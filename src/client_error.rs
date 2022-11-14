@@ -10,6 +10,7 @@ use nix::errno::Errno;
 use wayland_client::ConnectError;
 use wayland_client::GlobalError;
 
+#[derive(Debug)]
 pub enum ClientError
 {
     Mutex,

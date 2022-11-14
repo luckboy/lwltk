@@ -11,6 +11,6 @@ pub struct ClientContext {}
 
 impl ClientContext
 {
-    pub fn new() -> Result<ClientContext, ClientError>
+    pub(crate) fn new() -> Result<ClientContext, ClientError>
     { Ok(ClientContext {}) }
 }
