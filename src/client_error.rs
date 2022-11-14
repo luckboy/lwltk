@@ -14,6 +14,8 @@ pub enum ClientError
 {
     Mutex,
     RwLock,
+    Recv,
+    Send,
     Io(Error),
     Connect(ConnectError),
     Global(GlobalError),
