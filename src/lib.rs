@@ -9,6 +9,7 @@ mod app;
 mod callback_queue;
 mod client_context;
 mod client_error;
+mod theme;
 mod thread_signal;
 mod window_context;
 
@@ -16,5 +17,6 @@ pub use crate::app::*;
 pub use crate::callback_queue::*;
 pub use crate::client_context::*;
 pub use crate::client_error::*;
+pub use crate::theme::*;
 pub use crate::thread_signal::*;
 pub use crate::window_context::*;

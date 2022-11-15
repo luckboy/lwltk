@@ -7,10 +7,8 @@
 //
 use crate::client_error::*;
 
-pub struct ClientContext {}
+pub trait Theme: Send + Sync
+{}
 
-impl ClientContext
-{
-    pub(crate) fn new() -> Result<Self, ClientError>
-    { Ok(ClientContext {}) }
-}
+pub fn theme_from_env() -> Result<Box<dyn Theme>, ClientError>
+{ Err(ClientError::InvalidThemeName) }

@@ -21,4 +21,6 @@ pub enum ClientError
     Connect(ConnectError),
     Global(GlobalError),
     Nix(Errno),
+    NoXdgRuntimeDir,
+    InvalidThemeName,
 }

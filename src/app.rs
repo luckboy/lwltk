@@ -13,6 +13,7 @@ use std::rc::*;
 use crate::callback_queue::*;
 use crate::client_context::*;
 use crate::client_error::*;
+use crate::theme::*;
 use crate::thread_signal::*;
 use crate::window_context::*;
 
@@ -28,11 +29,21 @@ pub struct App<T>
 
 impl<T> App<T>
 {
-    pub fn new<F, G>(creating_f: F, setting_f: G) -> Result<App<T>, ClientError>
+    pub fn new<F, G>(creating_f: F, setting_f: G) -> Result<Self, ClientError>
+        where F: FnOnce(&mut WindowContext) -> T,
+              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>)
+    { Self::new_with_dyn_theme(theme_from_env()?, creating_f, setting_f) }
+
+    pub fn new_with_theme<U: Theme + 'static, F, G>(theme: U, creating_f: F, setting_f: G) -> Result<Self, ClientError>
+        where F: FnOnce(&mut WindowContext) -> T,
+              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>)
+    { Self::new_with_dyn_theme(Box::new(theme), creating_f, setting_f) }
+    
+    pub fn new_with_dyn_theme<F, G>(theme: Box<dyn Theme>, creating_f: F, setting_f: G) -> Result<Self, ClientError>
         where F: FnOnce(&mut WindowContext) -> T,
               G: FnOnce(&mut WindowContext, Arc<RwLock<T>>)
     {
-        let mut window_context = WindowContext::new();
+        let mut window_context = WindowContext::new(theme);
         let data = Arc::new(RwLock::new(creating_f(&mut window_context)));
         setting_f(&mut window_context, data.clone());
         let client_context = ClientContext::new()?;

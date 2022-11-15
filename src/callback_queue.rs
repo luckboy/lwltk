@@ -9,6 +9,6 @@ pub struct CallbackQueue {}
 
 impl CallbackQueue
 {
-    pub(crate) fn new() -> CallbackQueue
+    pub(crate) fn new() -> Self
     { CallbackQueue {} }
 }
