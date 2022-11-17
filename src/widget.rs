@@ -16,11 +16,11 @@ pub trait Widget: Container + PreferredSize
     fn bounds(&self) -> Rect<i32>;
     
     #[allow(unused_variables)]
-    fn prev(&self, idx_pair: WidgetIndexPair) -> Option<WidgetIndexPair>
+    fn prev(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
     { None }
 
     #[allow(unused_variables)]
-    fn next(&self, idx_pair: WidgetIndexPair) -> Option<WidgetIndexPair>
+    fn next(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
     { None }
 
     fn margin_pos(&self) -> Pos<i32>
