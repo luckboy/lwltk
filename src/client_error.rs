@@ -5,6 +5,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::error;
+use std::fmt;
 use std::io::Error;
 use nix::errno::Errno;
 use wayland_client::ConnectError;
@@ -23,4 +25,28 @@ pub enum ClientError
     Nix(Errno),
     NoXdgRuntimeDir,
     InvalidThemeName,
+    InvalidTheme,
+}
+
+impl error::Error for ClientError
+{}
+
+impl fmt::Display for ClientError
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
+        match self {
+            ClientError::Mutex => write!(f, "mutex error"),
+            ClientError::RwLock => write!(f, "rwlock error"),
+            ClientError::Recv => write!(f, "recv error"),
+            ClientError::Send => write!(f, "send error"),
+            ClientError::Io(err) => write!(f, "io: {}", err),
+            ClientError::Connect(err) => write!(f, "connect: {}", err),
+            ClientError::Global(err) => write!(f, "global: {}", err),
+            ClientError::Nix(err) => write!(f, "nix: {}", err),
+            ClientError::NoXdgRuntimeDir => write!(f, "no XDG_RUNTIME_DIR variable"),
+            ClientError::InvalidThemeName => write!(f, "invalid theme name"),
+            ClientError::InvalidTheme => write!(f, "invalid theme"),
+        }
+    }
 }
