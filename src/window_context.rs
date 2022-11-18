@@ -8,6 +8,7 @@
 use std::any::Any;
 use crate::theme::*;
 use crate::types::*;
+use crate::container::*;
 use crate::widget::*;
 use crate::window::*;
 use crate::window_pool::*;
@@ -53,9 +54,9 @@ impl WindowContext
     pub fn window_mut<T: Any>(&mut self, idx: WindowIndex) -> Option<&mut T>
     { self.window_pool.window_mut(idx) }
 
-    pub fn set_widget<T: Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
-        where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
-    { self.window_pool.set_widget(idx, f) }
+    pub fn add_widget1<C: Container + Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
+        where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
+    { self.window_pool.add_widget1(idx, f) }
     
     pub fn dyn_widget(&self, path: &AbsWidgetPath) -> Option<&dyn Widget>
     { self.window_pool.dyn_widget(path) }

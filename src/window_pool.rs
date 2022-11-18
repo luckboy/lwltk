@@ -261,13 +261,13 @@ impl WindowPool
     pub fn dyn_windows(&self) -> Windows
     { Windows::new(&self.windows) }
 
-    pub fn set_widget<T: Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
-        where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
+    pub fn add_widget1<C: Container + Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
+        where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
     {
         match self.window_mut(idx) {
             Some(window) => {
-                match f(window) {
-                    Some(idx_pair) => Some(AbsWidgetPath::new(idx, idx_pair)),
+                match add_container_widget1(window, f) {
+                    Some(rel_path) => Some(rel_path.to_abs_widget_path(idx)),
                     None => None,
                 }
             },

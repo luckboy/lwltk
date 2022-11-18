@@ -31,7 +31,7 @@ pub trait Widget: Container + PreferredSize
     { false }
 
     #[allow(unused_variables)]
-    fn set_viewport(&mut self, size: Size<i32>)
+    fn set_viewport(&mut self, size: Size<i32>, is_focused_window: bool)
     {}
     
     fn scroll_slider_x(&self, trough_width: i32);

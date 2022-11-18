@@ -268,6 +268,15 @@ pub fn container_widget<'a, C: Container + ?Sized, T: Any>(container: &'a C, pat
 pub fn container_widget_mut<'a, C: Container + ?Sized, T: Any>(container: &'a mut C, path: &RelWidgetPath) -> Option<&'a mut T>
 { container.dyn_widget_mut(path).map(|wg| wg.as_any_mut().downcast_mut::<T>()).flatten() }
 
+pub fn add_container_widget1<'a, C: Container, F>(container: &'a mut C, f: F) -> Option<RelWidgetPath>
+    where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
+{
+    match f(container) {
+        Some(idx_pair) => Some(RelWidgetPath::new(idx_pair)),
+        None => None,
+    }
+}
+
 pub fn add_container_widget<'a, C: Container + ?Sized, T: Any, F>(container: &'a mut C, path: &RelWidgetPath, f: F) -> Option<RelWidgetPath>
     where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
 {
