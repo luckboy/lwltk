@@ -58,6 +58,7 @@ impl PartialOrd for IndexRange
     { Some(self.cmp(other)) }
 }
 
+#[derive(Clone)]
 pub struct WindowIndices<'a>
 {
     iter: hash_map::Keys<'a, WindowIndex, Box<dyn Window + 'static>>,
@@ -86,6 +87,7 @@ impl<'a> Iterator for WindowIndices<'a>
     { self.iter.size_hint() }
 }
 
+#[derive(Clone)]
 pub struct Windows<'a>
 {
     iter: hash_map::Values<'a, WindowIndex, Box<dyn Window + 'static>>,
