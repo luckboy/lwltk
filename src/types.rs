@@ -5,11 +5,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::iter::FusedIterator;
 use std::ops::Add;
 use std::ops::Sub;
+use std::slice::Iter;
 use cairo;
 
 pub type CairoContext = cairo::Context;
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum WidgetState
+{
+    None,
+    Hover,
+    Active,
+}
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Pos<T>
@@ -87,7 +97,7 @@ impl<T: Copy + PartialOrd + Add<Output = T>> Rect<T>
 
 impl<T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T>> Rect<T>
 {
-    pub fn intersect(&self, rect: Rect<T>) -> Option<Rect<T>>
+    pub fn intersection(&self, rect: Rect<T>) -> Option<Rect<T>>
     {
         let x1 = if self.x > rect.x { self.x } else { rect.x };
         let y1 = if self.y > rect.y { self.y } else { rect.y };
@@ -136,11 +146,46 @@ impl Rect<f64>
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct WindowIndex(pub usize);
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct WidgetIndexPair(pub usize, pub usize);
+
+#[derive(Clone)]
+pub struct WidgetPathIter<'a>
+{
+    iter: Iter<'a, WidgetIndexPair>,
+}
+
+impl<'a> WidgetPathIter<'a>
+{
+    fn new(slice: &'a [WidgetIndexPair]) -> Self
+    { WidgetPathIter { iter: slice.iter(), } }
+}
+
+impl<'a> ExactSizeIterator for WidgetPathIter<'a>
+{}
+
+impl<'a> FusedIterator for WidgetPathIter<'a>
+{}
+
+impl<'a> DoubleEndedIterator for WidgetPathIter<'a>
+{
+    fn next_back(&mut self) -> Option<Self::Item>
+    { self.iter.next_back().map(|ip| *ip) }
+}
+
+impl<'a> Iterator for WidgetPathIter<'a>
+{
+    type Item = WidgetIndexPair;
+    
+    fn next(&mut self) -> Option<Self::Item>
+    { self.iter.next().map(|x| *x) }
+    
+    fn size_hint(&self) -> (usize, Option<usize>)
+    { self.iter.size_hint() }
+}
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct RelWidgetPath
@@ -153,11 +198,23 @@ impl RelWidgetPath
     pub fn new(widget_idx_pair: WidgetIndexPair) -> Self
     { RelWidgetPath { widget_index_pairs: vec![widget_idx_pair], } }
     
-    pub fn widget_index_pairs(&self) -> &[WidgetIndexPair]
-    { self.widget_index_pairs.as_slice() }
+    pub fn widget_index_pairs(&self) -> WidgetPathIter<'_>
+    { WidgetPathIter::new(self.widget_index_pairs.as_slice()) }
+
+    pub fn iter(&self) -> WidgetPathIter<'_>
+    { self.widget_index_pairs() }
 
     pub fn push(&mut self, widget_idx_pair: WidgetIndexPair)
     { self.widget_index_pairs.push(widget_idx_pair); }
+    
+    pub fn pop(&mut self) -> Option<WidgetIndexPair>
+    {
+        if self.widget_index_pairs.len() > 1 {
+            self.widget_index_pairs.pop()
+        } else {
+            None
+        }
+    }
 
     pub fn to_abs_widget_path(&self, window_idx: WindowIndex) -> AbsWidgetPath
     { 
@@ -188,12 +245,18 @@ impl AbsWidgetPath
     pub fn window_index(&self) -> WindowIndex
     { self.window_index }
 
-    pub fn widget_index_pairs(&self) -> &[WidgetIndexPair]
+    pub fn widget_index_pairs(&self) -> WidgetPathIter<'_>
     { self.rel_widget_path.widget_index_pairs() }
     
     pub fn as_rel_widget_path(&self) -> &RelWidgetPath
     { &self.rel_widget_path }
 
+    pub fn iter(&self) -> WidgetPathIter<'_>
+    { self.widget_index_pairs() }
+
     pub fn push(&mut self, widget_idx_pair: WidgetIndexPair)
     { self.rel_widget_path.push(widget_idx_pair); }
+
+    pub fn pop(&mut self) -> Option<WidgetIndexPair>
+    { self.rel_widget_path.pop() }
 }

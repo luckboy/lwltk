@@ -5,6 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::any::Any;
 use crate::container::*;
 use crate::preferred_size::*;
 use crate::types::*;
@@ -16,6 +17,10 @@ pub trait Window: Container + PreferredSize
     fn padding_bounds(&self) -> Rect<i32>;
 
     fn is_visible(&self) -> bool;
+    
+    fn is_focused(&self) -> bool;
+    
+    fn set_focus(&self, is_focused: bool);
 
     fn width(&self) -> i32
     { self.size().width }
@@ -41,3 +46,9 @@ pub trait Window: Container + PreferredSize
     fn padding_height(&self) -> i32
     { self.padding_bounds().height }
 }
+
+pub fn dyn_window_as_window<T: Any>(window: &dyn Window) -> Option<&T>
+{ window.as_any().downcast_ref::<T>() }
+
+pub fn dyn_window_mut_as_window_mut<T: Any>(window: &mut dyn Window) -> Option<&mut T>
+{ window.as_any_mut().downcast_mut::<T>() }
