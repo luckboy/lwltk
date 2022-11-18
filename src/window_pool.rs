@@ -220,6 +220,9 @@ impl WindowPool
                         None => (),
                     }
                 }
+                for child_idx in window.child_indices() {
+                    self.unset_parent_window(child_idx);
+                }
                 self.indices_to_destroy.insert(idx);
                 Some(window)
             },
@@ -298,6 +301,59 @@ impl WindowPool
                 }
             },
             None => None,
+        }
+    }
+
+    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex) -> bool
+    {
+        match self.dyn_window_mut(child_idx) {
+            Some(child_window) => {
+                if !child_window.set_parent(Some(ParentWindowIndex::new(parent_idx))) {
+                    return false;
+                }
+            },
+            None => return false,
+        }
+        let is_success = match self.dyn_window_mut(parent_idx) {
+            Some(parent_window) => parent_window.add_child(ChildWindowIndex::new(parent_idx)),
+            None => false,
+        };
+        if !is_success {
+            match self.dyn_window_mut(child_idx) {
+                Some(child_window) => {
+                    child_window.set_parent(None);
+                },
+                None => return false,
+            }
+        }
+        is_success
+    }
+
+    pub fn unset_parent_window(&mut self, child_idx: WindowIndex) -> bool
+    {
+        let parent_idx = match self.dyn_window_mut(child_idx) {
+            Some(child_window) => {
+                match child_window.parent() {
+                    Some(parent_idx) => {
+                        if child_window.set_parent(None) {
+                            Some(parent_idx)
+                        } else {
+                            None                            
+                        }
+                    },
+                    None => None,
+                }
+            },
+            None => None,
+        };
+        match parent_idx {
+            Some(parent_idx) => {
+                match self.dyn_window_mut(parent_idx) {
+                    Some(parent_window) => parent_window.remove_child(ChildWindowIndex::new(child_idx)),
+                    None => false
+                }
+            },
+            None => false,
         }
     }
 }

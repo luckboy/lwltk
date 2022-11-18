@@ -6,9 +6,34 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::any::Any;
+use std::slice::Iter;
 use crate::container::*;
 use crate::preferred_size::*;
 use crate::types::*;
+
+#[derive(Copy, Clone, Debug)]
+pub struct ParentWindowIndex(WindowIndex);
+
+impl ParentWindowIndex
+{
+    pub(crate) fn new(idx: WindowIndex) -> ParentWindowIndex
+    { ParentWindowIndex(idx) }
+    
+    pub fn window_index(&self) -> WindowIndex
+    { self.0 }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct ChildWindowIndex(WindowIndex);
+
+impl ChildWindowIndex
+{
+    pub(crate) fn new(idx: WindowIndex) -> ChildWindowIndex
+    { ChildWindowIndex(idx) }
+
+    pub fn window_index(&self) -> WindowIndex
+    { self.0 }
+}
 
 pub trait Window: Container + PreferredSize
 {
@@ -22,6 +47,29 @@ pub trait Window: Container + PreferredSize
     
     fn set_focus(&self, is_focused: bool);
 
+    fn is_popup(&self) -> bool
+    { false }
+    
+    fn parent(&self) -> Option<WindowIndex>
+    { None }
+    
+    #[allow(unused_variables)]
+    fn set_parent(&mut self, idx: Option<ParentWindowIndex>) -> bool
+    { false }
+
+    fn child_index_iter(&self) -> Option<Box<dyn ChildWindowIndexIterator>>;
+    
+    #[allow(unused_variables)]
+    fn add_child(&mut self, idx: ChildWindowIndex) -> bool
+    { false }
+
+    #[allow(unused_variables)]
+    fn remove_child(&mut self, idx: ChildWindowIndex) -> bool
+    { false }
+
+    fn child_indices(&self) -> ChildWindowIndices<'_>
+    { ChildWindowIndices::new(self.child_index_iter()) }
+    
     fn width(&self) -> i32
     { self.size().width }
 
@@ -45,6 +93,30 @@ pub trait Window: Container + PreferredSize
 
     fn padding_height(&self) -> i32
     { self.padding_bounds().height }
+}
+
+pub trait ChildWindowIndexIterator<'a>
+{
+    fn next(&mut self) -> Option<WindowIndex>;
+}
+
+pub struct ChildWindowIndices<'a>
+{
+    iter: Option<Box<dyn ChildWindowIndexIterator<'a>>>,
+}
+
+impl<'a> ChildWindowIndices<'a>
+{
+    fn new(iter: Option<Box<dyn ChildWindowIndexIterator<'a>>>) -> Self
+    { ChildWindowIndices { iter, } }
+}
+
+impl<'a> Iterator for ChildWindowIndices<'a>
+{
+    type Item = WindowIndex;
+    
+    fn next(&mut self) -> Option<Self::Item>
+    { self.iter.as_mut().map(|i| i.next()).flatten() }
 }
 
 pub fn dyn_window_as_window<T: Any>(window: &dyn Window) -> Option<&T>
