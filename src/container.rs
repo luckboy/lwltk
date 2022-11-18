@@ -6,12 +6,12 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::any::Any;
+use crate::call_on::*;
 use crate::draw::*;
-use crate::listener::*;
 use crate::types::*;
 use crate::widget::*;
 
-pub trait Container: Draw + Listener
+pub trait Container: Draw + CallOn
 {
     #[allow(unused_variables)]
     fn dyn_widget_for_index_pair(&self, idx_pair: WidgetIndexPair) -> Option<&dyn Widget>

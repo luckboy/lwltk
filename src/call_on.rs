@@ -7,7 +7,7 @@
 //
 use crate::events::*;
 
-pub trait Listener: Send + Sync
+pub trait CallOn: Send + Sync
 {
     fn call_on(&mut self, event: &Event) -> EventOption;
 }
