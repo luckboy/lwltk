@@ -217,7 +217,7 @@ impl WindowPool
                             self.free_indices.remove(&idx_range);
                             self.index_counter = idx_range.min.checked_sub(1);
                         },
-                        None => (),
+                        None => self.index_counter = self.index_counter.map(|ic| ic.checked_sub(1)).flatten(),
                     }
                 }
                 for child_idx in window.child_indices() {
