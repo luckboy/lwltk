@@ -143,7 +143,7 @@ impl WindowPool
                 self.free_indices.remove(&idx_range);
                 if idx_range.min < idx_range.max {
                     let new_idx_range = IndexRange::new(idx_range.min + 1, idx_range.max);
-                    self.free_indices.insert(idx_range);
+                    self.free_indices.insert(new_idx_range);
                 }
                 let new_idx = WindowIndex(idx_range.min);
                 self.windows.insert(new_idx, window);
