@@ -10,5 +10,5 @@ use crate::events::*;
 
 pub trait CallOn: Send + Sync
 {
-    fn call_on(&mut self, client_context: &mut ClientContext, event: &Event) -> EventOption;
+    fn call_on(&mut self, client_context: &mut ClientContext, event: &Event) -> Option<EventOption>;
 }

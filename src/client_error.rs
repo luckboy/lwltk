@@ -27,6 +27,7 @@ pub enum ClientError
     InvalidThemeName,
     InvalidTheme,
     DataError,
+    EventError,
 }
 
 impl error::Error for ClientError
@@ -49,6 +50,7 @@ impl fmt::Display for ClientError
             ClientError::InvalidThemeName => write!(f, "invalid theme name"),
             ClientError::InvalidTheme => write!(f, "invalid theme"),
             ClientError::DataError => write!(f, "data error"),
+            ClientError::EventError => write!(f, "event error"),
         }
     }
 }
