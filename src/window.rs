@@ -6,7 +6,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::any::Any;
-use std::slice::Iter;
 use crate::container::*;
 use crate::preferred_size::*;
 use crate::types::*;
