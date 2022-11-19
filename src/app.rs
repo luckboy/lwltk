@@ -10,9 +10,9 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::RwLock;
 use std::rc::*;
-use crate::callback_queue::*;
 use crate::client_context::*;
 use crate::client_error::*;
+use crate::queue_context::*;
 use crate::theme::*;
 use crate::thread_signal::*;
 use crate::window_context::*;
@@ -21,7 +21,7 @@ pub struct App<T>
 {
     client_context: Rc<RefCell<ClientContext>>,
     window_context: Arc<RwLock<WindowContext>>,
-    callback_queue: Arc<Mutex<CallbackQueue>>,
+    queue_context: Arc<Mutex<QueueContext>>,
     thread_signal_sender: ThreadSignalSender,
     thread_signal_receiver: ThreadSignalReceiver,
     data: Arc<RwLock<T>>,
@@ -54,7 +54,7 @@ impl<T> App<T>
                         let app = App {
                             client_context: Rc::new(RefCell::new(client_context)),
                             window_context: Arc::new(RwLock::new(window_context)),
-                            callback_queue: Arc::new(Mutex::new(CallbackQueue::new())),
+                            queue_context: Arc::new(Mutex::new(QueueContext::new())),
                             thread_signal_sender,
                             thread_signal_receiver,
                             data,
@@ -74,8 +74,8 @@ impl<T> App<T>
     pub fn window_context(&self) -> Arc<RwLock<WindowContext>>
     { self.window_context.clone() }
 
-    pub fn callback_queue(&self) -> Arc<Mutex<CallbackQueue>>
-    { self.callback_queue.clone() }
+    pub fn queue_context(&self) -> Arc<Mutex<QueueContext>>
+    { self.queue_context.clone() }
 
     pub fn thread_signal_sender(&self) -> ThreadSignalSender
     { self.thread_signal_sender }
