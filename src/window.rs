@@ -52,6 +52,9 @@ pub trait Window: Container + PreferredSize
     fn parent(&self) -> Option<WindowIndex>
     { None }
     
+    fn pos_in_parent(&self) -> Option<Pos<i32>>
+    { None }
+    
     #[allow(unused_variables)]
     fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> bool
     { false }
