@@ -30,33 +30,42 @@ pub struct App<T>
 impl<T> App<T>
 {
     pub fn new<F, G>(creating_f: F, setting_f: G) -> Result<Self, ClientError>
-        where F: FnOnce(&mut WindowContext) -> T,
-              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>)
+        where F: FnOnce(&mut WindowContext) -> Option<T>,
+              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>) -> Option<()>
     { Self::new_with_dyn_theme(theme_from_env()?, creating_f, setting_f) }
 
     pub fn new_with_theme<U: Theme + 'static, F, G>(theme: U, creating_f: F, setting_f: G) -> Result<Self, ClientError>
-        where F: FnOnce(&mut WindowContext) -> T,
-              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>)
+        where F: FnOnce(&mut WindowContext) -> Option<T>,
+              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>) -> Option<()>
     { Self::new_with_dyn_theme(Box::new(theme), creating_f, setting_f) }
     
     pub fn new_with_dyn_theme<F, G>(theme: Box<dyn Theme>, creating_f: F, setting_f: G) -> Result<Self, ClientError>
-        where F: FnOnce(&mut WindowContext) -> T,
-              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>)
+        where F: FnOnce(&mut WindowContext) -> Option<T>,
+              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>) -> Option<()>
     {
         let mut window_context = WindowContext::new(theme);
-        let data = Arc::new(RwLock::new(creating_f(&mut window_context)));
-        setting_f(&mut window_context, data.clone());
-        let client_context = ClientContext::new()?;
-        let (thread_signal_sender, thread_signal_receiver) = thread_signal_channel()?;
-        let app = App {
-            client_context: Rc::new(RefCell::new(client_context)),
-            window_context: Arc::new(RwLock::new(window_context)),
-            callback_queue: Arc::new(Mutex::new(CallbackQueue::new())),
-            thread_signal_sender,
-            thread_signal_receiver,
-            data,
-        };
-        Ok(app)
+        match creating_f(&mut window_context) {
+            Some(tmp_data) => {
+                let data = Arc::new(RwLock::new(tmp_data));
+                match setting_f(&mut window_context, data.clone()) {
+                    Some(()) => {
+                        let client_context = ClientContext::new()?;
+                        let (thread_signal_sender, thread_signal_receiver) = thread_signal_channel()?;
+                        let app = App {
+                            client_context: Rc::new(RefCell::new(client_context)),
+                            window_context: Arc::new(RwLock::new(window_context)),
+                            callback_queue: Arc::new(Mutex::new(CallbackQueue::new())),
+                            thread_signal_sender,
+                            thread_signal_receiver,
+                            data,
+                        };
+                        Ok(app)
+                    },
+                    None => Err(ClientError::DataError),
+                }
+            },
+            None => Err(ClientError::DataError),
+        }
     }
 
     pub fn client_context(&self) -> Rc<RefCell<ClientContext>>

@@ -26,6 +26,7 @@ pub enum ClientError
     NoXdgRuntimeDir,
     InvalidThemeName,
     InvalidTheme,
+    DataError,
 }
 
 impl error::Error for ClientError
@@ -47,6 +48,7 @@ impl fmt::Display for ClientError
             ClientError::NoXdgRuntimeDir => write!(f, "no XDG_RUNTIME_DIR variable"),
             ClientError::InvalidThemeName => write!(f, "invalid theme name"),
             ClientError::InvalidTheme => write!(f, "invalid theme"),
+            ClientError::DataError => write!(f, "data error"),
         }
     }
 }
