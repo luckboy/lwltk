@@ -17,12 +17,13 @@ pub struct WindowContext
 {
     theme: Box<dyn Theme>,
     window_pool: WindowPool,
+    current_window_index: Option<WindowIndex>,
 }
 
 impl WindowContext
 {
     pub(crate) fn new(theme: Box<dyn Theme>) -> Self
-    { WindowContext { theme, window_pool: WindowPool::new(), } }
+    { WindowContext { theme, window_pool: WindowPool::new(), current_window_index: None } }
     
     pub fn theme(&self) -> &dyn Theme
     { &*self.theme }
@@ -32,6 +33,44 @@ impl WindowContext
 
     pub fn window_pool_mut(&mut self) -> &mut WindowPool
     { &mut self.window_pool }
+    
+    pub fn current_window_index(&self) -> Option<WindowIndex>
+    { self.current_window_index }
+
+    pub(crate) fn set_current_window_index(&mut self, idx: Option<WindowIndex>)
+    { self.current_window_index = idx; }
+
+    pub fn dyn_current_window(&self) -> Option<&dyn Window>
+    {
+        match self.current_window_index {
+            Some(idx) => self.window_pool.dyn_window(idx),
+            None => None,
+        }
+    }
+
+    pub fn dyn_current_window_mut(&mut self) -> Option<&mut dyn Window>
+    {
+        match self.current_window_index {
+            Some(idx) => self.window_pool.dyn_window_mut(idx),
+            None => None,
+        }
+    }
+
+    pub fn current_window<T: Any>(&self) -> Option<&T>
+    {
+        match self.current_window_index {
+            Some(idx) => self.window_pool.window(idx),
+            None => None,
+        }
+    }
+
+    pub fn current_window_mut<T: Any>(&mut self) -> Option<&mut T>
+    {
+        match self.current_window_index {
+            Some(idx) => self.window_pool.window_mut(idx),
+            None => None,
+        }
+    }
 
     pub fn add_dyn_window(&mut self, window: Box<dyn Window>) -> Option<WindowIndex>
     { self.window_pool.add_dyn(window) }
