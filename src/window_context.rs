@@ -54,9 +54,9 @@ impl WindowContext
     pub fn window_mut<T: Any>(&mut self, idx: WindowIndex) -> Option<&mut T>
     { self.window_pool.window_mut(idx) }
 
-    pub fn add_widget1<C: Container + Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
+    pub fn abs_widget_path1<C: Container + Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
-    { self.window_pool.add_widget1(idx, f) }
+    { self.window_pool.abs_widget_path1(idx, f) }
     
     pub fn dyn_widget(&self, path: &AbsWidgetPath) -> Option<&dyn Widget>
     { self.window_pool.dyn_widget(path) }
@@ -70,7 +70,7 @@ impl WindowContext
     pub fn widget_mut<T: Any>(&mut self, path: &AbsWidgetPath) -> Option<&mut T>
     { self.window_pool.widget_mut(path) }
     
-    pub fn add_widget<T: Any, F>(&mut self, path: &AbsWidgetPath, f: F) -> Option<AbsWidgetPath>
+    pub fn abs_widget_path<T: Any, F>(&mut self, path: &AbsWidgetPath, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
-    { self.window_pool.add_widget(path, f) }
+    { self.window_pool.abs_widget_path(path, f) }
 }
