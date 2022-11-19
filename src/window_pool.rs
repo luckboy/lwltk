@@ -306,6 +306,7 @@ impl WindowPool
 
     pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex) -> bool
     {
+        self.unset_parent_window(child_idx);
         match self.dyn_window_mut(child_idx) {
             Some(child_window) => {
                 if !child_window.set_parent(Some(ParentWindowIndex::new(parent_idx))) {
