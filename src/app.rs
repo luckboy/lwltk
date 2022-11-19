@@ -61,10 +61,10 @@ impl<T> App<T>
                         };
                         Ok(app)
                     },
-                    None => Err(ClientError::DataError),
+                    None => Err(ClientError::Data),
                 }
             },
-            None => Err(ClientError::DataError),
+            None => Err(ClientError::Data),
         }
     }
 
