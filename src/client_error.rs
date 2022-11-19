@@ -8,6 +8,7 @@
 use std::error;
 use std::fmt;
 use std::io::Error;
+use cairo;
 use nix::errno::Errno;
 use wayland_client::ConnectError;
 use wayland_client::GlobalError;
@@ -20,6 +21,7 @@ pub enum ClientError
     Recv,
     Send,
     Io(Error),
+    Cairo(cairo::Error),
     Connect(ConnectError),
     Global(GlobalError),
     Nix(Errno),
@@ -43,6 +45,7 @@ impl fmt::Display for ClientError
             ClientError::Recv => write!(f, "recv error"),
             ClientError::Send => write!(f, "send error"),
             ClientError::Io(err) => write!(f, "io: {}", err),
+            ClientError::Cairo(err) => write!(f, "cairo: {}", err),
             ClientError::Connect(err) => write!(f, "connect: {}", err),
             ClientError::Global(err) => write!(f, "global: {}", err),
             ClientError::Nix(err) => write!(f, "nix: {}", err),

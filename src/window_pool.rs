@@ -304,57 +304,44 @@ impl WindowPool
         }
     }
 
-    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> bool
+    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> Option<()>
     {
         self.unset_parent_window(child_idx);
-        match self.dyn_window_mut(child_idx) {
-            Some(child_window) => {
-                if !child_window.set_parent(ParentWindowIndex::new(parent_idx), pos) {
-                    return false;
-                }
-            },
-            None => return false,
+        {
+            let child_window = self.dyn_window_mut(child_idx)?;
+            child_window.set_parent(ParentWindowIndex::new(parent_idx), pos)?;
         }
         let is_success = match self.dyn_window_mut(parent_idx) {
-            Some(parent_window) => parent_window.add_child(ChildWindowIndex::new(parent_idx)),
+            Some(parent_window) => parent_window.add_child(ChildWindowIndex::new(parent_idx)).is_some(),
             None => false,
         };
         if !is_success {
-            match self.dyn_window_mut(child_idx) {
-                Some(child_window) => {
-                    child_window.unset_parent();
-                },
-                None => return false,
-            }
+            let child_window = self.dyn_window_mut(child_idx)?;
+            child_window.unset_parent();
+            return None;
         }
-        is_success
+        Some(())
     }
 
-    pub fn unset_parent_window(&mut self, child_idx: WindowIndex) -> bool
+    pub fn unset_parent_window(&mut self, child_idx: WindowIndex) -> Option<()>
     {
-        let parent_idx = match self.dyn_window_mut(child_idx) {
-            Some(child_window) => {
-                match child_window.parent() {
-                    Some(parent_idx) => {
-                        if child_window.unset_parent() {
-                            Some(parent_idx)
-                        } else {
-                            None              
-                        }
-                    },
-                    None => None,
-                }
-            },
-            None => None,
+        let parent_idx = {
+            let child_window = self.dyn_window_mut(child_idx)?;
+            match child_window.parent() {
+                Some(parent_idx) => {
+                    child_window.unset_parent()?;
+                    Some(parent_idx)
+                },
+                None => None,
+            }
         };
         match parent_idx {
             Some(parent_idx) => {
-                match self.dyn_window_mut(parent_idx) {
-                    Some(parent_window) => parent_window.remove_child(ChildWindowIndex::new(child_idx)),
-                    None => false
-                }
+                let parent_window = self.dyn_window_mut(parent_idx)?;
+                parent_window.remove_child(ChildWindowIndex::new(child_idx))?;
+                Some(())
             },
-            None => false,
+            None => None,
         }
     }
 }

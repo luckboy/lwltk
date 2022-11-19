@@ -56,21 +56,22 @@ pub trait Window: Container + PreferredSize
     { None }
     
     #[allow(unused_variables)]
-    fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> bool
-    { false }
+    fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> Option<()>
+    { None }
 
-    fn unset_parent(&mut self) -> bool
-    { false }
+    fn unset_parent(&mut self) -> Option<()>
+    { None }
 
-    fn child_index_iter(&self) -> Option<Box<dyn ChildWindowIndexIterator>>;
+    fn child_index_iter(&self) -> Option<Box<dyn ChildWindowIndexIterator>>
+    { None }
     
     #[allow(unused_variables)]
-    fn add_child(&mut self, idx: ChildWindowIndex) -> bool
-    { false }
+    fn add_child(&mut self, idx: ChildWindowIndex) -> Option<()>
+    { None }
 
     #[allow(unused_variables)]
-    fn remove_child(&mut self, idx: ChildWindowIndex) -> bool
-    { false }
+    fn remove_child(&mut self, idx: ChildWindowIndex) -> Option<()>
+    { None }
 
     fn child_indices(&self) -> ChildWindowIndices<'_>
     { ChildWindowIndices::new(self.child_index_iter()) }
