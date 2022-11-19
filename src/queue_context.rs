@@ -41,8 +41,13 @@ impl QueueContext
     pub fn callback_queue_mut(&mut self) -> &mut CallbackQueue
     { &mut self.callback_queue }
 
-    pub fn current_call_on_id(&self) -> &Option<CallOnId>
-    { &self.current_call_on_id }
+    pub fn current_call_on_id(&self) -> Option<&CallOnId>
+    {
+        match &self.current_call_on_id {
+            Some(call_on_id) => Some(call_on_id),
+            None => None,
+        }
+    }
 
     pub(crate) fn set_current_call_on_id(&mut self, call_on_id: Option<CallOnId>)
     { self.current_call_on_id = call_on_id; }

@@ -46,7 +46,7 @@ pub trait Window: Container + PreferredSize
     
     fn set_focus(&self, is_focused: bool);
 
-    fn title(&self) -> Option<String>
+    fn title(&self) -> Option<&str>
     { None }
     
     fn is_popup(&self) -> bool
