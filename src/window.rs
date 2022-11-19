@@ -53,7 +53,10 @@ pub trait Window: Container + PreferredSize
     { None }
     
     #[allow(unused_variables)]
-    fn set_parent(&mut self, idx: Option<ParentWindowIndex>) -> bool
+    fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> bool
+    { false }
+
+    fn unset_parent(&mut self) -> bool
     { false }
 
     fn child_index_iter(&self) -> Option<Box<dyn ChildWindowIndexIterator>>;

@@ -304,12 +304,12 @@ impl WindowPool
         }
     }
 
-    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex) -> bool
+    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> bool
     {
         self.unset_parent_window(child_idx);
         match self.dyn_window_mut(child_idx) {
             Some(child_window) => {
-                if !child_window.set_parent(Some(ParentWindowIndex::new(parent_idx))) {
+                if !child_window.set_parent(ParentWindowIndex::new(parent_idx), pos) {
                     return false;
                 }
             },
@@ -322,7 +322,7 @@ impl WindowPool
         if !is_success {
             match self.dyn_window_mut(child_idx) {
                 Some(child_window) => {
-                    child_window.set_parent(None);
+                    child_window.unset_parent();
                 },
                 None => return false,
             }
@@ -336,10 +336,10 @@ impl WindowPool
             Some(child_window) => {
                 match child_window.parent() {
                     Some(parent_idx) => {
-                        if child_window.set_parent(None) {
+                        if child_window.unset_parent() {
                             Some(parent_idx)
                         } else {
-                            None                            
+                            None              
                         }
                     },
                     None => None,
