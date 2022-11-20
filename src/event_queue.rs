@@ -10,7 +10,7 @@ use crate::events::*;
 use crate::types::*;
 
 #[derive(Clone, Eq, PartialEq)]
-pub enum CallOnId
+pub enum CallOnPath
 {
     Window(WindowIndex),
     Widget(AbsWidgetPath),
@@ -19,14 +19,14 @@ pub enum CallOnId
 #[derive(Clone)]
 pub struct EventPair
 {
-    pub call_on_id: CallOnId,
+    pub call_on_path: CallOnPath,
     pub event: Event,
 }
 
 impl EventPair
 {
-    pub fn new(call_on_id: CallOnId, event: Event) -> EventPair
-    { EventPair { call_on_id, event, } }
+    pub fn new(call_on_path: CallOnPath, event: Event) -> EventPair
+    { EventPair { call_on_path, event, } }
 }
 
 pub struct EventQueue

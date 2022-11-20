@@ -15,7 +15,7 @@ pub struct QueueContext
 {
     event_queue: EventQueue,
     callback_queue: CallbackQueue,
-    current_call_on_id: Option<CallOnId>,
+    current_call_on_path: Option<CallOnPath>,
 }
 
 impl QueueContext
@@ -25,7 +25,7 @@ impl QueueContext
         QueueContext {
             event_queue: EventQueue::new(),
             callback_queue: CallbackQueue::new(),
-            current_call_on_id: None,
+            current_call_on_path: None,
         }
     }
 
@@ -41,22 +41,22 @@ impl QueueContext
     pub fn callback_queue_mut(&mut self) -> &mut CallbackQueue
     { &mut self.callback_queue }
 
-    pub fn current_call_on_id(&self) -> Option<&CallOnId>
+    pub fn current_call_on_path(&self) -> Option<&CallOnPath>
     {
-        match &self.current_call_on_id {
-            Some(call_on_id) => Some(call_on_id),
+        match &self.current_call_on_path {
+            Some(call_on_path) => Some(call_on_path),
             None => None,
         }
     }
 
-    pub(crate) fn set_current_call_on_id(&mut self, call_on_id: Option<CallOnId>)
-    { self.current_call_on_id = call_on_id; }
+    pub(crate) fn set_current_call_on_path(&mut self, call_on_path: Option<CallOnPath>)
+    { self.current_call_on_path = call_on_path; }
 
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {
-        match self.current_call_on_id.clone() {
-            Some(call_on_id) => {
-                self.event_queue.push(EventPair::new(call_on_id, event));
+        match self.current_call_on_path.clone() {
+            Some(call_on_path) => {
+                self.event_queue.push(EventPair::new(call_on_path, event));
                 Some(())
             },
             None => None,
