@@ -8,10 +8,10 @@
 use std::error;
 use std::fmt;
 use std::io::Error;
-use cairo;
 use nix::errno::Errno;
 use wayland_client::ConnectError;
 use wayland_client::GlobalError;
+use crate::types::*;
 
 #[derive(Debug)]
 pub enum ClientError
@@ -21,7 +21,7 @@ pub enum ClientError
     Recv,
     Send,
     Io(Error),
-    Cairo(cairo::Error),
+    Cairo(CairoError),
     Connect(ConnectError),
     Global(GlobalError),
     Nix(Errno),

@@ -16,6 +16,10 @@ pub trait Widget: Container + PreferredSize
     
     fn bounds(&self) -> Rect<i32>;
 
+    fn h_align(&self) -> HAlign;
+    
+    fn v_align(&self) -> VAlign;
+
     fn state(&self) -> WidgetState;
     
     fn set_state(&mut self, state: WidgetState);

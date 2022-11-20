@@ -13,12 +13,32 @@ use cairo;
 
 pub type CairoContext = cairo::Context;
 
+pub type CairoError = cairo::Error;
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum WidgetState
 {
     None,
     Hover,
     Active,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum HAlign
+{
+    Left,
+    Center,
+    Right,
+    Fill,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum VAlign
+{
+    Top,
+    Center,
+    Bottom,
+    Fill,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
