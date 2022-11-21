@@ -11,5 +11,5 @@ use crate::queue_context::*;
 
 pub trait CallOn: Send + Sync
 {
-    fn call_on(&mut self, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<EventOption>;
+    fn call_on(&mut self, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Event>>;
 }
