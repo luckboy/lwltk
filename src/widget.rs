@@ -6,6 +6,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::any::Any;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use crate::container::*;
 use crate::preferred_size::*;
 use crate::types::*;
@@ -49,6 +51,8 @@ pub trait Widget: Container + PreferredSize
     fn scroll_slider_height(&self, viewport_height: i32, trough_width: i32);
 
     fn set_client_y(&mut self, slider_y: f64, trough_height: i32);
+    
+    fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
     
     fn margin_pos(&self) -> Pos<i32>
     { self.margin_bounds().pos() }

@@ -76,6 +76,12 @@ pub trait Window: Container + MinSize + PreferredSize
     #[allow(unused_variables)]
     fn remove_child(&mut self, idx: ChildWindowIndex) -> Option<()>
     { None }
+    
+    fn has_changed_title(&self) -> bool;
+    
+    fn is_changed(&self) -> bool;
+    
+    fn clear_change_flags(&mut self);
 
     fn child_indices(&self) -> ChildWindowIndices<'_>
     { ChildWindowIndices::new(self.child_index_iter()) }
