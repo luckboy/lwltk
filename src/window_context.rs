@@ -112,4 +112,10 @@ impl WindowContext
     pub fn abs_widget_path<T: Any, F>(&mut self, path: &AbsWidgetPath, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
     { self.window_pool.abs_widget_path(path, f) }
+    
+    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> Option<()>
+    { self.window_pool.set_parent(child_idx, parent_idx, pos) }
+
+    pub fn unset_parent_window(&mut self, child_idx: WindowIndex) -> Option<()>
+    { self.window_pool.unset_parent(child_idx) }
 }

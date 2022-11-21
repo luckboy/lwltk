@@ -221,7 +221,7 @@ impl WindowPool
                     }
                 }
                 for child_idx in window.child_indices() {
-                    self.unset_parent_window(child_idx);
+                    self.unset_parent(child_idx);
                 }
                 self.indices_to_destroy.insert(idx);
                 Some(window)
@@ -304,9 +304,9 @@ impl WindowPool
         }
     }
 
-    pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> Option<()>
+    pub fn set_parent(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> Option<()>
     {
-        self.unset_parent_window(child_idx);
+        self.unset_parent(child_idx);
         {
             let child_window = self.dyn_window_mut(child_idx)?;
             child_window.set_parent(ParentWindowIndex::new(parent_idx), pos)?;
@@ -323,7 +323,7 @@ impl WindowPool
         Some(())
     }
 
-    pub fn unset_parent_window(&mut self, child_idx: WindowIndex) -> Option<()>
+    pub fn unset_parent(&mut self, child_idx: WindowIndex) -> Option<()>
     {
         let parent_idx = {
             let child_window = self.dyn_window_mut(child_idx)?;
