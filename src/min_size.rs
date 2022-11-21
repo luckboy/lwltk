@@ -7,7 +7,7 @@
 //
 use crate::types::*;
 
-pub trait MinSize
+pub trait MinSize: Send + Sync
 {
     fn min_size(&self) -> Size<Option<i32>>;
     
