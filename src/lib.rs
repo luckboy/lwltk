@@ -22,8 +22,8 @@ mod thread_signal;
 mod types;
 mod widget;
 mod window;
+mod window_container;
 mod window_context;
-mod window_pool;
 
 pub mod events;
 
@@ -44,5 +44,5 @@ pub use crate::thread_signal::*;
 pub use crate::types::*;
 pub use crate::widget::*;
 pub use crate::window::*;
+pub use crate::window_container::*;
 pub use crate::window_context::*;
-pub use crate::window_pool::*;

@@ -116,7 +116,7 @@ impl<'a> Iterator for Windows<'a>
     { self.iter.size_hint() }
 }
 
-pub struct WindowPool
+pub struct WindowContainer
 {
     windows: HashMap<WindowIndex, Box<dyn Window>>,
     free_indices: BTreeSet<IndexRange>,
@@ -124,11 +124,11 @@ pub struct WindowPool
     indices_to_destroy: BTreeSet<WindowIndex>,
 }
 
-impl WindowPool
+impl WindowContainer
 {
-    pub(crate) fn new() -> WindowPool
+    pub(crate) fn new() -> WindowContainer
     {
-        WindowPool {
+        WindowContainer {
             windows: HashMap::new(),
             free_indices: BTreeSet::new(),
             index_counter: None,
