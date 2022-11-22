@@ -11,6 +11,7 @@ use std::io::Error;
 use nix::errno::Errno;
 use wayland_client::ConnectError;
 use wayland_client::GlobalError;
+use crate::events::*;
 use crate::types::*;
 
 #[derive(Debug)]
@@ -29,7 +30,7 @@ pub enum ClientError
     InvalidThemeName,
     InvalidTheme,
     Data,
-    Event,
+    Event(Event),
 }
 
 impl error::Error for ClientError
@@ -53,7 +54,7 @@ impl fmt::Display for ClientError
             ClientError::InvalidThemeName => write!(f, "invalid theme name"),
             ClientError::InvalidTheme => write!(f, "invalid theme"),
             ClientError::Data => write!(f, "data error"),
-            ClientError::Event => write!(f, "event error"),
+            ClientError::Event(event) => write!(f, "event error for {:?}", event),
         }
     }
 }
