@@ -6,6 +6,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use crate::keys::*;
+use crate::types::*;
 
 #[derive(Clone, Debug)]
 pub enum Event
@@ -28,7 +29,7 @@ pub enum Event
     TableCellDeselection(usize, usize),
     TreeNodeSelection(Vec<usize>),
     TreeNodeDeselection(Vec<usize>),
-    Scroll(Option<f64>, Option<f64>),
+    Scroll(bool, bool, bool, bool),
     Menu,
     Close,
     Maximize,
@@ -39,20 +40,20 @@ pub enum Event
 pub enum ClientEvent
 {
     ShellSurfacePing,
-    ShellSurfaceConfigure(Resize, i32, i32),
+    ShellSurfaceConfigure(Resize, Size<i32>),
     ShellSurfacePopupDone,
-    PointerEnter(f64, f64),
+    PointerEnter(Pos<f64>),
     PointerLeave,
-    PointerMotion(u32, f64, f64),
+    PointerMotion(u32, Pos<f64>),
     PointerButton(u32, Button, State),
     PointerAxis(u32, Axis, f64),
     KeyboardEnter,
     KeyboardLeave,
     KeyboardKey(u32, Vec<VKey>, String),
     KeyboardModifiers(KeyModifiers),
-    TouchDown(u32, i32, f64, f64),
+    TouchDown(u32, i32, Pos<f64>),
     TouchUp(u32, i32),
-    TouchMotion(u32, i32, f64, f64),
+    TouchMotion(u32, i32, Pos<i64>),
     TouchFrame,
     TouchCancel,
 }
