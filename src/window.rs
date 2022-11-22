@@ -77,7 +77,8 @@ pub trait Window: Container + MinSize + PreferredSize
     fn remove_child(&mut self, idx: ChildWindowIndex) -> Option<()>
     { None }
     
-    fn has_changed_title(&self) -> bool;
+    fn has_changed_title(&self) -> bool
+    { false }
     
     fn is_changed(&self) -> bool;
     
