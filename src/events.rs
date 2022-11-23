@@ -29,7 +29,6 @@ pub enum Event
     TableCellDeselection(usize, usize),
     TreeNodeSelection(Vec<usize>),
     TreeNodeDeselection(Vec<usize>),
-    Scroll(bool, bool, bool, bool),
     Menu,
     Close,
     Maximize,
