@@ -12,19 +12,71 @@ use std::ops::BitOrAssign;
 use std::ops::BitXor;
 use std::ops::BitXorAssign;
 use std::ops::Not;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct KeyModifiers(u32);
 
 impl KeyModifiers
 {
-    pub const EMPTY: KeyModifiers = KeyModifiers(0);
     pub const SHIFT: KeyModifiers = KeyModifiers(1 << 0);
     pub const CAPS: KeyModifiers = KeyModifiers(1 << 1);
     pub const CTRL: KeyModifiers = KeyModifiers(1 << 2);
     pub const ALT: KeyModifiers = KeyModifiers(1 << 3);
     pub const NUM: KeyModifiers = KeyModifiers(1 << 4);
     pub const LOGO: KeyModifiers = KeyModifiers(1 << 5);
+
+    pub const fn empty() -> Self
+    { KeyModifiers(0) }
+
+    pub const fn all() -> Self
+    { KeyModifiers(63) }
+    
+    pub const fn is_empty(&self) -> bool
+    { self.0 == 0 }
+    
+    pub const fn is_all(&self) -> bool
+    { self.0 == 63 }
+
+    pub const fn intersects(&self, other: Self) -> bool
+    { self.0 & other.0 != 0 }
+    
+    pub const fn contains(&self, other: Self) -> bool
+    { (self.0 & other.0) == other.0 }
+
+    pub fn insert(&mut self, other: Self)
+    { self.0 |= other.0; }
+
+    pub fn remove(&mut self, other: Self)
+    { self.0 &= !other.0; }
+
+    pub fn toggle(&mut self, other: Self)
+    { self.0 ^= other.0; }
+
+    pub fn set(&mut self, other: Self, b: bool)
+    {
+        if b {
+            self.insert(other);
+        } else {
+            self.remove(other);
+        }
+    }
+    
+    pub fn intersection(self, other: Self) -> Self
+    { KeyModifiers(self.0 & other.0) }
+
+    pub fn union(self, other: Self) -> Self
+    { KeyModifiers(self.0 | other.0) }
+
+    pub fn difference(self, other: Self) -> Self
+    { KeyModifiers(self.0 & !other.0) }
+
+    pub fn symmetric_difference(self, other: Self) -> Self
+    { KeyModifiers(self.0 ^ other.0) }
+    
+    pub fn complement(self) -> Self
+    { KeyModifiers(self.0 ^ 63) }
 }
 
 impl Not for KeyModifiers
@@ -75,6 +127,20 @@ impl BitXorAssign for KeyModifiers
 {
     fn bitxor_assign(&mut self, rhs: Self)
     { self.0 ^= rhs.0; }
+}
+
+impl Sub for KeyModifiers
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output
+    { KeyModifiers(self.0 & !rhs.0) }
+}
+
+impl SubAssign for KeyModifiers
+{
+    fn sub_assign(&mut self, rhs: Self)
+    { self.0 &= !rhs.0; }
 }
 
 // Most names of these enumeration variants are from xkbcommon/xkbcommon-keysyms.h.
