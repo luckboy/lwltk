@@ -31,7 +31,7 @@ pub trait Container: Draw + CallOn
     { None }
     
     #[allow(unused_variables)]
-    fn point(&self, pos: Pos<f64>) -> Option<WidgetIndexPair>
+    fn point_for_index_pair(&self, pos: Pos<f64>) -> Option<WidgetIndexPair>
     { None }
 
     fn dyn_widget<'a>(&'a self, path: &RelWidgetPath) -> Option<&'a dyn Widget>
@@ -70,16 +70,16 @@ pub trait Container: Draw + CallOn
         }
     }
     
-    fn point_to_leaf(&self, pos: Pos<f64>) -> Option<RelWidgetPath>
+    fn point(&self, pos: Pos<f64>) -> Option<RelWidgetPath>
     {
-        match self.point(pos) {
+        match self.point_for_index_pair(pos) {
             Some(idx_pair) => {
                 let mut widget_path = RelWidgetPath::new(idx_pair);
                 let mut widget: Option<&'_ dyn Widget> = self.dyn_widget_for_index_pair(idx_pair);
                 loop {
                     let idx_pair = match widget {
                         Some(tmp_widget) => {
-                            match tmp_widget.point(pos) {
+                            match tmp_widget.point_for_index_pair(pos) {
                                 Some(tmp_idx_pair) => tmp_idx_pair,
                                 None => break,
                             }
@@ -98,9 +98,9 @@ pub trait Container: Draw + CallOn
         }
     }
 
-    fn point_focusable_to_leaf(&self, pos: Pos<f64>) -> Option<RelWidgetPath>
+    fn point_focusable(&self, pos: Pos<f64>) -> Option<RelWidgetPath>
     {
-        match self.point(pos) {
+        match self.point_for_index_pair(pos) {
             Some(idx_pair) => {
                 let mut widget_path = RelWidgetPath::new(idx_pair);
                 let mut focusable_widget_path: Option<RelWidgetPath> = None;
@@ -112,7 +112,7 @@ pub trait Container: Draw + CallOn
                 loop {
                     let idx_pair = match widget {
                         Some(tmp_widget) => {
-                            match tmp_widget.point(pos) {
+                            match tmp_widget.point_for_index_pair(pos) {
                                 Some(tmp_idx_pair) => tmp_idx_pair,
                                 None => break,
                             }
