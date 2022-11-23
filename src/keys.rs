@@ -5,6 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::fmt;
 use std::ops::BitAnd;
 use std::ops::BitAndAssign;
 use std::ops::BitOr;
@@ -15,11 +16,12 @@ use std::ops::Not;
 use std::ops::Sub;
 use std::ops::SubAssign;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct KeyModifiers(u32);
 
 impl KeyModifiers
 {
+    pub const EMPTY: KeyModifiers = KeyModifiers(0);
     pub const SHIFT: KeyModifiers = KeyModifiers(1 << 0);
     pub const CAPS: KeyModifiers = KeyModifiers(1 << 1);
     pub const CTRL: KeyModifiers = KeyModifiers(1 << 2);
@@ -141,6 +143,57 @@ impl SubAssign for KeyModifiers
 {
     fn sub_assign(&mut self, rhs: Self)
     { self.0 &= !rhs.0; }
+}
+
+impl fmt::Debug for KeyModifiers
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
+        if *self == Self::EMPTY {
+            write!(f, "EMPTY")?;
+        } else {
+            let mut is_first = true;
+            if (*self & Self::SHIFT) != Self::EMPTY {
+                write!(f, "SHIFT")?;
+                is_first = false;
+            }
+            if (*self & Self::CAPS) != Self::EMPTY {
+                if !is_first {
+                    write!(f, " | ")?;
+                }
+                write!(f, "CAPS")?;
+                is_first = false;
+            }
+            if (*self & Self::CTRL) != Self::EMPTY {
+                if !is_first {
+                    write!(f, " | ")?;
+                }
+                write!(f, "CTRL")?;
+                is_first = false;
+            }
+            if (*self & Self::ALT) != Self::EMPTY {
+                if !is_first {
+                    write!(f, " | ")?;
+                }
+                write!(f, "ALT")?;
+                is_first = false;
+            }
+            if (*self & Self::NUM) != Self::EMPTY {
+                if !is_first {
+                    write!(f, " | ")?;
+                }
+                write!(f, "NUM")?;
+                is_first = false;
+            }
+            if (*self & Self::LOGO) != Self::EMPTY {
+                if !is_first {
+                    write!(f, " | ")?;
+                }
+                write!(f, "LOGO")?;
+            }
+        }
+        Ok(())
+    }
 }
 
 // Most names of these enumeration variants are from xkbcommon/xkbcommon-keysyms.h.
