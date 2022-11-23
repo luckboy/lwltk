@@ -138,6 +138,18 @@ impl<T: Copy> Rect<T>
 
     pub fn size(&self) -> Size<T>
     { Size::new(self.width, self.height) }
+    
+    pub fn set_pos(&mut self, pos: Pos<T>)
+    {
+        self.x = pos.x;
+        self.y = pos.y;
+    }
+
+    pub fn set_size(&mut self, size: Size<T>)
+    {
+        self.width = size.width;
+        self.height = size.height;
+    }
 }
 
 impl Rect<i32>
