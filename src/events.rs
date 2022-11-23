@@ -39,16 +39,16 @@ pub enum Event
 pub enum ClientEvent
 {
     ShellSurfacePing,
-    ShellSurfaceConfigure(Resize, Size<i32>),
+    ShellSurfaceConfigure(ClientResize, Size<i32>),
     ShellSurfacePopupDone,
     PointerEnter(Pos<f64>),
     PointerLeave,
     PointerMotion(u32, Pos<f64>),
-    PointerButton(u32, Button, State),
-    PointerAxis(u32, Axis, f64),
+    PointerButton(u32, ClientButton, ClientState),
+    PointerAxis(u32, ClientAxis, f64),
     KeyboardEnter,
     KeyboardLeave,
-    KeyboardKey(u32, Vec<VKey>, String),
+    KeyboardKey(u32, Vec<VKey>, String, ClientState),
     KeyboardModifiers(KeyModifiers),
     TouchDown(u32, i32, Pos<f64>),
     TouchUp(u32, i32),
@@ -66,7 +66,7 @@ pub enum EventOption
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum Resize
+pub enum ClientResize
 {
     None,
     Top,
@@ -80,7 +80,7 @@ pub enum Resize
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum Button
+pub enum ClientButton
 {
     Left,
     Right,
@@ -88,14 +88,14 @@ pub enum Button
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum State
+pub enum ClientState
 {
     Released,
     Pressed,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum Axis
+pub enum ClientAxis
 {
     VScroll,
     HScroll,
