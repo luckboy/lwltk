@@ -28,6 +28,9 @@ mod window_context;
 pub mod events;
 pub mod keys;
 
+#[cfg(test)]
+mod mocks;
+
 pub use crate::app::*;
 pub use crate::as_any::*;
 pub use crate::call_on::*;
