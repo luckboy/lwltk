@@ -44,7 +44,7 @@ impl MockEmptyWindow
             padding_bounds: Rect::new(0, 0, 0, 0),
             is_visible: true,
             is_focused: false,
-            change_flag_arc: Arc::new(AtomicBool::new(true)),
+            change_flag_arc: Arc::new(AtomicBool::new(false)),
             min_size: Size::new(None, None),
             preferred_size: Size::new(None, None),
         }
