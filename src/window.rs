@@ -84,6 +84,9 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn clear_change_flags(&mut self);
 
+    fn content_index_pair(&self) -> Option<WidgetIndexPair>
+    { None }
+    
     fn child_indices(&self) -> ChildWindowIndices<'_>
     { ChildWindowIndices::new(self.child_index_iter()) }
     
