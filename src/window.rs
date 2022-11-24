@@ -45,7 +45,7 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn is_focused(&self) -> bool;
     
-    fn set_focus(&self, is_focused: bool);
+    fn set_focus(&mut self, is_focused: bool);
 
     fn title(&self) -> Option<&str>
     { None }
