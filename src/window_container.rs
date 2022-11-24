@@ -697,7 +697,7 @@ mod tests
     }
     
     #[test]
-    fn test_window_container_add_window_after_window_removing()
+    fn test_window_container_adds_window_after_window_removing()
     {
         let mut window_container = WindowContainer::new();
         window_container.add(MockEmptyWindow::new("test1"));
