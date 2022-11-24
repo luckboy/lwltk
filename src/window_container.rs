@@ -640,6 +640,33 @@ mod tests
     }
 
     #[test]
+    fn test_window_container_does_not_remove_non_existent_window()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockEmptyWindow::new("test1"));
+        window_container.add(MockEmptyWindow::new("test2"));
+        window_container.add(MockEmptyWindow::new("test3"));
+        let removed_window = window_container.remove(WindowIndex(3));
+        assert_eq!(true, removed_window.is_none());
+        assert_eq!(3, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(window) => assert_eq!(Some("test1"), window.title()),
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(window) => assert_eq!(Some("test2"), window.title()),
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(window) => assert_eq!(Some("test3"), window.title()),
+            None => assert!(false),
+        }
+        assert_eq!(true, window_container.free_indices.is_empty());
+        assert_eq!(Some(2), window_container.index_counter);
+        assert_eq!(true, window_container.indices_to_destroy.is_empty());
+    }    
+    
+    #[test]
     fn test_window_container_adds_window_after_removing_of_windows()
     {
         let mut window_container = WindowContainer::new();
