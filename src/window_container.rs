@@ -327,7 +327,7 @@ impl WindowContainer
     {
         let parent_idx = {
             let child_window = self.dyn_window_mut(child_idx)?;
-            match child_window.parent() {
+            match child_window.parent_index() {
                 Some(parent_idx) => {
                     child_window.unset_parent()?;
                     Some(parent_idx)

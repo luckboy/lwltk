@@ -53,7 +53,7 @@ pub trait Window: Container + MinSize + PreferredSize
     fn is_popup(&self) -> bool
     { false }
     
-    fn parent(&self) -> Option<WindowIndex>
+    fn parent_index(&self) -> Option<WindowIndex>
     { None }
     
     fn pos_in_parent(&self) -> Option<Pos<i32>>
