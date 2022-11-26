@@ -66,7 +66,7 @@ pub trait Window: Container + MinSize + PreferredSize
     fn unset_parent(&mut self) -> Option<()>
     { None }
 
-    fn child_index_iter(&self) -> Option<Box<dyn WindowIterator>>
+    fn child_index_iter(&self) -> Option<Box<dyn WindowIterator + '_>>
     { None }
     
     #[allow(unused_variables)]
@@ -122,12 +122,12 @@ pub trait WindowIterator<'a>
 
 pub struct ChildWindowIndices<'a>
 {
-    iter: Option<Box<dyn WindowIterator<'a>>>,
+    iter: Option<Box<dyn WindowIterator<'a> + 'a>>,
 }
 
 impl<'a> ChildWindowIndices<'a>
 {
-    fn new(iter: Option<Box<dyn WindowIterator<'a>>>) -> Self
+    fn new(iter: Option<Box<dyn WindowIterator<'a> + 'a>>) -> Self
     { ChildWindowIndices { iter, } }
 }
 

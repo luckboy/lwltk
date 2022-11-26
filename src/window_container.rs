@@ -179,7 +179,7 @@ impl WindowContainer
     pub fn remove(&mut self, idx: WindowIndex) -> Option<Box<dyn Window>>
     {
         match self.windows.remove(&idx) {
-            Some(window) => {
+            Some(mut window) => {
                 if self.index_counter.map(|ic| ic != idx.0).unwrap_or(false) {
                     let idx_range1 = match idx.0.checked_sub(1) {
                         Some(i) => self.free_indices.get(&IndexRange::new(i, i)).map(|ir| *ir),
@@ -220,8 +220,27 @@ impl WindowContainer
                         None => self.index_counter = self.index_counter.map(|ic| ic.checked_sub(1)).flatten(),
                     }
                 }
-                for child_idx in window.child_indices() {
-                    self.unset_parent(child_idx);
+                match window.parent_index() {
+                    Some(parent_idx) => {
+                        window.unset_parent();
+                        match self.dyn_window_mut(parent_idx) {
+                            Some(parent) => {
+                                parent.remove_child(ChildWindowIndex::new(idx));
+                            },
+                            None => (),
+                        }
+                    },
+                    None => (),
+                }
+                let child_indices: Vec<WindowIndex> = window.child_indices().collect();
+                for child_idx in &child_indices {
+                    match self.dyn_window_mut(*child_idx) {
+                        Some(child) => {
+                            child.unset_parent();
+                        },
+                        None => (),
+                    }
+                    window.remove_child(ChildWindowIndex::new(*child_idx));
                 }
                 self.indices_to_destroy.insert(idx);
                 Some(window)
@@ -312,7 +331,7 @@ impl WindowContainer
             child_window.set_parent(ParentWindowIndex::new(parent_idx), pos)?;
         }
         let is_success = match self.dyn_window_mut(parent_idx) {
-            Some(parent_window) => parent_window.add_child(ChildWindowIndex::new(parent_idx)).is_some(),
+            Some(parent_window) => parent_window.add_child(ChildWindowIndex::new(child_idx)).is_some(),
             None => false,
         };
         if !is_success {
@@ -870,5 +889,429 @@ mod tests
         assert_eq!(true, window_container.free_indices.is_empty());
         assert_eq!(Some(2), window_container.index_counter);
         assert_eq!(true, window_container.indices_to_destroy.is_empty());
+    }
+
+    #[test]
+    fn test_window_container_sets_parent()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child"));
+        window_container.add(MockParentWindow::new("parent"));
+        match window_container.set_parent(WindowIndex(0), WindowIndex(1), Pos::new(1, 2)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        assert_eq!(2, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child"), child.title());
+                assert_eq!(Some(WindowIndex(1)), child.parent_index());
+                assert_eq!(Some(Pos::new(1, 2)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_container_sets_parent_for_many_children()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child1"));
+        window_container.add(MockChildWindow::new("child2"));
+        window_container.add(MockChildWindow::new("child3"));
+        window_container.add(MockParentWindow::new("parent"));
+        match window_container.set_parent(WindowIndex(0), WindowIndex(3), Pos::new(1, 2)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        match window_container.set_parent(WindowIndex(1), WindowIndex(3), Pos::new(3, 4)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        match window_container.set_parent(WindowIndex(2), WindowIndex(3), Pos::new(5, 6)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        assert_eq!(4, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child1"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(1, 2)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(child) => {
+                assert_eq!(Some("child2"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(3, 4)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(child) => {
+                assert_eq!(Some("child3"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(5, 6)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(3)) {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(Some(WindowIndex(1)), child_indices.next());
+                assert_eq!(Some(WindowIndex(2)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_container_sets_many_parents()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child1"));
+        window_container.add(MockChildWindow::new("child2"));
+        window_container.add(MockParentWindow::new("parent1"));
+        window_container.add(MockParentWindow::new("parent2"));
+        match window_container.set_parent(WindowIndex(0), WindowIndex(2), Pos::new(1, 2)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        match window_container.set_parent(WindowIndex(1), WindowIndex(3), Pos::new(3, 4)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        assert_eq!(4, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child1"), child.title());
+                assert_eq!(Some(WindowIndex(2)), child.parent_index());
+                assert_eq!(Some(Pos::new(1, 2)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(child) => {
+                assert_eq!(Some("child2"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(3, 4)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(parent) => {
+                assert_eq!(Some("parent1"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(3)) {
+            Some(parent) => {
+                assert_eq!(Some("parent2"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(1)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_container_does_not_set_parent()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockEmptyWindow::new("test"));
+        window_container.add(MockParentWindow::new("parent"));
+        match window_container.set_parent(WindowIndex(0), WindowIndex(1), Pos::new(1, 2)) {
+            Some(()) => assert!(false),
+            None => assert!(true),
+        }
+        assert_eq!(2, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(window) => {
+                assert_eq!(Some("test"), window.title());
+                assert_eq!(None, window.parent_index());
+                assert_eq!(None, window.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_container_unsets_parent()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child1"));
+        window_container.add(MockChildWindow::new("child2"));
+        window_container.add(MockChildWindow::new("child3"));
+        window_container.add(MockParentWindow::new("parent"));
+        window_container.set_parent(WindowIndex(0), WindowIndex(3), Pos::new(1, 2));
+        window_container.set_parent(WindowIndex(1), WindowIndex(3), Pos::new(3, 4));
+        window_container.set_parent(WindowIndex(2), WindowIndex(3), Pos::new(5, 6));
+        match window_container.unset_parent(WindowIndex(1)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        assert_eq!(4, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child1"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(1, 2)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(child) => {
+                assert_eq!(Some("child2"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(child) => {
+                assert_eq!(Some("child3"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(5, 6)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(3)) {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(Some(WindowIndex(2)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }    
+
+    #[test]
+    fn test_window_container_unsets_many_parent()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child1"));
+        window_container.add(MockChildWindow::new("child2"));
+        window_container.add(MockChildWindow::new("child3"));
+        window_container.add(MockChildWindow::new("child4"));
+        window_container.add(MockParentWindow::new("parent"));
+        window_container.set_parent(WindowIndex(0), WindowIndex(4), Pos::new(1, 2));
+        window_container.set_parent(WindowIndex(1), WindowIndex(4), Pos::new(3, 4));
+        window_container.set_parent(WindowIndex(2), WindowIndex(4), Pos::new(5, 6));
+        window_container.set_parent(WindowIndex(3), WindowIndex(4), Pos::new(7, 8));
+        match window_container.unset_parent(WindowIndex(1)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        match window_container.unset_parent(WindowIndex(2)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        assert_eq!(5, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child1"), child.title());
+                assert_eq!(Some(WindowIndex(4)), child.parent_index());
+                assert_eq!(Some(Pos::new(1, 2)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(child) => {
+                assert_eq!(Some("child2"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(child) => {
+                assert_eq!(Some("child3"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(3)) {
+            Some(child) => {
+                assert_eq!(Some("child4"), child.title());
+                assert_eq!(Some(WindowIndex(4)), child.parent_index());
+                assert_eq!(Some(Pos::new(7, 8)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(4)) {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(Some(WindowIndex(3)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_container_automatically_unsets_parent_for_parent_removing()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child1"));
+        window_container.add(MockChildWindow::new("child2"));
+        window_container.add(MockChildWindow::new("child3"));
+        window_container.add(MockParentWindow::new("parent"));
+        window_container.set_parent(WindowIndex(0), WindowIndex(3), Pos::new(1, 2));
+        window_container.set_parent(WindowIndex(1), WindowIndex(3), Pos::new(3, 4));
+        window_container.set_parent(WindowIndex(2), WindowIndex(3), Pos::new(5, 6));
+        let parent = window_container.remove(WindowIndex(3));
+        match parent {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+        assert_eq!(3, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child1"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(child) => {
+                assert_eq!(Some("child2"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(child) => {
+                assert_eq!(Some("child3"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_container_automatically_unsets_parent_for_child_removing()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child1"));
+        window_container.add(MockChildWindow::new("child2"));
+        window_container.add(MockChildWindow::new("child3"));
+        window_container.add(MockParentWindow::new("parent"));
+        window_container.set_parent(WindowIndex(0), WindowIndex(3), Pos::new(1, 2));
+        window_container.set_parent(WindowIndex(1), WindowIndex(3), Pos::new(3, 4));
+        window_container.set_parent(WindowIndex(2), WindowIndex(3), Pos::new(5, 6));
+        let child = window_container.remove(WindowIndex(1));
+        match child {
+            Some(child) => {
+                assert_eq!(Some("child2"), child.title());
+                assert_eq!(None, child.parent_index());
+                assert_eq!(None, child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        assert_eq!(3, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child1"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(1, 2)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(child) => {
+                assert_eq!(Some("child3"), child.title());
+                assert_eq!(Some(WindowIndex(3)), child.parent_index());
+                assert_eq!(Some(Pos::new(5, 6)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(3)) {
+            Some(parent) => {
+                assert_eq!(Some("parent"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(Some(WindowIndex(2)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_container_automatically_unsets_parent_for_parent_setting()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockChildWindow::new("child"));
+        window_container.add(MockParentWindow::new("parent1"));
+        window_container.add(MockParentWindow::new("parent2"));
+        window_container.set_parent(WindowIndex(0), WindowIndex(1), Pos::new(1, 2));
+        match window_container.set_parent(WindowIndex(0), WindowIndex(2), Pos::new(3, 4)) {
+            Some(()) => assert!(true),
+            None => assert!(false),
+        }
+        assert_eq!(3, window_container.windows.len());
+        match window_container.windows.get(&WindowIndex(0)) {
+            Some(child) => {
+                assert_eq!(Some("child"), child.title());
+                assert_eq!(Some(WindowIndex(2)), child.parent_index());
+                assert_eq!(Some(Pos::new(3, 4)), child.pos_in_parent());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(1)) {
+            Some(parent) => {
+                assert_eq!(Some("parent1"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
+        match window_container.windows.get(&WindowIndex(2)) {
+            Some(parent) => {
+                assert_eq!(Some("parent2"), parent.title());
+                let mut child_indices = parent.child_indices();
+                assert_eq!(Some(WindowIndex(0)), child_indices.next());
+                assert_eq!(None, child_indices.next());
+            },
+            None => assert!(false),
+        }
     }
 }

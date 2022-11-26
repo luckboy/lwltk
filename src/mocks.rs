@@ -6,6 +6,12 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 #[allow(dead_code)]
+mod mock_child_window;
+#[allow(dead_code)]
 mod mock_empty_window;
+#[allow(dead_code)]
+mod mock_parent_window;
 
+pub(crate) use mock_child_window::*;
 pub(crate) use mock_empty_window::*;
+pub(crate) use mock_parent_window::*;
