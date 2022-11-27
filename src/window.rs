@@ -53,6 +53,9 @@ pub trait Window: Container + MinSize + PreferredSize
     fn is_popup(&self) -> bool
     { false }
     
+    fn is_maximized(&self) -> bool
+    { false }
+    
     fn parent_index(&self) -> Option<WindowIndex>
     { None }
     
@@ -76,9 +79,6 @@ pub trait Window: Container + MinSize + PreferredSize
     #[allow(unused_variables)]
     fn remove_child(&mut self, idx: ChildWindowIndex) -> Option<()>
     { None }
-    
-    fn has_changed_title(&self) -> bool
-    { false }
     
     fn is_changed(&self) -> bool;
     

@@ -40,15 +40,15 @@ pub trait Widget: Container + PreferredSize
     fn set_viewport(&mut self, size: Size<i32>, is_focused_window: bool)
     {}
     
-    fn scroll_slider_x(&self, trough_width: i32);
+    fn h_scroll_bar_slider_x(&self, trough_width: i32);
 
-    fn scroll_slider_width(&self, viewport_width: i32, trough_width: i32);
+    fn h_scroll_bar_slider_width(&self, viewport_width: i32, trough_width: i32);
 
     fn set_client_x(&mut self, slider_x: f64, trough_width: i32);
     
-    fn scroll_slider_y(&self, trough_height: i32);
+    fn v_scroll_bar_slider_y(&self, trough_height: i32);
     
-    fn scroll_slider_height(&self, viewport_height: i32, trough_width: i32);
+    fn v_scroll_bar_slider_height(&self, viewport_height: i32, trough_width: i32);
 
     fn set_client_y(&mut self, slider_y: f64, trough_height: i32);
     
