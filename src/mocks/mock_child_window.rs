@@ -120,7 +120,7 @@ impl Window for MockChildWindow
     fn is_changed(&self) -> bool
     { self.change_flag_arc.load(Ordering::SeqCst) }
     
-    fn clear_change_flags(&mut self)
+    fn clear_change_flag(&mut self)
     { self.change_flag_arc.store(false, Ordering::SeqCst); }
 }
 

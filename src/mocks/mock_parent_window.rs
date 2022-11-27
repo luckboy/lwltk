@@ -107,7 +107,7 @@ impl Window for MockParentWindow
     fn is_changed(&self) -> bool
     { self.change_flag_arc.load(Ordering::SeqCst) }
     
-    fn clear_change_flags(&mut self)
+    fn clear_change_flag(&mut self)
     { self.change_flag_arc.store(false, Ordering::SeqCst); }
 
     fn child_index_iter(&self) -> Option<Box<dyn WindowIterator + '_>>

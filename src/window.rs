@@ -82,7 +82,7 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn is_changed(&self) -> bool;
     
-    fn clear_change_flags(&mut self);
+    fn clear_change_flag(&mut self);
 
     fn content_index_pair(&self) -> Option<WidgetIndexPair>
     { None }
