@@ -110,7 +110,7 @@ impl<'a> Iterator for Windows<'a>
     type Item = &'a dyn Window;
     
     fn next(&mut self) -> Option<Self::Item>
-    { self.iter.next().map(|i| &**i) }
+    { self.iter.next().map(|w| &**w) }
     
     fn size_hint(&self) -> (usize, Option<usize>)
     { self.iter.size_hint() }
