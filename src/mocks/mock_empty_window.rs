@@ -21,7 +21,6 @@ use crate::queue_context::*;
 use crate::types::*;
 use crate::window::*;
 
-#[derive(Clone)]
 pub(crate) struct MockEmptyWindow
 {
     title: String,

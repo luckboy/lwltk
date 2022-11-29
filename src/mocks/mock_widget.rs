@@ -1,0 +1,194 @@
+//
+// Copyright (c) 2022 Łukasz Szpakowski
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+use std::any::Any;
+use std::cmp::max;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+use crate::as_any::*;
+use crate::call_on::*;
+use crate::client_context::*;
+use crate::container::*;
+use crate::draw::*;
+use crate::events::*;
+use crate::preferred_size::*;
+use crate::queue_context::*;
+use crate::types::*;
+use crate::widget::*;
+
+pub(crate) struct MockWidget
+{
+    text: String,
+    margin_bounds: Rect<i32>,
+    bounds: Rect<i32>,
+    h_align: HAlign,
+    v_align: VAlign,
+    state: WidgetState,
+    is_focusable: bool,
+    is_focused: bool,
+    change_flag_arc: Arc<AtomicBool>,
+    preferred_size: Size<Option<i32>>,
+}
+
+impl MockWidget
+{
+    pub(crate) fn new(s: &str) -> Self
+    {
+        MockWidget {
+            text: String::from(s),
+            margin_bounds: Rect::new(0, 0, 0, 0),
+            bounds: Rect::new(0, 0, 0, 0),
+            h_align: HAlign::Left,
+            v_align: VAlign::Top,
+            state: WidgetState::None,
+            is_focusable: true,
+            is_focused: false,
+            change_flag_arc: Arc::new(AtomicBool::new(false)),
+            preferred_size: Size::new(None, None),
+        }
+    }
+    
+    pub(crate) fn text(&self) -> &str
+    { self.text.as_str() }
+
+    pub(crate) fn set_margin_bounds(&mut self, bounds: Rect<i32>)
+    { self.margin_bounds = bounds; }
+
+    pub(crate) fn set_bounds(&mut self, bounds: Rect<i32>)
+    { self.bounds = bounds; }
+    
+    pub(crate) fn set_h_align(&mut self, align: HAlign)
+    { self.h_align = align; }
+
+    pub(crate) fn set_v_align(&mut self, align: VAlign)
+    { self.v_align = align; }
+
+    pub(crate) fn set_focusable(&mut self, is_focusable: bool)
+    { self.is_focusable = is_focusable; }
+
+    pub(crate) fn set_change_flag(&mut self, is_changed: bool)
+    { self.change_flag_arc.store(is_changed, Ordering::SeqCst); }
+    
+}
+
+impl Widget for MockWidget
+{
+    fn margin_bounds(&self) -> Rect<i32>
+    { self.margin_bounds }
+    
+    fn bounds(&self) -> Rect<i32>
+    { self.bounds }
+
+    fn h_align(&self) -> HAlign
+    { self.h_align }
+    
+    fn v_align(&self) -> VAlign
+    { self.v_align }
+
+    fn state(&self) -> WidgetState
+    { self.state }
+    
+    fn set_state(&mut self, state: WidgetState)
+    { self.state = state; }
+    
+    fn is_focusable(&self) -> bool
+    { self.is_focusable }
+    
+    fn is_focused(&self) -> bool
+    { self.is_focusable && self.is_focused }
+    
+    fn set_focus(&mut self, is_focused: bool) -> bool
+    {
+        if self.is_focusable {
+            self.is_focused = is_focused;
+            true
+        } else {
+            false
+        }
+    }
+    
+    fn h_scroll_bar_slider_x(&self, viewport_x: i32, viewport_width: i32, trough_width: i32) -> f64
+    { 
+        let client_width = max(viewport_width, self.bounds.width);
+        ((viewport_x - self.bounds.x) as f64) * (trough_width as f64) / (client_width as f64)
+    }
+
+    fn h_scroll_bar_slider_width(&self, viewport_width: i32, trough_width: i32) -> f64
+    { 
+        let client_width = max(viewport_width, self.bounds.width);
+        (viewport_width as f64) * (trough_width as f64) / (client_width as f64)
+    }
+
+    fn set_client_x(&mut self, viewport_x: i32, viewport_width: i32, slider_x: f64, trough_width: i32)
+    {
+        let client_width = max(viewport_width, self.bounds.width);
+        let client_x = ((slider_x * (client_width as f64)) / (trough_width as f64)) as i32;
+        self.bounds.x = viewport_x - client_x;
+    }
+    
+    fn v_scroll_bar_slider_y(&self, viewport_y: i32, viewport_height: i32, trough_height: i32) -> f64
+    {
+        let client_height = max(viewport_height, self.bounds.height);
+        ((viewport_y - self.bounds.y) as f64) * (trough_height as f64) / (client_height as f64)
+    }
+    
+    fn v_scroll_bar_slider_height(&self, viewport_height: i32, trough_height: i32) -> f64
+    {
+        let client_height = max(viewport_height, self.bounds.height);
+        (viewport_height as f64) * (trough_height as f64) / (client_height as f64)
+    }
+
+    fn set_client_y(&mut self, viewport_y: i32, viewport_height: i32, slider_y: f64, trough_height: i32)
+    {
+        let client_height = max(viewport_height, self.bounds.height);
+        let client_y = ((slider_y * (client_height as f64)) / (trough_height as f64)) as i32;
+        self.bounds.y = viewport_y - client_y;
+    }
+    
+    fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)
+    { self.change_flag_arc = flag_arc; }
+}
+
+impl Container for MockWidget
+{}
+
+impl PreferredSize for MockWidget
+{
+    fn preferred_size(&self) -> Size<Option<i32>>
+    { self.preferred_size }
+    
+    fn set_preferred_size(&mut self, size: Size<Option<i32>>)
+    { self.preferred_size = size; }
+}
+
+impl Draw for MockWidget
+{
+    fn update_size(&mut self, _cairo_context: &CairoContext, _area_size: Size<Option<i32>>, _is_focused_window: bool)
+    {}
+    
+    fn update_pos(&mut self, _cairo_context: &CairoContext, _area_pos: Pos<i32>, _is_focused_window: bool)
+    {}
+
+    fn draw(&self, _cairo_context: &CairoContext, _is_focused_window: bool)
+    {}
+}
+
+impl CallOn for MockWidget
+{
+    fn call_on(&mut self, _client_context: &mut ClientContext, _queue_context: &mut QueueContext, _event: &Event) -> Option<Option<Event>>
+    { Some(None) }
+}
+
+impl AsAny for MockWidget
+{
+    fn as_any(&self) -> &dyn Any
+    { self }
+    
+    fn as_any_mut(&mut self) -> &mut dyn Any
+    { self }
+}

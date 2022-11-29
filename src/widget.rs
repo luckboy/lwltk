@@ -33,24 +33,24 @@ pub trait Widget: Container + PreferredSize
     { false }
     
     #[allow(unused_variables)]
-    fn set_focus(&self, is_focused: bool) -> bool
+    fn set_focus(&mut self, is_focused: bool) -> bool
     { false }
 
     #[allow(unused_variables)]
     fn set_viewport(&mut self, size: Size<i32>, is_focused_window: bool)
     {}
     
-    fn h_scroll_bar_slider_x(&self, trough_width: i32);
+    fn h_scroll_bar_slider_x(&self, viewport_x: i32, viewport_width: i32, trough_width: i32) -> f64;
 
-    fn h_scroll_bar_slider_width(&self, viewport_width: i32, trough_width: i32);
+    fn h_scroll_bar_slider_width(&self, viewport_width: i32, trough_width: i32) -> f64;
 
-    fn set_client_x(&mut self, slider_x: f64, trough_width: i32);
+    fn set_client_x(&mut self, viewport_x: i32, viewport_width: i32, slider_x: f64, trough_width: i32);
     
-    fn v_scroll_bar_slider_y(&self, trough_height: i32);
+    fn v_scroll_bar_slider_y(&self, viewport_y: i32, viewport_height: i32, trough_height: i32) -> f64;
     
-    fn v_scroll_bar_slider_height(&self, viewport_height: i32, trough_width: i32);
+    fn v_scroll_bar_slider_height(&self, viewport_height: i32, trough_height: i32) -> f64;
 
-    fn set_client_y(&mut self, slider_y: f64, trough_height: i32);
+    fn set_client_y(&mut self, viewport_y: i32, viewport_height: i32, slider_y: f64, trough_height: i32);
     
     fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
     

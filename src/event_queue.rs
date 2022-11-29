@@ -9,7 +9,7 @@ use std::collections::VecDeque;
 use crate::events::*;
 use crate::types::*;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum CallOnPath
 {
     Window(WindowIndex),

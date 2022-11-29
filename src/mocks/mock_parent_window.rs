@@ -40,7 +40,6 @@ impl<'a> WindowIterator<'a> for MockWindowIter<'a>
     { self.iter.next().map(|i| *i) }
 }
 
-#[derive(Clone)]
 pub(crate) struct MockParentWindow
 {
     title: String,

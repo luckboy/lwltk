@@ -120,13 +120,15 @@ pub trait Container: Draw + CallOn
                         None => break,
                     };
                     widget_path.push(idx_pair);
-                    match widget {
-                        Some(tmp_widget) if tmp_widget.is_focusable() => focusable_widget_path = Some(widget_path.clone()),
-                        _ => (),
-                    }
                     widget = match widget {
                         Some(tmp_widget) => tmp_widget.dyn_widget_for_index_pair(idx_pair),
                         None => None,
+                    };
+                    match widget {
+                        Some(tmp_widget) if tmp_widget.is_focusable() => {
+                            focusable_widget_path = Some(widget_path.clone())
+                        },
+                        _ => (),
                     }
                 }
                 focusable_widget_path
@@ -292,5 +294,781 @@ pub fn container_rel_widget_path<'a, C: Container + ?Sized, T: Any, F>(container
             }
         },
         None => None,
+    }
+}
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+    use crate::widget::*;
+    
+    #[test]
+    fn test_container_sets_one_widget()
+    {
+        let mut window = MockWindow::new("test1");
+        let widget = MockWidget::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let widget: Option<&MockWidget> = container_widget(&window, &path);
+        match widget {
+            Some(widget) => assert_eq!("test2", widget.text()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_adds_widgets()
+    {
+        let mut window = MockWindow::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let mut expected_path1 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        expected_path1.push(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path1, path1);
+        let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        expected_path2.push(WidgetIndexPair(1, 0));
+        assert_eq!(expected_path2, path2);
+        let mut expected_path3 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        expected_path3.push(WidgetIndexPair(2, 0));
+        assert_eq!(expected_path3, path3);
+        let layout: Option<&MockLayout> = container_widget(&window, &path);
+        match layout {
+            Some(layout) => assert_eq!("test2", layout.text()),
+            None => assert!(false),
+        }
+        let widget1: Option<&MockWidget> = container_widget(&window, &path1);
+        match widget1 {
+            Some(widget) => assert_eq!("test3", widget.text()),
+            None => assert!(false),
+        }
+        let widget2: Option<&MockWidget> = container_widget(&window, &path2);
+        match widget2 {
+            Some(widget) => assert_eq!("test4", widget.text()),
+            None => assert!(false),
+        }
+        let widget3: Option<&MockWidget> = container_widget(&window, &path3);
+        match widget3 {
+            Some(widget) => assert_eq!("test5", widget.text()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_sets_one_widget_for_mutable()
+    {
+        let mut window = MockWindow::new("test1");
+        let widget = MockWidget::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let widget: Option<&mut MockWidget> = container_widget_mut(&mut window, &path);
+        match widget {
+            Some(widget) => assert_eq!("test2", widget.text()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_adds_widgets_for_mutable()
+    {
+        let mut window = MockWindow::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let mut expected_path1 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        expected_path1.push(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path1, path1);
+        let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        expected_path2.push(WidgetIndexPair(1, 0));
+        assert_eq!(expected_path2, path2);
+        let mut expected_path3 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        expected_path3.push(WidgetIndexPair(2, 0));
+        assert_eq!(expected_path3, path3);
+        let layout: Option<&mut MockLayout> = container_widget_mut(&mut window, &path);
+        match layout {
+            Some(layout) => assert_eq!("test2", layout.text()),
+            None => assert!(false),
+        }
+        let widget1: Option<&mut MockWidget> = container_widget_mut(&mut window, &path1);
+        match widget1 {
+            Some(widget) => assert_eq!("test3", widget.text()),
+            None => assert!(false),
+        }
+        let widget2: Option<&mut MockWidget> = container_widget_mut(&mut window, &path2);
+        match widget2 {
+            Some(widget) => assert_eq!("test4", widget.text()),
+            None => assert!(false),
+        }
+        let widget3: Option<&mut MockWidget> = container_widget_mut(&mut window, &path3);
+        match widget3 {
+            Some(widget) => assert_eq!("test5", widget.text()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_container_points_widgets()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(200, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 190, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_margin_bounds(Rect::new(10, 10, 80, 90));
+        widget1.set_bounds(Rect::new(15, 15, 70, 80));
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let mut widget2 = MockWidget::new("test4");
+        widget2.set_margin_bounds(Rect::new(110, 10, 80, 90));
+        widget2.set_bounds(Rect::new(115, 15, 70, 80));
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point(Pos::new(20.0, 20.0)) {
+            Some(path1) => {
+                let mut expected_path1 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path1.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path1, path1);
+            },
+            None => assert!(false),
+        }
+        match window.point(Pos::new(125.0, 25.0)) {
+            Some(path2) => {
+                let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path2.push(WidgetIndexPair(1, 0));
+                assert_eq!(expected_path2, path2);
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_points_widget_in_nested_layout()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(100, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 90, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test3");
+        layout2.set_bounds(Rect::new(10, 10, 80, 90));
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test3");
+        widget3.set_margin_bounds(Rect::new(15, 15, 70, 80));
+        widget3.set_bounds(Rect::new(20, 20, 60, 70));
+        match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point(Pos::new(20.0, 20.0)) {
+            Some(path3) => {
+                let mut expected_path3 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path3.push(WidgetIndexPair(0, 0));
+                expected_path3.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path3, path3);
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_points_nested_layout()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(100, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 90, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test3");
+        layout2.set_bounds(Rect::new(10, 10, 80, 90));
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test3");
+        widget3.set_margin_bounds(Rect::new(15, 15, 70, 80));
+        widget3.set_bounds(Rect::new(20, 20, 60, 70));
+        match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point(Pos::new(15.0, 15.0)) {
+            Some(path2) => {
+                let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path2.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path2, path2);
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_does_not_point_widgets()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(200, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 190, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_margin_bounds(Rect::new(10, 10, 80, 90));
+        widget1.set_bounds(Rect::new(15, 15, 70, 80));
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let mut widget2 = MockWidget::new("test4");
+        widget2.set_margin_bounds(Rect::new(110, 10, 80, 90));
+        widget2.set_bounds(Rect::new(115, 15, 70, 80));
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point(Pos::new(0.0, 0.0)) {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }    
+    
+    #[test]
+    fn test_container_points_focusable_widgets()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(200, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 190, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_margin_bounds(Rect::new(10, 10, 80, 90));
+        widget1.set_bounds(Rect::new(15, 15, 70, 80));
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let mut widget2 = MockWidget::new("test4");
+        widget2.set_margin_bounds(Rect::new(110, 10, 80, 90));
+        widget2.set_bounds(Rect::new(115, 15, 70, 80));
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point_focusable(Pos::new(20.0, 20.0)) {
+            Some(path1) => {
+                let mut expected_path1 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path1.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path1, path1);
+            },
+            None => assert!(false),
+        }
+        match window.point_focusable(Pos::new(125.0, 25.0)) {
+            Some(path2) => {
+                let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path2.push(WidgetIndexPair(1, 0));
+                assert_eq!(expected_path2, path2);
+            },
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_container_points_focusable_widget_in_nested_layout()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(100, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 90, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test3");
+        layout2.set_bounds(Rect::new(10, 10, 80, 90));
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test3");
+        widget3.set_margin_bounds(Rect::new(15, 15, 70, 80));
+        widget3.set_bounds(Rect::new(20, 20, 60, 70));
+        match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point_focusable(Pos::new(20.0, 20.0)) {
+            Some(path3) => {
+                let mut expected_path3 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path3.push(WidgetIndexPair(0, 0));
+                expected_path3.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path3, path3);
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_points_focusable_nested_layout()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(100, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 90, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test3");
+        layout2.set_focusable(true);
+        layout2.set_bounds(Rect::new(10, 10, 80, 90));
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test3");
+        widget3.set_margin_bounds(Rect::new(15, 15, 70, 80));
+        widget3.set_bounds(Rect::new(20, 20, 60, 70));
+        match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point_focusable(Pos::new(15.0, 15.0)) {
+            Some(path2) => {
+                let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path2.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path2, path2);
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_points_focusable_nested_layout_with_unfocusable_widget()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(100, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 90, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test3");
+        layout2.set_focusable(true);
+        layout2.set_bounds(Rect::new(10, 10, 80, 90));
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test3");
+        widget3.set_focusable(false);
+        widget3.set_margin_bounds(Rect::new(15, 15, 70, 80));
+        widget3.set_bounds(Rect::new(20, 20, 60, 70));
+        match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point_focusable(Pos::new(20.0, 20.0)) {
+            Some(path2) => {
+                let mut expected_path2 = RelWidgetPath::new(WidgetIndexPair(0, 0));
+                expected_path2.push(WidgetIndexPair(0, 0));
+                assert_eq!(expected_path2, path2);
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_does_not_point_unfocusable_nested_layout_and_unfocusable_widget()
+    {
+        let mut window = MockWindow::new("test1");
+        window.set_size(Size::new(100, 110));
+        let mut layout = MockLayout::new("test2");
+        layout.set_bounds(Rect::new(5, 5, 90, 100));
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test3");
+        layout2.set_bounds(Rect::new(10, 10, 80, 90));
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test3");
+        widget3.set_focusable(false);
+        widget3.set_margin_bounds(Rect::new(15, 15, 70, 80));
+        widget3.set_bounds(Rect::new(20, 20, 60, 70));
+        match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.point_focusable(Pos::new(20.0, 20.0)) {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
+    
+    #[test]
+    fn test_container_gives_reversed_widget_index_pairs()
+    {
+        let mut window = MockWindow::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget2 = MockWidget::new("test4");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget3 = MockWidget::new("test5");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let layout: Option<&MockLayout> = container_widget(&window, &path);
+        match layout {
+            Some(layout) => {
+                let mut iter = RevWidgetIndexPairs::new(layout);
+                assert_eq!(Some(WidgetIndexPair(2, 0)), iter.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), iter.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), iter.next());
+                assert_eq!(None, iter.next());
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_container_gives_widget_index_pairs()
+    {
+        let mut window = MockWindow::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget2 = MockWidget::new("test4");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget3 = MockWidget::new("test5");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let layout: Option<&MockLayout> = container_widget(&window, &path);
+        match layout {
+            Some(layout) => {
+                let mut iter = WidgetIndexPairs::new(layout);
+                assert_eq!(Some(WidgetIndexPair(0, 0)), iter.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), iter.next());
+                assert_eq!(Some(WidgetIndexPair(2, 0)), iter.next());
+                assert_eq!(None, iter.next());
+            },
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_container_gives_reversed_dynamic_widgets()
+    {
+        let mut window = MockWindow::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget2 = MockWidget::new("test4");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget3 = MockWidget::new("test5");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let layout: Option<&MockLayout> = container_widget(&window, &path);
+        match layout {
+            Some(layout) => {
+                let mut iter = RevWidgets::new(layout);
+                match iter.next() {
+                    Some(widget) => {
+                        let widget: Option<&MockWidget> = dyn_widget_as_widget(widget);
+                        match widget {
+                            Some(widget) => assert_eq!("test5", widget.text()),
+                            None => assert!(false),
+                        }
+                    },
+                    None => assert!(false),
+                }
+                match iter.next() {
+                    Some(widget) => {
+                        let widget: Option<&MockWidget> = dyn_widget_as_widget(widget);
+                        match widget {
+                            Some(widget) => assert_eq!("test4", widget.text()),
+                            None => assert!(false),
+                        }
+                    },
+                    None => assert!(false),
+                }
+                match iter.next() {
+                    Some(widget) => {
+                        let widget: Option<&MockWidget> = dyn_widget_as_widget(widget);
+                        match widget {
+                            Some(widget) => assert_eq!("test3", widget.text()),
+                            None => assert!(false),
+                        }
+                    },
+                    None => assert!(false),
+                }
+                match iter.next() {
+                    Some(_) => assert!(false),
+                    None => assert!(true),
+                }
+            },
+            None => assert!(false),
+        }
+    }    
+
+    #[test]
+    fn test_container_gives_dynamic_widgets()
+    {
+        let mut window = MockWindow::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget2 = MockWidget::new("test4");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let widget3 = MockWidget::new("test5");
+        match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        let layout: Option<&MockLayout> = container_widget(&window, &path);
+        match layout {
+            Some(layout) => {
+                let mut iter = Widgets::new(layout);
+                match iter.next() {
+                    Some(widget) => {
+                        let widget: Option<&MockWidget> = dyn_widget_as_widget(widget);
+                        match widget {
+                            Some(widget) => assert_eq!("test3", widget.text()),
+                            None => assert!(false),
+                        }
+                    },
+                    None => assert!(false),
+                }
+                match iter.next() {
+                    Some(widget) => {
+                        let widget: Option<&MockWidget> = dyn_widget_as_widget(widget);
+                        match widget {
+                            Some(widget) => assert_eq!("test4", widget.text()),
+                            None => assert!(false),
+                        }
+                    },
+                    None => assert!(false),
+                }
+                match iter.next() {
+                    Some(widget) => {
+                        let widget: Option<&MockWidget> = dyn_widget_as_widget(widget);
+                        match widget {
+                            Some(widget) => assert_eq!("test5", widget.text()),
+                            None => assert!(false),
+                        }
+                    },
+                    None => assert!(false),
+                }
+                match iter.next() {
+                    Some(_) => assert!(false),
+                    None => assert!(true),
+                }
+            },
+            None => assert!(false),
+        }
     }
 }

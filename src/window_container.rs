@@ -1314,4 +1314,212 @@ mod tests
             None => assert!(false),
         }
     }
+
+    #[test]
+    fn test_window_container_sets_one_widget_to_window()
+    {
+        let mut window_container = WindowContainer::new();
+        let idx = match window_container.add(MockWindow::new("test1")) {
+            Some(tmp_idx) => tmp_idx, 
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget = MockWidget::new("test2");
+        let path = match window_container.abs_widget_path1(idx, |w: &mut MockWindow| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let widget: Option<&MockWidget> = window_container.widget(&path);
+        match widget {
+            Some(widget) => assert_eq!("test2", widget.text()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_container_adds_widgets_to_layout()
+    {
+        let mut window_container = WindowContainer::new();
+        let idx = match window_container.add(MockWindow::new("test1")) {
+            Some(tmp_idx) => tmp_idx, 
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout = MockLayout::new("test2");
+        let path = match window_container.abs_widget_path1(idx, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match window_container.abs_widget_path(&path, |w: &mut MockLayout| w.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match window_container.abs_widget_path(&path, |w: &mut MockLayout| w.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match window_container.abs_widget_path(&path, |w: &mut MockLayout| w.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let mut expected_path1 = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        expected_path1.push(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path1, path1);
+        let mut expected_path2 = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        expected_path2.push(WidgetIndexPair(1, 0));
+        assert_eq!(expected_path2, path2);
+        let mut expected_path3 = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        expected_path3.push(WidgetIndexPair(2, 0));
+        assert_eq!(expected_path3, path3);
+        let layout: Option<&MockLayout> = window_container.widget(&path);
+        match layout {
+            Some(layout) => assert_eq!("test2", layout.text()),
+            None => assert!(false),
+        }
+        let widget1: Option<&MockWidget> = window_container.widget(&path1);
+        match widget1 {
+            Some(widget1) => assert_eq!("test3", widget1.text()),
+            None => assert!(false),
+        }
+        let widget2: Option<&MockWidget> = window_container.widget(&path2);
+        match widget2 {
+            Some(widget2) => assert_eq!("test4", widget2.text()),
+            None => assert!(false),
+        }
+        let widget3: Option<&MockWidget> = window_container.widget(&path3);
+        match widget3 {
+            Some(widget3) => assert_eq!("test5", widget3.text()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_container_sets_one_widget_to_window_for_mutable()
+    {
+        let mut window_container = WindowContainer::new();
+        let idx = match window_container.add(MockWindow::new("test1")) {
+            Some(tmp_idx) => tmp_idx, 
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget = MockWidget::new("test2");
+        let path = match window_container.abs_widget_path1(idx, |w: &mut MockWindow| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let widget: Option<&mut MockWidget> = window_container.widget_mut(&path);
+        match widget {
+            Some(widget) => assert_eq!("test2", widget.text()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_container_adds_widgets_to_layout_for_mutable()
+    {
+        let mut window_container = WindowContainer::new();
+        let idx = match window_container.add(MockWindow::new("test1")) {
+            Some(tmp_idx) => tmp_idx, 
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout = MockLayout::new("test2");
+        let path = match window_container.abs_widget_path1(idx, |w: &mut MockWindow| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match window_container.abs_widget_path(&path, |w: &mut MockLayout| w.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match window_container.abs_widget_path(&path, |w: &mut MockLayout| w.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match window_container.abs_widget_path(&path, |w: &mut MockLayout| w.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let expected_path = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        assert_eq!(expected_path, path);
+        let mut expected_path1 = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        expected_path1.push(WidgetIndexPair(0, 0));
+        assert_eq!(expected_path1, path1);
+        let mut expected_path2 = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        expected_path2.push(WidgetIndexPair(1, 0));
+        assert_eq!(expected_path2, path2);
+        let mut expected_path3 = AbsWidgetPath::new(idx, WidgetIndexPair(0, 0));
+        expected_path3.push(WidgetIndexPair(2, 0));
+        assert_eq!(expected_path3, path3);
+        let layout: Option<&mut MockLayout> = window_container.widget_mut(&path);
+        match layout {
+            Some(layout) => assert_eq!("test2", layout.text()),
+            None => assert!(false),
+        }
+        let widget1: Option<&mut MockWidget> = window_container.widget_mut(&path1);
+        match widget1 {
+            Some(widget1) => assert_eq!("test3", widget1.text()),
+            None => assert!(false),
+        }
+        let widget2: Option<&mut MockWidget> = window_container.widget_mut(&path2);
+        match widget2 {
+            Some(widget2) => assert_eq!("test4", widget2.text()),
+            None => assert!(false),
+        }
+        let widget3: Option<&mut MockWidget> = window_container.widget_mut(&path3);
+        match widget3 {
+            Some(widget3) => assert_eq!("test5", widget3.text()),
+            None => assert!(false),
+        }
+    }
 }

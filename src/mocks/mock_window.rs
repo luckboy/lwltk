@@ -19,9 +19,10 @@ use crate::min_size::*;
 use crate::preferred_size::*;
 use crate::queue_context::*;
 use crate::types::*;
+use crate::widget::*;
 use crate::window::*;
 
-pub(crate) struct MockChildWindow
+pub(crate) struct MockWindow
 {
     title: String,
     size: Size<i32>,
@@ -31,15 +32,14 @@ pub(crate) struct MockChildWindow
     change_flag_arc: Arc<AtomicBool>,
     min_size: Size<Option<i32>>,
     preferred_size: Size<Option<i32>>,
-    parent_index: Option<WindowIndex>,
-    pos_in_parent: Option<Pos<i32>>,
+    content: Option<Box<dyn Widget>>,
 }
 
-impl MockChildWindow
+impl MockWindow
 {
     pub(crate) fn new(title: &str) -> Self
     {
-        MockChildWindow {
+        MockWindow {
             title: String::from(title),
             size: Size::new(0, 0),
             padding_bounds: Rect::new(0, 0, 0, 0),
@@ -48,8 +48,7 @@ impl MockChildWindow
             change_flag_arc: Arc::new(AtomicBool::new(false)),
             min_size: Size::new(None, None),
             preferred_size: Size::new(None, None),
-            parent_index: None,
-            pos_in_parent: None,
+            content: None,
         }
     }
     
@@ -64,9 +63,19 @@ impl MockChildWindow
     
     pub(crate) fn set_change_flag(&mut self, is_changed: bool)
     { self.change_flag_arc.store(is_changed, Ordering::SeqCst); }
+    
+    pub(crate) fn set_dyn(&mut self, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    {
+        widget.set_change_flag_arc(self.change_flag_arc.clone());
+        self.content = Some(widget);
+        Some(WidgetIndexPair(0, 0))
+    }
+
+    pub(crate) fn set<T: Widget + 'static>(&mut self, widget: T) -> Option<WidgetIndexPair>
+    { self.set_dyn(Box::new(widget)) }
 }
 
-impl Window for MockChildWindow
+impl Window for MockWindow
 {
     fn size(&self) -> Size<i32>
     { self.size }
@@ -85,48 +94,93 @@ impl Window for MockChildWindow
 
     fn title(&self) -> Option<&str>
     { Some(self.title.as_str()) }
-
-    fn parent_index(&self) -> Option<WindowIndex>
-    { self.parent_index }
-    
-    fn pos_in_parent(&self) -> Option<Pos<i32>>
-    { self.pos_in_parent }
-    
-    fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> Option<()>
-    {
-        match (self.parent_index, self.pos_in_parent) {
-            (None, None) => {
-                self.parent_index = Some(idx.window_index());
-                self.pos_in_parent = Some(pos);
-                Some(())
-            },
-            _ => None,
-        }
-    }
-
-    fn unset_parent(&mut self) -> Option<()>
-    {
-        match (self.parent_index, self.pos_in_parent) {
-            (None, None) => None,
-            _ => {
-                self.parent_index = None;
-                self.pos_in_parent = None;
-                Some(())
-            },
-        }
-    }
     
     fn is_changed(&self) -> bool
     { self.change_flag_arc.load(Ordering::SeqCst) }
     
     fn clear_change_flag(&mut self)
     { self.change_flag_arc.store(false, Ordering::SeqCst); }
+    
+    fn content_index_pair(&self) -> Option<WidgetIndexPair>
+    {
+        if self.content.is_some() {
+            Some(WidgetIndexPair(0, 0))
+        } else {
+            None
+        }
+    }
 }
 
-impl Container for MockChildWindow
-{}
+impl Container for MockWindow
+{
+    fn prev(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
+    {
+        match idx_pair {
+            None => {
+                if self.content.is_some() {
+                    Some(WidgetIndexPair(0, 0))
+                } else {
+                    None
+                }
+            },
+            _ => None,
+        }
+    }
 
-impl MinSize for MockChildWindow
+    fn next(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
+    {
+        match idx_pair {
+            None => {
+                if self.content.is_some() {
+                    Some(WidgetIndexPair(0, 0))
+                } else {
+                    None
+                }
+            },
+            _ => None,
+        }
+    }
+
+    fn dyn_widget_for_index_pair(&self, idx_pair: WidgetIndexPair) -> Option<&dyn Widget>
+    {
+        if idx_pair == WidgetIndexPair(0, 0) {
+            match &self.content {
+                Some(widget) => Some(&**widget),
+                None => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    fn dyn_widget_mut_for_index_pair(&mut self, idx_pair: WidgetIndexPair) -> Option<&mut dyn Widget>
+    {
+        if idx_pair == WidgetIndexPair(0, 0) {
+            match &mut self.content {
+                Some(widget) => Some(&mut **widget),
+                None => None,
+            }
+        } else {
+            None
+        }
+    }
+    
+    fn point_for_index_pair(&self, pos: Pos<f64>) -> Option<WidgetIndexPair>
+    {
+        match &self.content {
+            Some(widget) => {
+                if widget.bounds().to_f64_rect().contains(pos) {
+                    Some(WidgetIndexPair(0, 0))
+                } else {
+                    None
+                }
+            },
+            None => None,
+        }
+    }
+}
+
+impl MinSize for MockWindow
 {
     fn min_size(&self) -> Size<Option<i32>>
     { self.min_size }
@@ -135,7 +189,7 @@ impl MinSize for MockChildWindow
     { self.min_size = size; }
 }
 
-impl PreferredSize for MockChildWindow
+impl PreferredSize for MockWindow
 {
     fn preferred_size(&self) -> Size<Option<i32>>
     { self.preferred_size }
@@ -144,7 +198,7 @@ impl PreferredSize for MockChildWindow
     { self.preferred_size = size; }
 }
 
-impl Draw for MockChildWindow
+impl Draw for MockWindow
 {
     fn update_size(&mut self, _cairo_context: &CairoContext, _area_size: Size<Option<i32>>, _is_focused_window: bool)
     {}
@@ -156,13 +210,13 @@ impl Draw for MockChildWindow
     {}
 }
 
-impl CallOn for MockChildWindow
+impl CallOn for MockWindow
 {
     fn call_on(&mut self, _client_context: &mut ClientContext, _queue_context: &mut QueueContext, _event: &Event) -> Option<Option<Event>>
     { Some(None) }
 }
 
-impl AsAny for MockChildWindow
+impl AsAny for MockWindow
 {
     fn as_any(&self) -> &dyn Any
     { self }

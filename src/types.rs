@@ -219,7 +219,7 @@ impl<'a> Iterator for WidgetPathIter<'a>
     { self.iter.size_hint() }
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct RelWidgetPath
 {
     widget_index_pairs: Vec<WidgetIndexPair>,
@@ -257,7 +257,7 @@ impl RelWidgetPath
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct AbsWidgetPath
 {
     window_index: WindowIndex,
