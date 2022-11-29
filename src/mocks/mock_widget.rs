@@ -135,6 +135,29 @@ impl Widget for MockWidget
         self.client_pos.x = ((slider_x * (client_width as f64)) / (trough_width as f64)) as i32;
     }
     
+    fn update_client_x(&mut self, old_viewport_width: i32, new_viewport_width: i32) -> bool
+    {
+        if new_viewport_width > old_viewport_width {
+            if self.margin_bounds.width - self.client_pos.x < new_viewport_width {
+                if self.margin_bounds.width > new_viewport_width {
+                    self.client_pos.x = self.margin_bounds.width - new_viewport_width;
+                    true
+                } else {
+                    if self.client_pos.x != 0 {
+                        self.client_pos.x = 0;
+                        true
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+    
     fn v_scroll_bar_slider_y(&self, viewport_height: i32, trough_height: i32) -> f64
     {
         let client_height = max(viewport_height, self.margin_bounds.height);
@@ -151,6 +174,29 @@ impl Widget for MockWidget
     {
         let client_height = max(viewport_height, self.margin_bounds.height);
         self.client_pos.y = ((slider_y * (client_height as f64)) / (trough_height as f64)) as i32;
+    }
+
+    fn update_client_y(&mut self, old_viewport_height: i32, new_viewport_height: i32) -> bool
+    {
+        if new_viewport_height > old_viewport_height {
+            if self.margin_bounds.height - self.client_pos.x < new_viewport_height {
+                if self.margin_bounds.height > new_viewport_height {
+                    self.client_pos.y = self.margin_bounds.height - new_viewport_height;
+                    true
+                } else {
+                    if self.client_pos.y != 0 {
+                        self.client_pos.y = 0;
+                        true
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                false
+            }
+        } else {
+            false
+        }
     }
     
     fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)
