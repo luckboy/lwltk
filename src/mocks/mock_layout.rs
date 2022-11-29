@@ -25,6 +25,7 @@ pub(crate) struct MockLayout
 {
     text: String,
     bounds: Rect<i32>,
+    client_pos: Pos<i32>,
     h_align: HAlign,
     v_align: VAlign,
     state: WidgetState,
@@ -42,6 +43,7 @@ impl MockLayout
         MockLayout {
             text: String::from(s),
             bounds: Rect::new(0, 0, 0, 0),
+            client_pos: Pos::new(0, 0),
             h_align: HAlign::Left,
             v_align: VAlign::Top,
             state: WidgetState::None,
@@ -58,6 +60,9 @@ impl MockLayout
 
     pub(crate) fn set_bounds(&mut self, bounds: Rect<i32>)
     { self.bounds = bounds; }
+
+    pub(crate) fn set_client_pos(&mut self, pos: Pos<i32>)
+    { self.client_pos = pos; }
     
     pub(crate) fn set_h_align(&mut self, align: HAlign)
     { self.h_align = align; }
@@ -119,10 +124,10 @@ impl Widget for MockLayout
         }
     }
     
-    fn h_scroll_bar_slider_x(&self, viewport_x: i32, viewport_width: i32, trough_width: i32) -> f64
+    fn h_scroll_bar_slider_x(&self, viewport_width: i32, trough_width: i32) -> f64
     { 
         let client_width = max(viewport_width, self.bounds.width);
-        ((viewport_x - self.bounds.x) as f64) * (trough_width as f64) / (client_width as f64)
+        (self.client_pos.x as f64) * (trough_width as f64) / (client_width as f64)
     }
 
     fn h_scroll_bar_slider_width(&self, viewport_width: i32, trough_width: i32) -> f64
@@ -131,17 +136,16 @@ impl Widget for MockLayout
         (viewport_width as f64) * (trough_width as f64) / (client_width as f64)
     }
 
-    fn set_client_x(&mut self, viewport_x: i32, viewport_width: i32, slider_x: f64, trough_width: i32)
+    fn set_client_x(&mut self, viewport_width: i32, slider_x: f64, trough_width: i32)
     {
         let client_width = max(viewport_width, self.bounds.width);
-        let client_x = ((slider_x * (client_width as f64)) / (trough_width as f64)) as i32;
-        self.bounds.x = viewport_x - client_x;
+        self.client_pos.x = ((slider_x * (client_width as f64)) / (trough_width as f64)) as i32;
     }
     
-    fn v_scroll_bar_slider_y(&self, viewport_y: i32, viewport_height: i32, trough_height: i32) -> f64
+    fn v_scroll_bar_slider_y(&self, viewport_height: i32, trough_height: i32) -> f64
     {
         let client_height = max(viewport_height, self.bounds.height);
-        ((viewport_y - self.bounds.y) as f64) * (trough_height as f64) / (client_height as f64)
+        (self.client_pos.y as f64) * (trough_height as f64) / (client_height as f64)
     }
     
     fn v_scroll_bar_slider_height(&self, viewport_height: i32, trough_height: i32) -> f64
@@ -150,11 +154,10 @@ impl Widget for MockLayout
         (viewport_height as f64) * (trough_height as f64) / (client_height as f64)
     }
 
-    fn set_client_y(&mut self, viewport_y: i32, viewport_height: i32, slider_y: f64, trough_height: i32)
+    fn set_client_y(&mut self, viewport_height: i32, slider_y: f64, trough_height: i32)
     {
         let client_height = max(viewport_height, self.bounds.height);
-        let client_y = ((slider_y * (client_height as f64)) / (trough_height as f64)) as i32;
-        self.bounds.y = viewport_y - client_y;
+        self.client_pos.y = ((slider_y * (client_height as f64)) / (trough_height as f64)) as i32;
     }
     
     fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)

@@ -302,7 +302,6 @@ mod tests
 {
     use super::*;
     use crate::mocks::*;
-    use crate::widget::*;
     
     #[test]
     fn test_container_sets_one_widget()
