@@ -853,7 +853,7 @@ mod tests
     }
     
     #[test]
-    fn test_container_gives_reversed_widget_index_pairs()
+    fn test_container_gives_reversed_widget_index_pair_iterator()
     {
         let mut window = MockWindow::new("test1");
         let layout = MockLayout::new("test2");
@@ -893,7 +893,7 @@ mod tests
     }
 
     #[test]
-    fn test_container_gives_widget_index_pairs()
+    fn test_container_gives_widget_index_pair_iterator()
     {
         let mut window = MockWindow::new("test1");
         let layout = MockLayout::new("test2");
@@ -933,7 +933,7 @@ mod tests
     }
     
     #[test]
-    fn test_container_gives_reversed_dynamic_widgets()
+    fn test_container_gives_reversed_dynamic_widget_iterator()
     {
         let mut window = MockWindow::new("test1");
         let layout = MockLayout::new("test2");
@@ -1003,7 +1003,7 @@ mod tests
     }    
 
     #[test]
-    fn test_container_gives_dynamic_widgets()
+    fn test_container_gives_dynamic_widget_iterator()
     {
         let mut window = MockWindow::new("test1");
         let layout = MockLayout::new("test2");
