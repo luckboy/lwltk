@@ -13,9 +13,9 @@ use crate::window_context::*;
 
 pub struct QueueContext
 {
-    event_queue: EventQueue,
-    callback_queue: CallbackQueue,
-    current_call_on_path: Option<CallOnPath>,
+    pub(crate) event_queue: EventQueue,
+    pub(crate) callback_queue: CallbackQueue,
+    pub(crate) current_call_on_path: Option<CallOnPath>,
 }
 
 impl QueueContext
@@ -48,9 +48,6 @@ impl QueueContext
             None => None,
         }
     }
-
-    pub(crate) fn set_current_call_on_path(&mut self, call_on_path: Option<CallOnPath>)
-    { self.current_call_on_path = call_on_path; }
 
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {

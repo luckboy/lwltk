@@ -15,9 +15,9 @@ use crate::window_container::*;
 
 pub struct WindowContext
 {
-    theme: Box<dyn Theme>,
-    window_container: WindowContainer,
-    current_window_index: Option<WindowIndex>,
+    pub(crate) theme: Box<dyn Theme>,
+    pub(crate) window_container: WindowContainer,
+    pub(crate) current_window_index: Option<WindowIndex>,
 }
 
 impl WindowContext
@@ -36,9 +36,6 @@ impl WindowContext
     
     pub fn current_window_index(&self) -> Option<WindowIndex>
     { self.current_window_index }
-
-    pub(crate) fn set_current_window_index(&mut self, idx: Option<WindowIndex>)
-    { self.current_window_index = idx; }
 
     pub fn dyn_current_window(&self) -> Option<&dyn Window>
     {
