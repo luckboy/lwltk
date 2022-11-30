@@ -18,6 +18,7 @@ use crate::draw::*;
 use crate::events::*;
 use crate::preferred_size::*;
 use crate::queue_context::*;
+use crate::theme::*;
 use crate::types::*;
 use crate::widget::*;
 
@@ -285,13 +286,13 @@ impl PreferredSize for MockLayout
 
 impl Draw for MockLayout
 {
-    fn update_size(&mut self, _cairo_context: &CairoContext, _area_size: Size<Option<i32>>, _is_focused_window: bool)
+    fn update_size(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_size: Size<Option<i32>>, _is_focused_window: bool)
     {}
     
-    fn update_pos(&mut self, _cairo_context: &CairoContext, _area_pos: Pos<i32>, _is_focused_window: bool)
+    fn update_pos(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_pos: Pos<i32>, _is_focused_window: bool)
     {}
 
-    fn draw(&self, _cairo_context: &CairoContext, _is_focused_window: bool)
+    fn draw(&self, _cairo_context: &CairoContext, _theme: &dyn Theme, _is_focused_window: bool)
     {}
 }
 
