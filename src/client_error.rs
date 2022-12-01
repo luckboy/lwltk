@@ -31,6 +31,7 @@ pub enum ClientError
     InvalidTheme,
     Data,
     Event(Event),
+    Callback,
 }
 
 impl error::Error for ClientError
@@ -55,6 +56,7 @@ impl fmt::Display for ClientError
             ClientError::InvalidTheme => write!(f, "invalid theme"),
             ClientError::Data => write!(f, "data error"),
             ClientError::Event(event) => write!(f, "event error for {:?}", event),
+            ClientError::Callback => write!(f, "callback error"),
         }
     }
 }
