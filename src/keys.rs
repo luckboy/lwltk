@@ -212,11 +212,6 @@ pub enum VKey
     SysReq,
     Escape,
     Delete,
-    // Multi keys.
-    CodeInput,
-    SingleCandidate,
-    MultipleCandidate,
-    PreviousCandidate,
     // Japanse keys.
     Kanji,
     Muhenkan,
