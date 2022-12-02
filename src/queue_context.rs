@@ -60,10 +60,10 @@ impl QueueContext
         }
     }
 
-    pub fn push_dyn_callback(&mut self, f: Box<dyn FnMut(&mut ClientContext, &mut WindowContext) -> Option<()> + Send + Sync + 'static>)
+    pub fn push_dyn_callback(&mut self, f: Box<dyn FnMut(&mut ClientContext, &mut WindowContext, &mut QueueContext) -> Option<()> + Send + Sync + 'static>)
     { self.callback_queue.push_dyn(f); }
 
     pub fn push_callback<F>(&mut self, f: F)
-        where F: FnMut(&mut ClientContext, &mut WindowContext) -> Option<()> + Send + Sync + 'static
+        where F: FnMut(&mut ClientContext, &mut WindowContext, &mut QueueContext) -> Option<()> + Send + Sync + 'static
     { self.callback_queue.push(f); }
 }
