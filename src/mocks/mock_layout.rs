@@ -27,6 +27,7 @@ pub(crate) struct MockLayout
     text: String,
     bounds: Rect<i32>,
     client_pos: Pos<i32>,
+    weight: u32,
     h_align: HAlign,
     v_align: VAlign,
     state: WidgetState,
@@ -45,6 +46,7 @@ impl MockLayout
             text: String::from(s),
             bounds: Rect::new(0, 0, 0, 0),
             client_pos: Pos::new(0, 0),
+            weight: 1,
             h_align: HAlign::Left,
             v_align: VAlign::Top,
             state: WidgetState::None,
@@ -65,6 +67,9 @@ impl MockLayout
     pub(crate) fn set_client_pos(&mut self, pos: Pos<i32>)
     { self.client_pos = pos; }
     
+    pub(crate) fn set_weight(&mut self, weight: u32)
+    { self.weight = weight; }
+
     pub(crate) fn set_h_align(&mut self, align: HAlign)
     { self.h_align = align; }
 
@@ -96,6 +101,9 @@ impl Widget for MockLayout
     
     fn bounds(&self) -> Rect<i32>
     { self.bounds }
+
+    fn weight(&self) -> u32
+    { self.weight }
 
     fn h_align(&self) -> HAlign
     { self.h_align }

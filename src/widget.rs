@@ -18,6 +18,8 @@ pub trait Widget: Container + PreferredSize
     
     fn bounds(&self) -> Rect<i32>;
 
+    fn weight(&self) -> u32;
+
     fn h_align(&self) -> HAlign;
     
     fn v_align(&self) -> VAlign;
