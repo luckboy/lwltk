@@ -213,7 +213,7 @@ impl Draw for MockWidget
     fn update_size(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_size: Size<Option<i32>>, _is_focused_window: bool)
     {}
     
-    fn update_pos(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_pos: Pos<i32>, _is_focused_window: bool)
+    fn update_pos(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_bounds: Rect<i32>, _is_focused_window: bool)
     {}
 
     fn draw(&self, _cairo_context: &CairoContext, _theme: &dyn Theme, _is_focused_window: bool)
