@@ -89,7 +89,6 @@ impl MockWidget
 
     pub(crate) fn set_change_flag(&mut self, is_changed: bool)
     { self.change_flag_arc.store(is_changed, Ordering::SeqCst); }
-    
 }
 
 impl Widget for MockWidget
