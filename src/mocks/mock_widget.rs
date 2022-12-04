@@ -114,7 +114,7 @@ impl Widget for MockWidget
     fn set_state(&mut self, state: WidgetState)
     { self.state = state; }
 
-    fn is_enabled(&mut self) -> bool
+    fn is_enabled(&self) -> bool
     { self.is_enabled }
     
     fn is_focusable(&self) -> bool

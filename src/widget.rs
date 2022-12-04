@@ -28,7 +28,7 @@ pub trait Widget: Container + PreferredSize
     
     fn set_state(&mut self, state: WidgetState);
 
-    fn is_enabled(&mut self) -> bool;
+    fn is_enabled(&self) -> bool;
 
     fn is_focusable(&self) -> bool
     { false }
