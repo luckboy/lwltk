@@ -31,6 +31,7 @@ pub(crate) struct MockLayout
     h_align: HAlign,
     v_align: VAlign,
     state: WidgetState,
+    is_enabled: bool,
     is_focusable: bool,
     is_focused: bool,
     change_flag_arc: Arc<AtomicBool>,
@@ -50,6 +51,7 @@ impl MockLayout
             h_align: HAlign::Left,
             v_align: VAlign::Top,
             state: WidgetState::None,
+            is_enabled: true,
             is_focusable: false,
             is_focused: false,
             change_flag_arc: Arc::new(AtomicBool::new(false)),
@@ -76,6 +78,9 @@ impl MockLayout
     pub(crate) fn set_v_align(&mut self, align: VAlign)
     { self.v_align = align; }
 
+    pub(crate) fn set_enabled(&mut self, is_enabled: bool)
+    { self.is_enabled = is_enabled; }    
+    
     pub(crate) fn set_focusable(&mut self, is_focusable: bool)
     { self.is_focusable = is_focusable; }
 
@@ -117,6 +122,9 @@ impl Widget for MockLayout
     fn set_state(&mut self, state: WidgetState)
     { self.state = state; }
     
+    fn is_enabled(&mut self) -> bool
+    { self.is_enabled }
+
     fn is_focusable(&self) -> bool
     { self.is_focusable }
     
