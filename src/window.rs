@@ -53,6 +53,9 @@ pub trait Window: Container + MinSize + PreferredSize
     fn is_popup(&self) -> bool
     { false }
     
+    fn is_transient(&self) -> bool
+    { false }
+    
     fn is_maximized(&self) -> bool
     { false }
     
