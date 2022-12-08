@@ -7,9 +7,9 @@
 //
 use std::any::Any;
 use std::cmp::Ordering;
-use std::collections::hash_map;
+use std::collections::btree_map;
+use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::collections::HashMap;
 use std::iter::FusedIterator;
 use crate::container::*;
 use crate::types::*;
@@ -61,12 +61,12 @@ impl PartialOrd for IndexRange
 #[derive(Clone)]
 pub struct WindowIndices<'a>
 {
-    iter: hash_map::Keys<'a, WindowIndex, Box<dyn Window + 'static>>,
+    iter: btree_map::Keys<'a, WindowIndex, Box<dyn Window + 'static>>,
 }
 
 impl<'a> WindowIndices<'a>
 {
-    fn new(windows: &'a HashMap<WindowIndex, Box<dyn Window + 'static>>) -> Self
+    fn new(windows: &'a BTreeMap<WindowIndex, Box<dyn Window + 'static>>) -> Self
     { WindowIndices { iter: windows.keys(), } }
 }
 
@@ -90,12 +90,12 @@ impl<'a> Iterator for WindowIndices<'a>
 #[derive(Clone)]
 pub struct Windows<'a>
 {
-    iter: hash_map::Values<'a, WindowIndex, Box<dyn Window + 'static>>,
+    iter: btree_map::Values<'a, WindowIndex, Box<dyn Window + 'static>>,
 }
 
 impl<'a> Windows<'a>
 {
-    fn new(windows: &'a HashMap<WindowIndex, Box<dyn Window + 'static>>) -> Self
+    fn new(windows: &'a BTreeMap<WindowIndex, Box<dyn Window + 'static>>) -> Self
     { Windows { iter: windows.values(), } }
 }
 
@@ -118,7 +118,7 @@ impl<'a> Iterator for Windows<'a>
 
 pub struct WindowContainer
 {
-    windows: HashMap<WindowIndex, Box<dyn Window>>,
+    windows: BTreeMap<WindowIndex, Box<dyn Window>>,
     free_indices: BTreeSet<IndexRange>,
     index_counter: Option<usize>,
     indices_to_destroy: BTreeSet<WindowIndex>,
@@ -129,7 +129,7 @@ impl WindowContainer
     pub(crate) fn new() -> WindowContainer
     {
         WindowContainer {
-            windows: HashMap::new(),
+            windows: BTreeMap::new(),
             free_indices: BTreeSet::new(),
             index_counter: None,
             indices_to_destroy: BTreeSet::new(),
@@ -249,10 +249,10 @@ impl WindowContainer
         }
     }
     
-    pub(crate) fn window_map(&self) -> &HashMap<WindowIndex, Box<dyn Window>>
+    pub(crate) fn window_map(&self) -> &BTreeMap<WindowIndex, Box<dyn Window>>
     { &self.windows }
     
-    pub(crate) fn window_map_mut(&mut self) -> &mut HashMap<WindowIndex, Box<dyn Window>>
+    pub(crate) fn window_map_mut(&mut self) -> &mut BTreeMap<WindowIndex, Box<dyn Window>>
     { &mut self.windows }
     
     pub(crate) fn indices_to_destroy(&self) -> &BTreeSet<WindowIndex>
