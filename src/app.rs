@@ -19,6 +19,7 @@ use crate::window_context::*;
 
 pub struct App<T>
 {
+    client_display: ClientDisplay,
     client_context: Rc<RefCell<ClientContext>>,
     window_context: Arc<RwLock<WindowContext>>,
     queue_context: Arc<Mutex<QueueContext>>,
@@ -49,9 +50,10 @@ impl<T> App<T>
                 let data = Arc::new(RwLock::new(tmp_data));
                 match setting_f(&mut window_context, data.clone()) {
                     Some(()) => {
-                        let client_context = ClientContext::new()?;
+                        let (client_display, client_context) = ClientContext::new()?;
                         let (thread_signal_sender, thread_signal_receiver) = thread_signal_channel()?;
                         let app = App {
+                            client_display,
                             client_context: Rc::new(RefCell::new(client_context)),
                             window_context: Arc::new(RwLock::new(window_context)),
                             queue_context: Arc::new(Mutex::new(QueueContext::new())),
@@ -83,6 +85,6 @@ impl<T> App<T>
     pub fn data(&self) -> Arc<RwLock<T>>
     { self.data.clone() }
     
-    pub fn run(&self) -> Result<(), ClientError>
-    { Ok(()) }
+    pub fn run(&mut self) -> Result<(), ClientError>
+    { run_main_loop(&mut self.client_display, self.client_context.clone(), self.window_context.clone(), self.queue_context.clone(), self.thread_signal_receiver) }
 }
