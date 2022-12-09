@@ -230,11 +230,15 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
         match poll_fds[1].revents() {
             Some(revents) => {
                 if !revents.is_empty() {
-                    let mut is_timer = false;
+                    let mut is_cursor_timer = false;
+                    let mut is_key_timer = false;
+                    let mut is_text_cursor_timer = false;
                     let mut is_other = false;
                     loop {
                         match thread_signal_receiver.recv()? {
-                            Some(ThreadSignal::Timer) => is_timer = true,
+                            Some(ThreadSignal::Timer(ThreadTimer::Cursor)) => is_cursor_timer = true,
+                            Some(ThreadSignal::Timer(ThreadTimer::Key)) => is_key_timer = true,
+                            Some(ThreadSignal::Timer(ThreadTimer::TextCursor)) => is_text_cursor_timer = true,
                             Some(ThreadSignal::Other) => is_other = true,
                             None => (),
                         }

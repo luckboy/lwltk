@@ -13,10 +13,18 @@ use nix::unistd::read;
 use nix::unistd::write;
 use crate::client_error::*;
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub(crate) enum ThreadTimer
+{
+    Cursor,
+    Key,
+    TextCursor,
+}
+
 #[derive(Copy, Clone, Debug)]
 pub(crate) enum ThreadSignal
 {
-    Timer,
+    Timer(ThreadTimer),
     Other,
 }
 
@@ -25,10 +33,15 @@ pub struct ThreadSignalSender(RawFd);
 
 impl ThreadSignalSender
 {
-    pub(crate) fn commit_timer(&self) -> Result<(), ClientError>
+    pub(crate) fn commit_timer(&self, timer: ThreadTimer) -> Result<(), ClientError>
     {
         let mut buf: [u8; 1] = [0];
-        match write(self.0, &mut buf) {
+        match timer {
+            ThreadTimer::Cursor => buf[0] = 0,
+            ThreadTimer::Key => buf[0] = 1,
+            ThreadTimer::TextCursor => buf[0] = 2,
+        }
+        match write(self.0, &buf) {
             Ok(_) => Ok(()),
             Err(err) => Err(ClientError::Nix(err)),
         }
@@ -36,7 +49,7 @@ impl ThreadSignalSender
 
     pub fn commit(&self) -> Result<(), ClientError>
     {
-        let mut buf: [u8; 1] = [1];
+        let mut buf: [u8; 1] = [3];
         match write(self.0, &mut buf) {
             Ok(_) => Ok(()),
             Err(err) => Err(ClientError::Nix(err)),
@@ -56,7 +69,11 @@ impl ThreadSignalReceiver
             Ok(0) => Ok(None),
             Ok(_) => {
                 if buf[0] == 0 {
-                    Ok(Some(ThreadSignal::Timer))
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::Cursor)))
+                } else if buf[0] == 1 {
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::Key)))
+                } else if buf[0] == 2 {
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::TextCursor)))
                 } else {
                     Ok(Some(ThreadSignal::Other))
                 }
