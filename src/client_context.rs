@@ -6,6 +6,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::cell::*;
+use std::env;
 use std::io::ErrorKind;
 use std::os::unix::io::AsRawFd;
 use std::sync::Arc;
@@ -39,6 +40,13 @@ use crate::queue_context::*;
 use crate::thread_signal::*;
 use crate::window_context::*;
 
+const DEFAULT_SCALE: i32 = 1;
+const DEFAULT_REPEATED_KEY_DELAY: u64 = 500;
+const DEFAULT_REPEATED_KEY_TIME: u64 = 30;
+const DEFAULT_TEXT_CURSOR_BLINK_TIME: u64 = 1200;
+const DEFAULT_DOUBLE_CLICK_DELAY: u64 = 400;
+const DEFAULT_LONG_CLICK_DELAY: u64 = 1000;
+
 pub(crate) struct ClientDisplay
 {
     display: Display,
@@ -50,6 +58,12 @@ pub struct ClientContext
     pub(crate) compositor: Main<wl_compositor::WlCompositor>,
     pub(crate) shell: Main<wl_shell::WlShell>,
     pub(crate) seat: Main<wl_seat::WlSeat>,
+    pub(crate) scale: i32,
+    pub(crate) repeated_key_delay: u64,
+    pub(crate) repeated_key_time: u64,
+    pub(crate) text_cursor_blink_time: u64,
+    pub(crate) double_click_delay: u64,
+    pub(crate) long_click_delay: u64,
 }
 
 impl ClientContext
@@ -79,6 +93,82 @@ impl ClientContext
             Ok(tmp_seat) => tmp_seat,
             Err(err) => return Err(ClientError::Global(err)),
         };
+        let scale = match env::var("LWLTK_SCALE") {
+            Ok(s) => {
+                match s.parse::<i32>() {
+                    Ok(tmp_scale) if tmp_scale <= 0 => {
+                        eprintln!("lwltk: warning: invalid scale");
+                        DEFAULT_SCALE
+                    },
+                    Ok(tmp_scale) => tmp_scale,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid scale");
+                        DEFAULT_SCALE
+                    },
+                }
+            },
+            Err(_) => DEFAULT_SCALE,
+        };
+        let repeated_key_delay = match env::var("LWLTK_REPEATED_KEY_DELAY") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_repeated_key_delay) => tmp_repeated_key_delay,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of repeated key delay");
+                        DEFAULT_REPEATED_KEY_DELAY
+                    },
+                }
+            },
+            Err(_) => DEFAULT_REPEATED_KEY_DELAY,
+        };
+        let repeated_key_time = match env::var("LWLTK_REPEATED_KEY_TIME") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of repeated key time");
+                        DEFAULT_REPEATED_KEY_TIME
+                    },
+                }
+            },
+            Err(_) => DEFAULT_REPEATED_KEY_TIME,
+        };
+        let text_cursor_blink_time = match env::var("LWLTK_TEXT_CURSOR_BLINK_TIME") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of text cursor blink time");
+                        DEFAULT_TEXT_CURSOR_BLINK_TIME
+                    },
+                }
+            },
+            Err(_) => DEFAULT_TEXT_CURSOR_BLINK_TIME,
+        };
+        let double_click_delay = match env::var("LWLTK_DOUBLE_CLICK_DELAY") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of double click delay");
+                        DEFAULT_DOUBLE_CLICK_DELAY
+                    },
+                }
+            },
+            Err(_) => DEFAULT_DOUBLE_CLICK_DELAY,
+        };
+        let long_click_delay = match env::var("LWLTK_LONG_CLICK_DELAY") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of long click delay");
+                        DEFAULT_LONG_CLICK_DELAY
+                    },
+                }
+            },
+            Err(_) => DEFAULT_LONG_CLICK_DELAY,
+        };
         Ok((ClientDisplay {
                 display,
                 event_queue,
@@ -86,6 +176,12 @@ impl ClientContext
             compositor,
             shell,
             seat,
+            scale,
+            repeated_key_delay,
+            repeated_key_time,
+            text_cursor_blink_time,
+            double_click_delay,
+            long_click_delay,
         }))
     }
 }
