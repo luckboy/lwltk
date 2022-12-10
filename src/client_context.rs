@@ -41,8 +41,8 @@ use crate::thread_signal::*;
 use crate::window_context::*;
 
 const DEFAULT_SCALE: i32 = 1;
-const DEFAULT_REPEATED_KEY_DELAY: u64 = 500;
-const DEFAULT_REPEATED_KEY_TIME: u64 = 30;
+const DEFAULT_KEY_REPEAT_DELAY: u64 = 500;
+const DEFAULT_KEY_REPEAT_TIME: u64 = 30;
 const DEFAULT_TEXT_CURSOR_BLINK_TIME: u64 = 1200;
 const DEFAULT_DOUBLE_CLICK_DELAY: u64 = 400;
 const DEFAULT_LONG_CLICK_DELAY: u64 = 1000;
@@ -59,8 +59,8 @@ pub struct ClientContext
     pub(crate) shell: Main<wl_shell::WlShell>,
     pub(crate) seat: Main<wl_seat::WlSeat>,
     pub(crate) scale: i32,
-    pub(crate) repeated_key_delay: u64,
-    pub(crate) repeated_key_time: u64,
+    pub(crate) key_repeat_delay: u64,
+    pub(crate) key_repeat_time: u64,
     pub(crate) text_cursor_blink_time: u64,
     pub(crate) double_click_delay: u64,
     pub(crate) long_click_delay: u64,
@@ -109,29 +109,29 @@ impl ClientContext
             },
             Err(_) => DEFAULT_SCALE,
         };
-        let repeated_key_delay = match env::var("LWLTK_REPEATED_KEY_DELAY") {
+        let key_repeat_delay = match env::var("LWLTK_KEY_REPEAT_DELAY") {
             Ok(s) => {
                 match s.parse::<u64>() {
                     Ok(tmp_repeated_key_delay) => tmp_repeated_key_delay,
                     Err(_) => {
-                        eprintln!("lwltk: warning: invalid value of repeated key delay");
-                        DEFAULT_REPEATED_KEY_DELAY
+                        eprintln!("lwltk: warning: invalid value of key repeat delay");
+                        DEFAULT_KEY_REPEAT_DELAY
                     },
                 }
             },
-            Err(_) => DEFAULT_REPEATED_KEY_DELAY,
+            Err(_) => DEFAULT_KEY_REPEAT_DELAY,
         };
-        let repeated_key_time = match env::var("LWLTK_REPEATED_KEY_TIME") {
+        let key_repeat_time = match env::var("LWLTK_KEY_REPEAT_TIME") {
             Ok(s) => {
                 match s.parse::<u64>() {
                     Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
                     Err(_) => {
-                        eprintln!("lwltk: warning: invalid value of repeated key time");
-                        DEFAULT_REPEATED_KEY_TIME
+                        eprintln!("lwltk: warning: invalid value of key repeat time");
+                        DEFAULT_KEY_REPEAT_TIME
                     },
                 }
             },
-            Err(_) => DEFAULT_REPEATED_KEY_TIME,
+            Err(_) => DEFAULT_KEY_REPEAT_TIME,
         };
         let text_cursor_blink_time = match env::var("LWLTK_TEXT_CURSOR_BLINK_TIME") {
             Ok(s) => {
@@ -177,8 +177,8 @@ impl ClientContext
             shell,
             seat,
             scale,
-            repeated_key_delay,
-            repeated_key_time,
+            key_repeat_delay,
+            key_repeat_time,
             text_cursor_blink_time,
             double_click_delay,
             long_click_delay,
