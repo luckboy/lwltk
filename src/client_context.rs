@@ -97,12 +97,12 @@ impl ClientContext
             Ok(s) => {
                 match s.parse::<i32>() {
                     Ok(tmp_scale) if tmp_scale <= 0 => {
-                        eprintln!("lwltk: warning: invalid scale");
+                        eprintln!("lwltk: warning: invalid value of scale");
                         DEFAULT_SCALE
                     },
                     Ok(tmp_scale) => tmp_scale,
                     Err(_) => {
-                        eprintln!("lwltk: warning: invalid scale");
+                        eprintln!("lwltk: warning: invalid value of scale");
                         DEFAULT_SCALE
                     },
                 }
