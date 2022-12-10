@@ -15,7 +15,7 @@ pub type CairoContext = cairo::Context;
 
 pub type CairoError = cairo::Error;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum WidgetState
 {
     None,
@@ -23,7 +23,7 @@ pub enum WidgetState
     Active,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum HAlign
 {
     Left,
@@ -32,7 +32,7 @@ pub enum HAlign
     Fill,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum VAlign
 {
     Top,

@@ -16,7 +16,7 @@ use std::ops::Not;
 use std::ops::Sub;
 use std::ops::SubAssign;
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct KeyModifiers(u32);
 
 impl KeyModifiers
@@ -198,7 +198,7 @@ impl fmt::Debug for KeyModifiers
 
 // Most names of these enumeration variants are from xkbcommon/xkbcommon-keysyms.h.
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum VKey
 {
     // TTY keys.
