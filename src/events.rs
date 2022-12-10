@@ -55,6 +55,7 @@ pub enum ClientEvent
     TouchMotion(u32, i32, Pos<i64>),
     TouchFrame,
     TouchCancel,
+    RepeatedKey(Vec<VKey>, String),
 }
 
 #[derive(Clone)]
