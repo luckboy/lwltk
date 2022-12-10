@@ -136,7 +136,7 @@ impl ClientContext
         let text_cursor_blink_time = match env::var("LWLTK_TEXT_CURSOR_BLINK_TIME") {
             Ok(s) => {
                 match s.parse::<u64>() {
-                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Ok(tmp_text_cursor_blink_time) => tmp_text_cursor_blink_time,
                     Err(_) => {
                         eprintln!("lwltk: warning: invalid value of text cursor blink time");
                         DEFAULT_TEXT_CURSOR_BLINK_TIME
@@ -148,7 +148,7 @@ impl ClientContext
         let double_click_delay = match env::var("LWLTK_DOUBLE_CLICK_DELAY") {
             Ok(s) => {
                 match s.parse::<u64>() {
-                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Ok(tmp_double_click_delay) => tmp_double_click_delay,
                     Err(_) => {
                         eprintln!("lwltk: warning: invalid value of double click delay");
                         DEFAULT_DOUBLE_CLICK_DELAY
@@ -160,7 +160,7 @@ impl ClientContext
         let long_click_delay = match env::var("LWLTK_LONG_CLICK_DELAY") {
             Ok(s) => {
                 match s.parse::<u64>() {
-                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Ok(tmp_long_click_delay) => tmp_long_click_delay,
                     Err(_) => {
                         eprintln!("lwltk: warning: invalid value of long click delay");
                         DEFAULT_LONG_CLICK_DELAY
