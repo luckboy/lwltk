@@ -13,21 +13,16 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::RwLock;
 use std::rc::*;
-use memmap2::MmapOptions;
-use memmap2::MmapMut;
 use nix::errno::Errno;
 use nix::poll::PollFd;
 use nix::poll::PollFlags;
 use nix::poll::poll;
-use wayland_client::protocol::wl_buffer;
 use wayland_client::protocol::wl_compositor;
 use wayland_client::protocol::wl_keyboard;
 use wayland_client::protocol::wl_pointer;
 use wayland_client::protocol::wl_seat;
 use wayland_client::protocol::wl_shm;
 use wayland_client::protocol::wl_shell;
-use wayland_client::protocol::wl_shell_surface;
-use wayland_client::protocol::wl_surface;
 use wayland_client::protocol::wl_touch;
 use wayland_client::Display;
 use wayland_client::EventQueue as WaylandEventQueue;
@@ -36,6 +31,7 @@ use wayland_client::GlobalManager;
 use wayland_client::Main;
 use wayland_client::event_enum;
 use crate::client_error::*;
+use crate::client_window::*;
 use crate::queue_context::*;
 use crate::thread_signal::*;
 use crate::window_context::*;
@@ -58,6 +54,7 @@ pub struct ClientContext
     pub(crate) compositor: Main<wl_compositor::WlCompositor>,
     pub(crate) shell: Main<wl_shell::WlShell>,
     pub(crate) seat: Main<wl_seat::WlSeat>,
+    pub(crate) shm: Main<wl_shm::WlShm>,
     pub(crate) scale: i32,
     pub(crate) key_repeat_delay: u64,
     pub(crate) key_repeat_time: u64,
@@ -91,6 +88,10 @@ impl ClientContext
         };
         let seat = match global_manager.instantiate_exact::<wl_seat::WlSeat>(1) {
             Ok(tmp_seat) => tmp_seat,
+            Err(err) => return Err(ClientError::Global(err)),
+        };
+        let shm = match global_manager.instantiate_exact::<wl_shm::WlShm>(1) {
+            Ok(tmp_shm) => tmp_shm,
             Err(err) => return Err(ClientError::Global(err)),
         };
         let scale = match env::var("LWLTK_SCALE") {
@@ -176,6 +177,7 @@ impl ClientContext
             compositor,
             shell,
             seat,
+            shm,
             scale,
             key_repeat_delay,
             key_repeat_time,

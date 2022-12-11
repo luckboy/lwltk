@@ -11,6 +11,7 @@ mod call_on;
 mod callback_queue;
 mod client_context;
 mod client_error;
+mod client_window;
 mod container;
 mod draw;
 mod event_queue;
