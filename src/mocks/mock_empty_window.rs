@@ -113,10 +113,10 @@ impl PreferredSize for MockEmptyWindow
 
 impl Draw for MockEmptyWindow
 {
-    fn update_size(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_size: Size<Option<i32>>, _is_focused_window: bool)
+    fn update_size(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_size: Size<Option<i32>>)
     {}
     
-    fn update_pos(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_bounds: Rect<i32>, _is_focused_window: bool)
+    fn update_pos(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_bounds: Rect<i32>)
     {}
 
     fn draw(&self, _cairo_context: &CairoContext, _theme: &dyn Theme, _is_focused_window: bool)

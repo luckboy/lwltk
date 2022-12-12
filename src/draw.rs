@@ -11,9 +11,9 @@ use crate::types::*;
 
 pub trait Draw: AsAny + Send + Sync
 {
-    fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>, is_focused_window: bool);
+    fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>);
     
-    fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>, is_focused_window: bool);
+    fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>);
 
     fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool);
 }
