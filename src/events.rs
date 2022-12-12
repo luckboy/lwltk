@@ -38,7 +38,6 @@ pub enum Event
 #[derive(Clone, Debug)]
 pub enum ClientEvent
 {
-    ShellSurfacePing,
     ShellSurfaceConfigure(ClientResize, Size<i32>),
     ShellSurfacePopupDone,
     PointerEnter(Pos<f64>),
