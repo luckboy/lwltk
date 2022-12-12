@@ -18,12 +18,22 @@ pub struct WindowContext
     pub(crate) theme: Box<dyn Theme>,
     pub(crate) window_container: WindowContainer,
     pub(crate) current_window_index: Option<WindowIndex>,
+    pub(crate) focused_window_index: Option<WindowIndex>,
+    pub(crate) old_focused_window_index: Option<WindowIndex>,
 }
 
 impl WindowContext
 {
     pub(crate) fn new(theme: Box<dyn Theme>) -> Self
-    { WindowContext { theme, window_container: WindowContainer::new(), current_window_index: None } }
+    {
+        WindowContext {
+            theme,
+            window_container: WindowContainer::new(),
+            current_window_index: None,
+            focused_window_index: None,
+            old_focused_window_index: None,
+        }
+    }
     
     pub fn theme(&self) -> &dyn Theme
     { &*self.theme }
@@ -37,6 +47,15 @@ impl WindowContext
     pub fn current_window_index(&self) -> Option<WindowIndex>
     { self.current_window_index }
 
+    pub fn focused_window_index(&self) -> Option<WindowIndex>
+    { self.focused_window_index }
+    
+    pub fn set_focused_window_index(&mut self, idx: Option<WindowIndex>)
+    {
+        self.old_focused_window_index = self.focused_window_index;
+        self.focused_window_index = idx;
+    }
+    
     pub fn dyn_current_window(&self) -> Option<&dyn Window>
     {
         match self.current_window_index {
