@@ -47,14 +47,14 @@ pub(crate) struct ClientWindow
     pub(crate) child_indices: BTreeSet<WindowIndex>,
 }
 
-fn create_buffer(client_context: &ClientContext, window: &dyn Window) -> Result<(Main<wl_buffer::WlBuffer>, File, MmapMut, ImageSurface), ClientError>
+fn create_buffer(client_context_fields: &ClientContextFields, window: &dyn Window) -> Result<(Main<wl_buffer::WlBuffer>, File, MmapMut, ImageSurface), ClientError>
 {
     let mut tempfile_builder = tempfile::Builder::new();
     tempfile_builder.prefix("lwltk-");
-    match tempfile_builder.tempfile_in(client_context.xdg_runtime_dir.as_str()) {
+    match tempfile_builder.tempfile_in(client_context_fields.xdg_runtime_dir.as_str()) {
         Ok(named_temp_file) => {
             let tmp_file = named_temp_file.into_file();
-            let scale = client_context.scale;
+            let scale = client_context_fields.scale;
             let size = window.width() * window.height() * scale * scale * 4;
             match tmp_file.set_len(size as u64) {
                 Ok(()) => {
@@ -62,7 +62,7 @@ fn create_buffer(client_context: &ClientContext, window: &dyn Window) -> Result<
                     mmap_opts.len(size as usize);
                     match unsafe { mmap_opts.map_mut(&tmp_file) } {
                         Ok(mut mmap) => {
-                            let shm_pool = client_context.shm.create_pool(tmp_file.as_raw_fd(), size);
+                            let shm_pool = client_context_fields.shm.create_pool(tmp_file.as_raw_fd(), size);
                             let buffer = shm_pool.create_buffer(0, window.width() * scale, window.height() * scale, window.width() * scale * 4, wl_shm::Format::Argb8888);
                             shm_pool.destroy();
                             match Format::ARgb32.stride_for_width((window.width() * scale) as u32) {
@@ -98,11 +98,11 @@ fn update_window_size_and_window_pos(_window: &mut dyn Window, _theme: &dyn Them
 
 impl ClientWindow
 {
-    pub(crate) fn new(client_context: &ClientContext, window: &mut dyn Window, theme: &dyn Theme) -> Result<ClientWindow, ClientError>
+    pub(crate) fn new(client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<ClientWindow, ClientError>
     {
         update_window_size_and_window_pos(window, theme);
-        let surface = client_context.compositor.create_surface();
-        let shell_surface = client_context.shell.get_shell_surface(&surface);
+        let surface = client_context_fields.compositor.create_surface();
+        let shell_surface = client_context_fields.shell.get_shell_surface(&surface);
         let size = window.size();
         let title = window.title().map(|s| String::from(s));
         match title.clone() {
@@ -110,7 +110,7 @@ impl ClientWindow
             None => (),
         }
         let is_maximized = window.is_maximized();
-        let (buffer, file, mmap, cairo_surface) = match create_buffer(client_context, window) {
+        let (buffer, file, mmap, cairo_surface) = match create_buffer(client_context_fields, window) {
             Ok(tuple) => tuple,
             Err(err) => {
                 surface.destroy();
@@ -142,29 +142,29 @@ impl ClientWindow
                  match  event {
                      wl_shell_surface::Event::Ping { serial, } => {
                          let mut client_context_r = client_context2.borrow_mut();
-                         client_context_r.serial = Some(serial);
+                         client_context_r.fields.serial = Some(serial);
                          shell_surface.pong(serial);
                      },
                      wl_shell_surface::Event::Configure { edges, width, height, } => {
-                         let client_context3 = client_context2.clone();
+                         let client_context_fields3 = client_context2.clone();
                          let window_context3 = window_context2.clone();
                          let queue_context3 = queue_context2.clone();
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
-                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
                      },
                      wl_shell_surface::Event::PopupDone => {
-                         let client_context3 = client_context2.clone();
+                         let client_context_fields3 = client_context2.clone();
                          let window_context3 = window_context2.clone();
                          let queue_context3 = queue_context2.clone();
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
-                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
@@ -174,14 +174,14 @@ impl ClientWindow
          });
     }
     
-    pub(crate) fn set(&mut self, client_context: &ClientContext, window: &mut dyn Window, theme: &dyn Theme, parent_surface: Option<&wl_surface::WlSurface>) -> Result<(), ClientError>
+    pub(crate) fn set(&mut self, client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme, parent_surface: Option<&wl_surface::WlSurface>) -> Result<(), ClientError>
     {
-        let scale = client_context.scale;
+        let scale = client_context_fields.scale;
         match (window.parent_index(), window.pos_in_parent(), parent_surface) {
             (Some(parent_idx), Some(pos_in_parent), Some(parent_surface)) => {
                 if window.is_popup() {
-                    match client_context.serial {
-                        Some(serial) => self.shell_surface.set_popup(&client_context.seat, serial, parent_surface, pos_in_parent.x * scale, pos_in_parent.y * scale, wl_shell_surface::Transient::empty()),
+                    match client_context_fields.serial {
+                        Some(serial) => self.shell_surface.set_popup(&client_context_fields.seat, serial, parent_surface, pos_in_parent.x * scale, pos_in_parent.y * scale, wl_shell_surface::Transient::empty()),
                         None => return Err(ClientError::NoSerial),
                     }
                 } else {
@@ -204,9 +204,9 @@ impl ClientWindow
         Ok(())
     }
 
-    pub(crate) fn update(&mut self, client_context: &ClientContext, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), ClientError>
+    pub(crate) fn update(&mut self, client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), ClientError>
     {
-        let scale = client_context.scale;
+        let scale = client_context_fields.scale;
         let new_title = window.title().map(|s| String::from(s));
         if self.title == new_title {
             self.title = new_title.clone();
@@ -228,7 +228,7 @@ impl ClientWindow
         if window.is_changed() {
             update_window_size_and_window_pos(window, theme);
             if self.size != window.size() {
-                let (buffer, file, mmap, cairo_surface) = create_buffer(client_context, window)?;
+                let (buffer, file, mmap, cairo_surface) = create_buffer(client_context_fields, window)?;
                 self.buffer = buffer;
                 self.mmap = mmap;
                 self.cairo_surface = cairo_surface;

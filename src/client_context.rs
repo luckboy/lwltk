@@ -54,15 +54,13 @@ pub(crate) struct ClientDisplay
     event_queue: WaylandEventQueue,
 }
 
-pub struct ClientContext
+pub(crate) struct ClientContextFields
 {
     pub(crate) compositor: Main<wl_compositor::WlCompositor>,
     pub(crate) shell: Main<wl_shell::WlShell>,
     pub(crate) seat: Main<wl_seat::WlSeat>,
     pub(crate) shm: Main<wl_shm::WlShm>,
     pub(crate) serial: Option<u32>,
-    pub(crate) client_windows: BTreeMap<WindowIndex, Box<ClientWindow>>,
-    pub(crate) client_windows_to_destroy: VecDeque<BTreeMap<WindowIndex, Box<ClientWindow>>>,
     pub(crate) xdg_runtime_dir: String,
     pub(crate) scale: i32,
     pub(crate) key_repeat_delay: u64,
@@ -71,6 +69,13 @@ pub struct ClientContext
     pub(crate) double_click_delay: u64,
     pub(crate) long_click_delay: u64,
     pub(crate) has_exit: bool,
+}
+
+pub struct ClientContext
+{
+    pub(crate) fields: ClientContextFields,
+    pub(crate) client_windows: BTreeMap<WindowIndex, Box<ClientWindow>>,
+    pub(crate) client_windows_to_destroy: VecDeque<BTreeMap<WindowIndex, Box<ClientWindow>>>,
 }
 
 impl ClientContext
@@ -188,21 +193,23 @@ impl ClientContext
                 display,
                 event_queue,
         }, ClientContext {
-            compositor,
-            shell,
-            seat,
-            shm,
-            serial: None,
+            fields: ClientContextFields {
+                compositor,
+                shell,
+                seat,
+                shm,
+                serial: None,
+                xdg_runtime_dir,
+                scale,
+                key_repeat_delay,
+                key_repeat_time,
+                text_cursor_blink_time,
+                double_click_delay,
+                long_click_delay,
+                has_exit: false,
+            },
             client_windows: BTreeMap::new(),
             client_windows_to_destroy: VecDeque::new(),
-            xdg_runtime_dir,
-            scale,
-            key_repeat_delay,
-            key_repeat_time,
-            text_cursor_blink_time,
-            double_click_delay,
-            long_click_delay,
-            has_exit: false,
         }))
     }
     
@@ -235,9 +242,9 @@ impl ClientContext
         }
         let child_idxs = match window_context.window_container.dyn_window_mut(idx) {
             Some(window) => {
-                let mut client_window = ClientWindow::new(self, window, &*window_context.theme)?;
+                let mut client_window = ClientWindow::new(&self.fields, window, &*window_context.theme)?;
                 client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone());
-                match client_window.set(self, window, &*window_context.theme, parent_surface) {
+                match client_window.set(&self.fields, window, &*window_context.theme, parent_surface) {
                     Ok(()) => (),
                     Err(err) => {
                         client_window.destroy();
@@ -400,16 +407,14 @@ impl ClientContext
         if visiteds.contains(&idx) {
             return Err(ClientError::WindowCycle);
         }
-        let child_idxs = match self.remove_client_window(idx) {
-            Some(mut client_window) => {
+        let child_idxs = match client_window_mut(&mut self.client_windows, idx) {
+            Some(client_window) => {
                 match window_context.window_container.dyn_window_mut(idx) {
                     Some(window) => {
-                        client_window.update(self, window, &*window_context.theme)?;
-                        self.add_client_window(idx, client_window);
+                        client_window.update(&self.fields, window, &*window_context.theme)?;
                         window.child_indices().collect::<Vec<WindowIndex>>()
                     },
                     None => {
-                        self.add_client_window(idx, client_window);
                         return Err(ClientError::NoWindow)
                     },
                 }
@@ -417,9 +422,9 @@ impl ClientContext
             None => {
                 match window_context.window_container.dyn_window_mut(idx) {
                     Some(window) => {
-                        let mut client_window = ClientWindow::new(self, window, &*window_context.theme)?;
+                        let mut client_window = ClientWindow::new(&self.fields, window, &*window_context.theme)?;
                         client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone());
-                        match client_window.set(self, window, &*window_context.theme, parent_surface) {
+                        match client_window.set(&self.fields, window, &*window_context.theme, parent_surface) {
                             Ok(()) => (),
                             Err(err) => {
                                 client_window.destroy();
@@ -529,13 +534,13 @@ impl ClientContext
     }
     
     pub fn has_exit(&self) -> bool
-    { self.has_exit }
+    { self.fields.has_exit }
 
     pub fn set_exit(&mut self, is_exit: bool)
-    { self.has_exit = is_exit; }
+    { self.fields.has_exit = is_exit; }
 
     pub fn exit(&mut self)
-    { self.has_exit = true; }
+    { self.fields.has_exit = true; }
 }
 
 pub(crate) fn client_window(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex) -> Option<&ClientWindow>
@@ -611,7 +616,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -624,7 +629,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -649,7 +654,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -682,7 +687,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -695,7 +700,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -708,7 +713,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -721,7 +726,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -739,7 +744,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -752,7 +757,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let window_context3 = window_context2.clone();
                                 let queue_context3 = queue_context2.clone();
                                 let mut client_context_r = client_context2.borrow_mut();
-                                client_context_r.serial = Some(serial);
+                                client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
                                         client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
@@ -804,7 +809,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
         let mut is_pointer = false;
         let mut is_keyboard = false;
         let mut is_touch = false;
-        client_context_r.seat.quick_assign(move |seat, event, _| {
+        client_context_r.fields.seat.quick_assign(move |seat, event, _| {
                 match event {
                     wl_seat::Event::Capabilities { capabilities } => {
                         if !is_pointer && capabilities.contains(wl_seat::Capability::Pointer) {
@@ -950,7 +955,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                 return Err(err);
             },
         }
-        if client_context_r.has_exit {
+        if client_context_r.fields.has_exit {
             break;
         }
     }
