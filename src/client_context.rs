@@ -293,6 +293,7 @@ impl ClientContext
             },
             (None, None) => (),
         }
+        window_context.old_focused_window_index = window_context.focused_window_index;
         let idxs: Vec<WindowIndex> = window_context.window_container.window_indices().collect();
         let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
         for idx in &idxs {
@@ -476,6 +477,7 @@ impl ClientContext
             },
             (None, None) => (),
         }
+        window_context.old_focused_window_index = window_context.focused_window_index;
         let idxs: Vec<WindowIndex> = window_context.window_container.window_indices().collect();
         let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
         for idx in &idxs {
