@@ -249,12 +249,6 @@ impl WindowContainer
         }
     }
     
-    pub(crate) fn window_map(&self) -> &BTreeMap<WindowIndex, Box<dyn Window>>
-    { &self.windows }
-    
-    pub(crate) fn window_map_mut(&mut self) -> &mut BTreeMap<WindowIndex, Box<dyn Window>>
-    { &mut self.windows }
-    
     pub(crate) fn indices_to_destroy(&self) -> &BTreeSet<WindowIndex>
     { &self.indices_to_destroy }
 

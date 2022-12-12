@@ -32,6 +32,10 @@ pub enum ClientError
     Data,
     Event(Event),
     Callback,
+    NoSerial,
+    WindowCycle,
+    NoWindow,
+    NoClientWindow,
 }
 
 impl error::Error for ClientError
@@ -57,6 +61,10 @@ impl fmt::Display for ClientError
             ClientError::Data => write!(f, "data error"),
             ClientError::Event(event) => write!(f, "event error for {:?}", event),
             ClientError::Callback => write!(f, "callback error"),
+            ClientError::NoSerial => write!(f, "no serial"),
+            ClientError::WindowCycle => write!(f, "cycle of windows"),
+            ClientError::NoWindow => write!(f, "no window"),
+            ClientError::NoClientWindow => write!(f, "no client window"),
         }
     }
 }

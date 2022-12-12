@@ -7,13 +7,14 @@
 //
 use std::cell::*;
 use std::collections::BTreeSet;
-use std::env;
 use std::fs::*;
 use std::os::unix::io::AsRawFd;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::RwLock;
 use std::rc::*;
+use cairo::Format;
+use cairo::ImageSurface;
 use memmap2::MmapOptions;
 use memmap2::MmapMut;
 use tempfile;
@@ -27,6 +28,7 @@ use crate::client_error::*;
 use crate::queue_context::*;
 use crate::window::*;
 use crate::window_context::*;
+use crate::theme::*;
 use crate::types::*;
 
 pub(crate) struct ClientWindow
@@ -36,91 +38,223 @@ pub(crate) struct ClientWindow
     pub(crate) buffer: Main<wl_buffer::WlBuffer>,
     pub(crate) file: File,
     pub(crate) mmap: MmapMut,
+    pub(crate) cairo_surface: ImageSurface,
     pub(crate) size: Size<i32>,
+    pub(crate) unmaximized_size: Size<i32>,
     pub(crate) title: Option<String>,
     pub(crate) is_maximized: bool,
     pub(crate) parent_index: Option<WindowIndex>,
     pub(crate) child_indices: BTreeSet<WindowIndex>,
 }
 
-fn create_buffer(client_context: &ClientContext, window: &dyn Window) -> Result<(Main<wl_buffer::WlBuffer>, File, MmapMut), ClientError>
+fn create_buffer(client_context: &ClientContext, window: &dyn Window) -> Result<(Main<wl_buffer::WlBuffer>, File, MmapMut, ImageSurface), ClientError>
 {
-    match env::var("XDG_RUNTIME_DIR") {
-        Ok(xdg_runtime_dir) => {
-            let mut tempfile_builder = tempfile::Builder::new();
-            tempfile_builder.prefix("lwltk-");
-            match tempfile_builder.tempfile_in(xdg_runtime_dir) {
-                Ok(named_temp_file) => {
-                    let tmp_file = named_temp_file.into_file();
-                    let scale = client_context.scale;
-                    let size = window.width() * window.height() * scale * scale * 4;
-                    match tmp_file.set_len(size as u64) {
-                        Ok(()) => {
-                            let mut mmap_opts = MmapOptions::new();
-                            mmap_opts.len(size as usize);
-                            match unsafe { mmap_opts.map_mut(&tmp_file) } {
-                                Ok(mmap) => {
-                                    let shm_pool = client_context.shm.create_pool(tmp_file.as_raw_fd(), size);
-                                    let buffer = shm_pool.create_buffer(0, window.width() * scale, window.height() * scale, window.width() * scale * 4, wl_shm::Format::Argb8888);
-                                    shm_pool.destroy();
-                                    Ok((buffer, tmp_file, mmap))
+    let mut tempfile_builder = tempfile::Builder::new();
+    tempfile_builder.prefix("lwltk-");
+    match tempfile_builder.tempfile_in(client_context.xdg_runtime_dir.as_str()) {
+        Ok(named_temp_file) => {
+            let tmp_file = named_temp_file.into_file();
+            let scale = client_context.scale;
+            let size = window.width() * window.height() * scale * scale * 4;
+            match tmp_file.set_len(size as u64) {
+                Ok(()) => {
+                    let mut mmap_opts = MmapOptions::new();
+                    mmap_opts.len(size as usize);
+                    match unsafe { mmap_opts.map_mut(&tmp_file) } {
+                        Ok(mut mmap) => {
+                            let shm_pool = client_context.shm.create_pool(tmp_file.as_raw_fd(), size);
+                            let buffer = shm_pool.create_buffer(0, window.width() * scale, window.height() * scale, window.width() * scale * 4, wl_shm::Format::Argb8888);
+                            shm_pool.destroy();
+                            match Format::ARgb32.stride_for_width((window.width() * scale) as u32) {
+                                Ok(stride) => {
+                                    match unsafe { ImageSurface::create_for_data_unsafe(mmap.as_mut_ptr(), Format::ARgb32, window.width() * scale, window.height() * scale, stride) } {
+                                        Ok(cairo_surface) => {
+                                            Ok((buffer, tmp_file, mmap, cairo_surface))
+                                        },
+                                        Err(err) => {
+                                            buffer.destroy();
+                                            Err(ClientError::Cairo(err))
+                                        },
+                                    }
                                 },
-                                Err(err) => Err(ClientError::Io(err)),
+                                Err(err) => {
+                                    buffer.destroy();
+                                    Err(ClientError::Cairo(err))
+                                },
                             }
                         },
                         Err(err) => Err(ClientError::Io(err)),
                     }
                 },
-                Err(err) => Err(ClientError::Io(err)),   
+                Err(err) => Err(ClientError::Io(err)),
             }
         },
-        Err(_) => Err(ClientError::NoXdgRuntimeDir),
+        Err(err) => Err(ClientError::Io(err)),   
     }
 }
 
+fn update_window_size_and_window_pos(_window: &mut dyn Window, _theme: &dyn Theme)
+{}
+
 impl ClientWindow
 {
-    pub(crate) fn new(client_context: &ClientContext, window: &dyn Window) -> Result<ClientWindow, ClientError>
+    pub(crate) fn new(client_context: &ClientContext, window: &mut dyn Window, theme: &dyn Theme) -> Result<ClientWindow, ClientError>
     {
-       let surface = client_context.compositor.create_surface();
-       let shell_surface = client_context.shell.get_shell_surface(&surface);
-       let size = window.size();
-       let title = window.title().map(|s| String::from(s));
-       let is_maximized = window.is_maximized();
-       let (buffer, file, mmap) = create_buffer(client_context, window)?;
-       Ok(ClientWindow {
-               surface,
-               shell_surface,
-               buffer,
-               file,
-               mmap,
-               size,
-               title,
-               is_maximized,
-               parent_index: None,
-               child_indices: BTreeSet::new(),
-       })
+        update_window_size_and_window_pos(window, theme);
+        let surface = client_context.compositor.create_surface();
+        let shell_surface = client_context.shell.get_shell_surface(&surface);
+        let size = window.size();
+        let title = window.title().map(|s| String::from(s));
+        match title.clone() {
+            Some(title) => shell_surface.set_title(title),
+            None => (),
+        }
+        let is_maximized = window.is_maximized();
+        let (buffer, file, mmap, cairo_surface) = match create_buffer(client_context, window) {
+            Ok(tuple) => tuple,
+            Err(err) => {
+                surface.destroy();
+                return Err(err);
+            }
+        };
+        Ok(ClientWindow {
+                surface,
+                shell_surface,
+                buffer,
+                file,
+                mmap,
+                cairo_surface,
+                size,
+                unmaximized_size: size,
+                title,
+                is_maximized,
+                parent_index: None,
+                child_indices: BTreeSet::new(),
+        })
     }
+
+    fn draw(&self, _window: &dyn Window, _theme: &dyn Theme, _is_focused_window: bool)
+    {}
     
     pub(crate) fn assign(&self, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>)
     {
          self.shell_surface.quick_assign(move |shell_surface, event, _| {
                  match  event {
                      wl_shell_surface::Event::Ping { serial, } => {
-                         let client_context_r = client_context2.borrow_mut();
+                         let mut client_context_r = client_context2.borrow_mut();
+                         client_context_r.serial = Some(serial);
                          shell_surface.pong(serial);
                      },
                      wl_shell_surface::Event::Configure { edges, width, height, } => {
-                         let client_context_r = client_context2.borrow_mut();
+                         let client_context3 = client_context2.clone();
+                         let window_context3 = window_context2.clone();
+                         let queue_context3 = queue_context2.clone();
+                         let mut client_context_r = client_context2.borrow_mut();
+                         match window_context2.write() {
+                             Ok(mut window_context_g) => {
+                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                             },
+                             Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                         }
                      },
                      wl_shell_surface::Event::PopupDone => {
-                         let client_context_r = client_context2.borrow_mut();
+                         let client_context3 = client_context2.clone();
+                         let window_context3 = window_context2.clone();
+                         let queue_context3 = queue_context2.clone();
+                         let mut client_context_r = client_context2.borrow_mut();
+                         match window_context2.write() {
+                             Ok(mut window_context_g) => {
+                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                             },
+                             Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                         }
                      },
                      _ => (),
                  }
          });
     }
     
+    pub(crate) fn set(&mut self, client_context: &ClientContext, window: &mut dyn Window, theme: &dyn Theme, parent_surface: Option<&wl_surface::WlSurface>) -> Result<(), ClientError>
+    {
+        let scale = client_context.scale;
+        match (window.parent_index(), window.pos_in_parent(), parent_surface) {
+            (Some(parent_idx), Some(pos_in_parent), Some(parent_surface)) => {
+                if window.is_popup() {
+                    match client_context.serial {
+                        Some(serial) => self.shell_surface.set_popup(&client_context.seat, serial, parent_surface, pos_in_parent.x * scale, pos_in_parent.y * scale, wl_shell_surface::Transient::empty()),
+                        None => return Err(ClientError::NoSerial),
+                    }
+                } else {
+                    self.shell_surface.set_transient(parent_surface, pos_in_parent.x * scale, pos_in_parent.y * scale, wl_shell_surface::Transient::empty());
+                }
+                self.parent_index = Some(parent_idx);
+            },
+            _ => {
+                if !window.is_maximized() {
+                    self.shell_surface.set_maximized(None);
+                } else {
+                    self.shell_surface.set_toplevel();
+                }
+            },
+        }
+        self.draw(window, theme, window.is_focused());
+        self.surface.attach(Some(&self.buffer), 0, 0);
+        self.surface.commit();
+        window.clear_change_flag();
+        Ok(())
+    }
+
+    pub(crate) fn update(&mut self, client_context: &ClientContext, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), ClientError>
+    {
+        let scale = client_context.scale;
+        let new_title = window.title().map(|s| String::from(s));
+        if self.title == new_title {
+            self.title = new_title.clone();
+            match new_title {
+                Some(new_title) => self.shell_surface.set_title(new_title),
+                None => (),
+            }
+        }
+        if window.is_maximized() != self.is_maximized {
+            if window.is_maximized() {
+                self.unmaximized_size = self.size;
+                self.shell_surface.set_maximized(None);
+            } else {
+                self.shell_surface.set_toplevel();
+                window.set_preferred_size(Size::new(Some(self.unmaximized_size.width), Some(self.unmaximized_size.height)));
+            }
+            self.is_maximized = window.is_maximized();
+        }
+        if window.is_changed() {
+            update_window_size_and_window_pos(window, theme);
+            if self.size != window.size() {
+                let (buffer, file, mmap, cairo_surface) = create_buffer(client_context, window)?;
+                self.buffer = buffer;
+                self.mmap = mmap;
+                self.cairo_surface = cairo_surface;
+                self.draw(window, theme, window.is_focused());
+                self.surface.attach(Some(&self.buffer), 0, 0);
+                self.surface.damage(0, 0, window.width() * scale, window.height() * scale);
+                self.surface.commit();
+                self.file = file;
+            } else {
+                self.draw(window, theme, window.is_focused());
+                self.surface.attach(Some(&self.buffer), 0, 0);
+                self.surface.damage(0, 0, window.width() * scale, window.height() * scale);
+                self.surface.commit();
+            }
+            self.size = window.size();
+            window.clear_change_flag();
+        }
+        Ok(())
+    }
+    
+    pub(crate) fn add_child(&mut self, idx: WindowIndex)
+    { self.child_indices.insert(idx); }
+    
+    pub(crate) fn remove_child(&mut self, idx: WindowIndex)
+    { self.child_indices.remove(&idx); }
+
     pub(crate) fn destroy(&self)
     {
         self.buffer.destroy();

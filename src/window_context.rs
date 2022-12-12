@@ -51,10 +51,7 @@ impl WindowContext
     { self.focused_window_index }
     
     pub fn set_focused_window_index(&mut self, idx: Option<WindowIndex>)
-    {
-        self.old_focused_window_index = self.focused_window_index;
-        self.focused_window_index = idx;
-    }
+    { self.focused_window_index = idx; }
     
     pub fn dyn_current_window(&self) -> Option<&dyn Window>
     {
