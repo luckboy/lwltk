@@ -414,9 +414,7 @@ impl ClientContext
                         client_window.update(&self.fields, window, &*window_context.theme)?;
                         window.child_indices().collect::<Vec<WindowIndex>>()
                     },
-                    None => {
-                        return Err(ClientError::NoWindow)
-                    },
+                    None => return Err(ClientError::NoWindow),
                 }
             },
             None => {
