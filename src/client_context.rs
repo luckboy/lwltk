@@ -60,6 +60,9 @@ pub(crate) struct ClientContextFields
     pub(crate) shell: Main<wl_shell::WlShell>,
     pub(crate) seat: Main<wl_seat::WlSeat>,
     pub(crate) shm: Main<wl_shm::WlShm>,
+    pub(crate) pointer: Option<Main<wl_pointer::WlPointer>>,
+    pub(crate) keyboard: Option<Main<wl_keyboard::WlKeyboard>>,
+    pub(crate) touch: Option<Main<wl_touch::WlTouch>>,
     pub(crate) serial: Option<u32>,
     pub(crate) xdg_runtime_dir: String,
     pub(crate) scale: i32,
@@ -198,6 +201,9 @@ impl ClientContext
                 shell,
                 seat,
                 shm,
+                pointer: None,
+                keyboard: None,
+                touch: None,
                 serial: None,
                 xdg_runtime_dir,
                 scale,
@@ -601,8 +607,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
     let window_context2 = window_context.clone();
     let queue_context2 = queue_context.clone();
     let client_context3 = client_context.clone();
-    let window_context3 = window_context.clone();
-    let queue_context3 = queue_context.clone();
+    let client_context4 = client_context.clone();
+    let window_context4 = window_context.clone();
+    let queue_context4 = queue_context.clone();
     {
         let mut client_context_r = client_context.borrow_mut();
         let filter = Filter::new(move |event, _, _| {
@@ -804,30 +811,31 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     },
                 }
         });
-        let mut is_pointer = false;
-        let mut is_keyboard = false;
-        let mut is_touch = false;
         client_context_r.fields.seat.quick_assign(move |seat, event, _| {
                 match event {
                     wl_seat::Event::Capabilities { capabilities } => {
-                        if !is_pointer && capabilities.contains(wl_seat::Capability::Pointer) {
-                            seat.get_pointer().assign(filter.clone());
-                            is_pointer = true;
+                        let mut client_context_r = client_context3.borrow_mut();
+                        if !client_context_r.fields.pointer.is_some() && capabilities.contains(wl_seat::Capability::Pointer) {
+                            let pointer = seat.get_pointer();
+                            pointer.assign(filter.clone());
+                            client_context_r.fields.pointer = Some(pointer);
                         }
-                        if !is_keyboard && capabilities.contains(wl_seat::Capability::Keyboard) {
-                            seat.get_keyboard().assign(filter.clone());
-                            is_keyboard = true;
+                        if !client_context_r.fields.keyboard.is_some() && capabilities.contains(wl_seat::Capability::Keyboard) {
+                            let keyboard = seat.get_keyboard();
+                            keyboard.assign(filter.clone());
+                            client_context_r.fields.keyboard = Some(keyboard);
                         }
-                        if !is_touch && capabilities.contains(wl_seat::Capability::Touch) {
-                            seat.get_keyboard().assign(filter.clone());
-                            is_touch = true;
+                        if !client_context_r.fields.touch.is_some() && capabilities.contains(wl_seat::Capability::Touch) {
+                            let touch = seat.get_touch();
+                            touch.assign(filter.clone());
+                            client_context_r.fields.touch = Some(touch);
                         }
                     },
                     _ => (),
                 }
         });
         match window_context.write() {
-            Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3)?,
+            Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4)?,
             Err(err) => return Err(ClientError::RwLock),
         }
     }
