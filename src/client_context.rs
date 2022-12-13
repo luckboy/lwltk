@@ -317,24 +317,23 @@ impl ClientContext
     
     fn add_child_client_window_indices_to_destroy_from(&mut self, client_windows_to_destroy: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex, visiteds: &mut BTreeSet<WindowIndex>, indices_to_destroy: &mut Vec<WindowIndex>) -> Result<(), ClientError>
     {
-        if visiteds.contains(&idx) {
-            return Err(ClientError::WindowCycle);
-        }
-        let child_idxs = match client_window(client_windows_to_destroy, idx) {
-            Some(client_window) => client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>(),
-            None => {
-                match self.client_window(idx) {
-                    Some(client_window) => client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>(),
-                    None => return Err(ClientError::NoClientWindow),
+        if !visiteds.contains(&idx) {
+            let child_idxs = match client_window(client_windows_to_destroy, idx) {
+                Some(client_window) => client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>(),
+                None => {
+                    match self.client_window(idx) {
+                        Some(client_window) => client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>(),
+                        None => return Err(ClientError::NoClientWindow),
+                    }
+                },
+            };
+            visiteds.insert(idx);
+            for child_idx in &child_idxs {
+                if self.client_window(*child_idx).is_some() {
+                    indices_to_destroy.push(*child_idx);
                 }
-            },
-        };
-        visiteds.insert(idx);
-        for child_idx in &child_idxs {
-            if self.client_window(*child_idx).is_some() {
-                indices_to_destroy.push(*child_idx);
+                self.add_child_client_window_indices_to_destroy_from(client_windows_to_destroy, *child_idx, visiteds, indices_to_destroy)?;
             }
-            self.add_child_client_window_indices_to_destroy_from(client_windows_to_destroy, *child_idx, visiteds, indices_to_destroy)?;
         }
         Ok(())
     }
