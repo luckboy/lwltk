@@ -254,6 +254,9 @@ impl WindowContainer
 
     pub(crate) fn clear_indices_to_destroy(&mut self)
     { self.indices_to_destroy.clear(); }
+    
+    pub(crate) fn window_map(&self) -> &BTreeMap<WindowIndex, Box<dyn Window>>
+    { &self.windows }
 
     pub fn dyn_window(&self, idx: WindowIndex) -> Option<&dyn Window>
     {

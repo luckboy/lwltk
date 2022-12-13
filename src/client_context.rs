@@ -301,7 +301,7 @@ impl ClientContext
             (None, None) => (),
         }
         window_context.old_focused_window_index = window_context.focused_window_index;
-        let idxs: Vec<WindowIndex> = window_context.window_container.window_indices().collect();
+        let idxs: Vec<WindowIndex> = window_context.window_container.window_map().keys().map(|i| *i).collect();
         let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
         for idx in &idxs {
             let is_creating = match window_context.window_container.dyn_window(*idx) {
@@ -341,22 +341,22 @@ impl ClientContext
     fn add_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
     {
         let mut client_windows_to_destroy: BTreeMap<WindowIndex, Box<ClientWindow>> = BTreeMap::new();
-        for idx in window_context.window_container.window_indices() {
-            match window_context.window_container.dyn_window(idx) {
+        for idx in window_context.window_container.window_map().keys() {
+            match window_context.window_container.dyn_window(*idx) {
                 Some(window) => {
                     if !window.is_visible() {
-                        match self.remove_client_window(idx) {
-                            Some(client_window) => add_map_client_window(&mut client_windows_to_destroy, idx, client_window),
+                        match self.remove_client_window(*idx) {
+                            Some(client_window) => add_map_client_window(&mut client_windows_to_destroy, *idx, client_window),
                             None => (),
                         }
                     } else {
-                        let is_parent_diff = match self.client_window(idx) {
+                        let is_parent_diff = match self.client_window(*idx) {
                             Some(client_window) => client_window.parent_index != window.parent_index(),
                             None => false,
                         };
                         if is_parent_diff {
-                            match self.remove_client_window(idx) {
-                                Some(client_window) => add_map_client_window(&mut client_windows_to_destroy, idx, client_window),
+                            match self.remove_client_window(*idx) {
+                                Some(client_window) => add_map_client_window(&mut client_windows_to_destroy, *idx, client_window),
                                 None => (),
                             }
                         }
@@ -483,7 +483,7 @@ impl ClientContext
             (None, None) => (),
         }
         window_context.old_focused_window_index = window_context.focused_window_index;
-        let idxs: Vec<WindowIndex> = window_context.window_container.window_indices().collect();
+        let idxs: Vec<WindowIndex> = window_context.window_container.window_map().keys().map(|i| *i).collect();
         let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
         for idx in &idxs {
             let is_creating = match window_context.window_container.dyn_window(*idx) {
