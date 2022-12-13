@@ -347,17 +347,17 @@ impl ClientContext
                     if !window.is_visible() {
                         match self.remove_client_window(idx) {
                             Some(client_window) => add_client_window(&mut client_windows_to_destroy, idx, client_window),
-                            None => return Err(ClientError::NoClientWindow)
+                            None => (),
                         }
                     } else {
                         let is_parent_diff = match self.client_window(idx) {
                             Some(client_window) => client_window.parent_index != window.parent_index(),
-                            None => return Err(ClientError::NoClientWindow),
+                            None => false,
                         };
                         if is_parent_diff {
                             match self.remove_client_window(idx) {
                                 Some(client_window) => add_client_window(&mut client_windows_to_destroy, idx, client_window),
-                                None => return Err(ClientError::NoClientWindow)
+                                None => (),
                             }
                         }
                     }
@@ -368,7 +368,7 @@ impl ClientContext
         for idx in window_context.window_container.indices_to_destroy().iter() {
             match self.remove_client_window(*idx) {
                 Some(client_window) => add_client_window(&mut client_windows_to_destroy, *idx, client_window),
-                None => return Err(ClientError::NoClientWindow)
+                None => (),
             }
         }
         window_context.window_container.clear_indices_to_destroy();
@@ -380,7 +380,7 @@ impl ClientContext
         for idx in &idxs_to_destroy {
             match self.remove_client_window(*idx) {
                 Some(client_window) => add_client_window(&mut client_windows_to_destroy, *idx, client_window),
-                None => return Err(ClientError::NoClientWindow)
+                None => return Err(ClientError::NoClientWindow),
             }
         }
         for idx in client_windows_to_destroy.keys() {
