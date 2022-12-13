@@ -341,23 +341,22 @@ impl ClientContext
     pub(crate) fn add_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
     {
         let mut client_windows_to_destroy: BTreeMap<WindowIndex, Box<ClientWindow>> = BTreeMap::new();
-        let idxs: Vec<WindowIndex> = window_context.window_container.window_indices().collect();
-        for idx in &idxs {
-            match window_context.window_container.dyn_window(*idx) {
+        for idx in window_context.window_container.window_indices() {
+            match window_context.window_container.dyn_window(idx) {
                 Some(window) => {
                     if !window.is_visible() {
-                        match self.remove_client_window(*idx) {
-                            Some(client_window) => add_client_window(&mut client_windows_to_destroy, *idx, client_window),
+                        match self.remove_client_window(idx) {
+                            Some(client_window) => add_client_window(&mut client_windows_to_destroy, idx, client_window),
                             None => return Err(ClientError::NoClientWindow)
                         }
                     } else {
-                        let is_parent_diff = match self.client_window(*idx) {
+                        let is_parent_diff = match self.client_window(idx) {
                             Some(client_window) => client_window.parent_index != window.parent_index(),
                             None => return Err(ClientError::NoClientWindow),
                         };
                         if is_parent_diff {
-                            match self.remove_client_window(*idx) {
-                                Some(client_window) => add_client_window(&mut client_windows_to_destroy, *idx, client_window),
+                            match self.remove_client_window(idx) {
+                                Some(client_window) => add_client_window(&mut client_windows_to_destroy, idx, client_window),
                                 None => return Err(ClientError::NoClientWindow)
                             }
                         }
@@ -366,8 +365,7 @@ impl ClientContext
                 None => return Err(ClientError::NoWindow),
             }
         }
-        let idxs: Vec<WindowIndex> = window_context.window_container.indices_to_destroy().iter().map(|i| *i).collect();
-        for idx in &idxs {
+        for idx in window_context.window_container.indices_to_destroy().iter() {
             match self.remove_client_window(*idx) {
                 Some(client_window) => add_client_window(&mut client_windows_to_destroy, *idx, client_window),
                 None => return Err(ClientError::NoClientWindow)
@@ -375,9 +373,8 @@ impl ClientContext
         }
         window_context.window_container.clear_indices_to_destroy();
         let mut idxs_to_destroy: Vec<WindowIndex> = Vec::new();
-        let idxs: Vec<WindowIndex> = client_windows_to_destroy.keys().map(|i| *i).collect();
         let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
-        for idx in &idxs {
+        for idx in client_windows_to_destroy.keys() {
             self.add_child_client_window_indices_to_destroy_from(&client_windows_to_destroy, *idx, &mut visiteds, &mut idxs_to_destroy)?;
         }
         for idx in &idxs_to_destroy {
@@ -386,8 +383,7 @@ impl ClientContext
                 None => return Err(ClientError::NoClientWindow)
             }
         }
-        let idxs: Vec<WindowIndex> = client_windows_to_destroy.keys().map(|i| *i).collect();
-        for idx in &idxs {
+        for idx in client_windows_to_destroy.keys() {
             let parent_idx = match client_window(&client_windows_to_destroy, *idx) {
                 Some(client_window) => client_window.parent_index,
                 None => return Err(ClientError::NoClientWindow),
@@ -569,16 +565,14 @@ pub(crate) fn add_client_window(client_windows: &mut BTreeMap<WindowIndex, Box<C
 fn destroy_client_windows_from(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex, visiteds: &mut BTreeSet<WindowIndex>) -> Result<(), ClientError>
 {
     if !visiteds.contains(&idx) {
-        let child_idxs = match client_window(client_windows, idx) {
-            Some(client_window) => client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>(),
-            None => return Err(ClientError::NoClientWindow),
-        };
-        visiteds.insert(idx);
-        for child_idx in &child_idxs {
-            destroy_client_windows_from(client_windows, idx, visiteds)?;
-        }
         match client_window(client_windows, idx) {
-            Some(client_window) => client_window.destroy(),
+            Some(client_window) => {
+                visiteds.insert(idx);
+                for child_idx in client_window.child_indices.iter() {
+                    destroy_client_windows_from(client_windows, idx, visiteds)?;
+                }
+                client_window.destroy();
+            },
             None => return Err(ClientError::NoClientWindow),
         }
     }
@@ -587,9 +581,8 @@ fn destroy_client_windows_from(client_windows: &BTreeMap<WindowIndex, Box<Client
 
 pub(crate) fn destroy_client_windows(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>) -> Result<(), ClientError>
 {
-    let idxs: Vec<WindowIndex> = client_windows.keys().map(|i| *i).collect();
     let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
-    for idx in &idxs {
+    for idx in client_windows.keys() {
         destroy_client_windows_from(&client_windows, *idx, &mut visiteds)?;
     }
     Ok(())
