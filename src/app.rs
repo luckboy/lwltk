@@ -86,5 +86,5 @@ impl<T> App<T>
     { self.data.clone() }
     
     pub fn run(&mut self) -> Result<(), ClientError>
-    { run_main_loop(&mut self.client_display, self.client_context.clone(), self.window_context.clone(), self.queue_context.clone(), self.thread_signal_receiver) }
+    { run_main_loop(&mut self.client_display, self.client_context.clone(), self.window_context.clone(), self.queue_context.clone(), self.thread_signal_sender, self.thread_signal_receiver) }
 }

@@ -595,7 +595,7 @@ event_enum!(
     Touch => wl_touch::WlTouch
 );
 
-pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: Rc<RefCell<ClientContext>>, window_context: Arc<RwLock<WindowContext>>, queue_context: Arc<Mutex<QueueContext>>, thread_signal_receiver: ThreadSignalReceiver) -> Result<(), ClientError>
+pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: Rc<RefCell<ClientContext>>, window_context: Arc<RwLock<WindowContext>>, queue_context: Arc<Mutex<QueueContext>>, thread_signal_sender: ThreadSignalSender,thread_signal_receiver: ThreadSignalReceiver) -> Result<(), ClientError>
 {
     let client_context2 = client_context.clone();
     let window_context2 = window_context.clone();
