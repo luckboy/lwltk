@@ -338,7 +338,7 @@ impl ClientContext
         Ok(())
     }
     
-    fn add_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
+    fn add_client_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
     {
         let mut client_windows_to_destroy: BTreeMap<WindowIndex, Box<ClientWindow>> = BTreeMap::new();
         for idx in window_context.window_container.window_map().keys() {
@@ -499,7 +499,7 @@ impl ClientContext
     
     pub(crate) fn add_client_windows_to_destroy_and_create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>)
     {
-        match self.add_windows_to_destroy(window_context) {
+        match self.add_client_windows_to_destroy(window_context) {
             Ok(()) => (),
             Err(err) => eprintln!("lwltk: {}", err),
         }
