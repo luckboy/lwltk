@@ -570,15 +570,16 @@ fn destroy_client_windows_from(client_windows: &BTreeMap<WindowIndex, Box<Client
 {
     if !visiteds.contains(&idx) {
         let child_idxs = match client_window(client_windows, idx) {
-            Some(client_window) => {
-                client_window.destroy();
-                client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>()
-            },
+            Some(client_window) => client_window.child_indices.iter().map(|i| *i).collect::<Vec<WindowIndex>>(),
             None => return Err(ClientError::NoClientWindow),
         };
         visiteds.insert(idx);
         for child_idx in &child_idxs {
             destroy_client_windows_from(client_windows, idx, visiteds)?;
+        }
+        match client_window(client_windows, idx) {
+            Some(client_window) => client_window.destroy(),
+            None => return Err(ClientError::NoClientWindow),
         }
     }
     Ok(())
