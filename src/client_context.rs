@@ -271,7 +271,7 @@ impl ClientContext
         Ok(())
     }
     
-    pub(crate) fn create_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
+    fn create_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
     {
         match (window_context.focused_window_index, window_context.old_focused_window_index) {
             (Some(idx), Some(old_idx)) => {
@@ -338,7 +338,7 @@ impl ClientContext
         Ok(())
     }
     
-    pub(crate) fn add_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
+    fn add_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
     {
         let mut client_windows_to_destroy: BTreeMap<WindowIndex, Box<ClientWindow>> = BTreeMap::new();
         for idx in window_context.window_container.window_indices() {
@@ -453,7 +453,7 @@ impl ClientContext
         Ok(())
     }
     
-    pub(crate) fn create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
+    fn create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
     {
         match (window_context.focused_window_index, window_context.old_focused_window_index) {
             (Some(idx), Some(old_idx)) => {
@@ -579,7 +579,7 @@ fn destroy_client_windows_from(client_windows: &BTreeMap<WindowIndex, Box<Client
     Ok(())
 }
 
-pub(crate) fn destroy_client_windows(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>) -> Result<(), ClientError>
+fn destroy_client_windows(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>) -> Result<(), ClientError>
 {
     let mut visiteds: BTreeSet<WindowIndex> = BTreeSet::new();
     for idx in client_windows.keys() {
