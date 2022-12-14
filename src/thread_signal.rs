@@ -7,6 +7,7 @@
 //
 use std::os::unix::io::RawFd;
 use nix::fcntl::OFlag;
+use nix::unistd::close;
 use nix::unistd::pipe2;
 use nix::unistd::read;
 use nix::unistd::write;
@@ -54,6 +55,14 @@ impl ThreadSignalSender
             Err(err) => Err(ClientError::Nix(err)),
         }
     }
+    
+    pub(crate) fn close(&self) -> Result<(), ClientError>
+    {
+        match close(self.0) {
+            Ok(()) => Ok(()),
+            Err(err) => Err(ClientError::Nix(err)),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -83,6 +92,14 @@ impl ThreadSignalReceiver
 
     pub(crate) fn fd(&self) -> RawFd
     { self.0 }
+
+    pub(crate) fn close(&self) -> Result<(), ClientError>
+    {
+        match close(self.0) {
+            Ok(()) => Ok(()),
+            Err(err) => Err(ClientError::Nix(err)),
+        }
+    }
 }
 
 pub(crate) fn thread_signal_channel() -> Result<(ThreadSignalSender, ThreadSignalReceiver), ClientError>

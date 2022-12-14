@@ -88,3 +88,12 @@ impl<T> App<T>
     pub fn run(&mut self) -> Result<(), ClientError>
     { run_main_loop(&mut self.client_display, self.client_context.clone(), self.window_context.clone(), self.queue_context.clone(), self.thread_signal_sender, self.thread_signal_receiver) }
 }
+
+impl<T> Drop for App<T>
+{
+    fn drop(&mut self)
+    {
+        let _res1 = self.thread_signal_sender.close();
+        let _res2 = self.thread_signal_receiver.close();
+    }
+}
