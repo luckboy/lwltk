@@ -27,6 +27,7 @@ use crate::client_context::*;
 use crate::client_error::*;
 use crate::client_shell_surface::*;
 use crate::event_handler::*;
+use crate::events::*;
 use crate::queue_context::*;
 use crate::window::*;
 use crate::window_context::*;
@@ -186,6 +187,44 @@ impl ClientWindow
          });
     }
     
+    fn set_move(&self, client_context_fields: &ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
+    {
+        if window.is_moved() {
+            match client_context_fields.serial {
+                Some(serial) => self.shell_surface._move(&client_context_fields.seat, serial),
+                None => return Err(ClientError::NoSerial),
+            }
+            window.clear_move_flag();
+        }
+        Ok(())
+    }
+
+    fn set_resize(&self, client_context_fields: &ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
+    {
+        match window.resize_egdes() {
+            Some(edges) => {
+                let wayland_edges = match edges {
+                    ClientResize::None => wl_shell_surface::Resize::None,
+                    ClientResize::Top => wl_shell_surface::Resize::Top,
+                    ClientResize::Bottom => wl_shell_surface::Resize::Bottom,
+                    ClientResize::Left => wl_shell_surface::Resize::Left,
+                    ClientResize::Right => wl_shell_surface::Resize::Right,
+                    ClientResize::TopLeft => wl_shell_surface::Resize::TopLeft,
+                    ClientResize::TopRight => wl_shell_surface::Resize::TopRight,
+                    ClientResize::BottomLeft => wl_shell_surface::Resize::BottomLeft,
+                    ClientResize::BottomRight => wl_shell_surface::Resize::BottomRight,
+                };
+                match client_context_fields.serial {
+                    Some(serial) => self.shell_surface.resize(&client_context_fields.seat, serial, wayland_edges),
+                    None => return Err(ClientError::NoSerial),
+                }
+                window.clear_resize_edges();
+            },
+            None => (),
+        }
+        Ok(())
+    }
+    
     pub(crate) fn set(&mut self, client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme, parent_surface: Option<&wl_surface::WlSurface>) -> Result<(), ClientError>
     {
         let scale = client_context_fields.scale;
@@ -209,6 +248,8 @@ impl ClientWindow
                 }
             },
         }
+        self.set_move(client_context_fields, window)?;
+        self.set_resize(client_context_fields, window)?;
         self.draw(window, theme, window.is_focused());
         self.surface.attach(Some(&self.buffer), 0, 0);
         self.surface.commit();
@@ -237,6 +278,8 @@ impl ClientWindow
             }
             self.is_maximized = window.is_maximized();
         }
+        self.set_move(client_context_fields, window)?;
+        self.set_resize(client_context_fields, window)?;
         if window.is_changed() {
             update_window_size_and_window_pos(window, theme);
             if self.size != window.size() {

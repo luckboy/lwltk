@@ -7,6 +7,7 @@
 //
 use std::any::Any;
 use crate::container::*;
+use crate::events::*;
 use crate::min_size::*;
 use crate::preferred_size::*;
 use crate::types::*;
@@ -87,6 +88,18 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn clear_change_flag(&mut self);
 
+    fn is_moved(&self) -> bool
+    { false }
+
+    fn clear_move_flag(&mut self) -> bool
+    { false }
+
+    fn resize_egdes(&self) -> Option<ClientResize>
+    { None }
+
+    fn clear_resize_edges(&mut self) -> bool
+    { false }    
+    
     fn content_index_pair(&self) -> Option<WidgetIndexPair>
     { None }
     
