@@ -8,10 +8,11 @@
 use wayland_client::protocol::wl_shell_surface;
 use crate::client_context::*;
 use crate::events::*;
+use crate::queue_context::*;
 use crate::window_context::*;
 
-pub(crate) fn prepare_event_for_client_shell_surface_configure(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _shell_surface: &wl_shell_surface::WlShellSurface, _resize: wl_shell_surface::Resize, _width: i32, _height: i32) -> Event
+pub(crate) fn prepare_event_for_client_shell_surface_configure(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _shell_surface: &wl_shell_surface::WlShellSurface, _resize: wl_shell_surface::Resize, _width: i32, _height: i32) -> Event
 { Event::Char('e') }
 
-pub(crate) fn prepare_event_for_client_shell_surface_popup_done(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _shell_surface: &wl_shell_surface::WlShellSurface) -> Event
+pub(crate) fn prepare_event_for_client_shell_surface_popup_done(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _shell_surface: &wl_shell_surface::WlShellSurface) -> Event
 { Event::Char('e') }

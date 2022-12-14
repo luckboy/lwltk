@@ -155,9 +155,11 @@ impl ClientWindow
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
-                                 let event = prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &shell_surface, edges, width, height);
                                  match queue_context2.lock() {
-                                     Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                     Ok(mut queue_context_g) => {
+                                         let event = prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface, edges, width, height);
+                                         handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                     },
                                      Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                  }
                                  client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
@@ -172,9 +174,11 @@ impl ClientWindow
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
-                                 let event = prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &shell_surface);
                                  match queue_context2.lock() {
-                                     Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                     Ok(mut queue_context_g) => {
+                                         let event = prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface);
+                                         handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                     },
                                      Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                  }
                                  client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
