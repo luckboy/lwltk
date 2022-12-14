@@ -34,7 +34,11 @@ use wayland_client::GlobalManager;
 use wayland_client::Main;
 use wayland_client::event_enum;
 use crate::client_error::*;
+use crate::client_keyboard::*;
+use crate::client_pointer::*;
+use crate::client_touch::*;
 use crate::client_window::*;
+use crate::event_handler::*;
 use crate::queue_context::*;
 use crate::thread_signal::*;
 use crate::types::*;
@@ -623,6 +627,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_pointer_enter(&mut client_context_r, &mut *window_context_g, &surface, surface_x, surface_y);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -636,6 +645,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_pointer_leave(&mut client_context_r, &mut *window_context_g, &surface);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -648,6 +662,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let mut client_context_r = client_context2.borrow_mut();
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_pointer_motion(&mut client_context_r, &mut *window_context_g, time, surface_x, surface_y);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -661,6 +680,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_pointer_button(&mut client_context_r, &mut *window_context_g, time, button, state);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -673,6 +697,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let mut client_context_r = client_context2.borrow_mut();
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_pointer_axis(&mut client_context_r, &mut *window_context_g, time, axis, value);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -685,6 +714,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         match event {
                             wl_keyboard::Event::Keymap { format, fd, size, } => {
                                 let mut client_context_r = client_context2.borrow_mut();
+                                initialize_keyboard(&mut *client_context_r, format, fd, size);
                             },
                             wl_keyboard::Event::Enter { serial, surface, .. } => {
                                 let client_context3 = client_context2.clone();
@@ -694,6 +724,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_keyboard_enter(&mut client_context_r, &mut *window_context_g, &surface);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -707,6 +742,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_keyboard_leave(&mut client_context_r, &mut *window_context_g, &surface);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -720,6 +760,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_keyboard_key(&mut client_context_r, &mut *window_context_g, time, key, state);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -733,6 +778,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_keyboard_modifiers(&mut client_context_r, &mut *window_context_g, mods_depressed, mods_latched, mods_locked, group);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -751,6 +801,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_touch_down(&mut client_context_r, &mut *window_context_g, time, &surface, id, x, y);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -764,6 +819,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 client_context_r.fields.serial = Some(serial);
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_touch_up(&mut client_context_r, &mut *window_context_g, time, id);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -776,6 +836,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let mut client_context_r = client_context2.borrow_mut();
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_touch_motion(&mut client_context_r, &mut *window_context_g, time, id, x, y);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -788,6 +853,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let mut client_context_r = client_context2.borrow_mut();
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_touch_frame(&mut client_context_r, &mut *window_context_g);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -800,6 +870,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 let mut client_context_r = client_context2.borrow_mut();
                                 match window_context2.write() {
                                     Ok(mut window_context_g) => {
+                                        let event = prepare_event_for_client_touch_cancel(&mut client_context_r, &mut *window_context_g);
+                                        match queue_context2.lock() {
+                                            Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                        }
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),

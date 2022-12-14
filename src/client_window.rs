@@ -25,6 +25,8 @@ use wayland_client::protocol::wl_surface;
 use wayland_client::Main;
 use crate::client_context::*;
 use crate::client_error::*;
+use crate::client_shell_surface::*;
+use crate::event_handler::*;
 use crate::queue_context::*;
 use crate::window::*;
 use crate::window_context::*;
@@ -152,6 +154,11 @@ impl ClientWindow
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
+                                 let event = prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &shell_surface, edges, width, height);
+                                 match queue_context2.lock() {
+                                     Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                     Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                 }
                                  client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -164,6 +171,11 @@ impl ClientWindow
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
+                                 let event = prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &shell_surface);
+                                 match queue_context2.lock() {
+                                     Ok(mut queue_context_g) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                     Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                 }
                                  client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
