@@ -5,7 +5,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-use std::os::unix::io::AsRawFd;
 use std::os::unix::io::RawFd;
 use nix::fcntl::OFlag;
 use nix::unistd::pipe2;
@@ -81,11 +80,8 @@ impl ThreadSignalReceiver
             Err(err) => Err(ClientError::Nix(err)),
         }
     }
-}
 
-impl AsRawFd for ThreadSignalReceiver
-{
-    fn as_raw_fd(&self) -> RawFd
+    pub(crate) fn fd(&self) -> RawFd
     { self.0 }
 }
 

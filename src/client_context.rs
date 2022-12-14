@@ -11,7 +11,6 @@ use std::collections::BTreeSet;
 use std::collections::VecDeque;
 use std::env;
 use std::io::ErrorKind;
-use std::os::unix::io::AsRawFd;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::RwLock;
@@ -851,7 +850,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
         }
         let mut poll_fds: [PollFd; 2] = [
             PollFd::new(client_display.display.get_connection_fd(), PollFlags::POLLIN),
-            PollFd::new(thread_signal_receiver.as_raw_fd(), PollFlags::POLLIN)
+            PollFd::new(thread_signal_receiver.fd(), PollFlags::POLLIN)
         ];
         loop {
             match poll(&mut poll_fds, -1) {
@@ -914,7 +913,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             }
                         }
                         let mut poll_fds: [PollFd; 1] = [
-                            PollFd::new(thread_signal_receiver.as_raw_fd(), PollFlags::POLLIN)
+                            PollFd::new(thread_signal_receiver.fd(), PollFlags::POLLIN)
                         ];
                         loop {
                             match poll(&mut poll_fds, 0) {
