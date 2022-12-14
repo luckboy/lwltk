@@ -19,9 +19,3 @@ pub(crate) fn prepare_event_for_client_touch_up(_client_context: &mut ClientCont
 
 pub(crate) fn prepare_event_for_client_touch_motion(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _id: i32, _x: f64, _y: f64) -> Event
 { Event::Char('e') }
-
-pub(crate) fn prepare_event_for_client_touch_frame(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext) -> Event
-{ Event::Char('e') }
-
-pub(crate) fn prepare_event_for_client_touch_cancel(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext) -> Event
-{ Event::Char('e') }

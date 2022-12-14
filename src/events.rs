@@ -52,8 +52,6 @@ pub enum ClientEvent
     TouchDown(u32, i32, Pos<f64>),
     TouchUp(u32, i32),
     TouchMotion(u32, i32, Pos<i64>),
-    TouchFrame,
-    TouchCancel,
     RepeatedKey(Vec<VKey>, String),
 }
 

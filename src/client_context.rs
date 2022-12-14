@@ -870,44 +870,6 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                             },
-                            wl_touch::Event::Frame => {
-                                let client_context3 = client_context2.clone();
-                                let window_context3 = window_context2.clone();
-                                let queue_context3 = queue_context2.clone();
-                                let mut client_context_r = client_context2.borrow_mut();
-                                match window_context2.write() {
-                                    Ok(mut window_context_g) => {
-                                        match queue_context2.lock() {
-                                            Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_touch_frame(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
-                                            },
-                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
-                                        }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
-                                    },
-                                    Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
-                                }
-                            },
-                            wl_touch::Event::Cancel => {
-                                let client_context3 = client_context2.clone();
-                                let window_context3 = window_context2.clone();
-                                let queue_context3 = queue_context2.clone();
-                                let mut client_context_r = client_context2.borrow_mut();
-                                match window_context2.write() {
-                                    Ok(mut window_context_g) => {
-                                        match queue_context2.lock() {
-                                            Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_touch_cancel(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
-                                            },
-                                            Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
-                                        }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
-                                    },
-                                    Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
-                                }
-                            },
                             _ => (),
                         }
                     },
