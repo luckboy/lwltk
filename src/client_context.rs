@@ -629,8 +629,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_pointer_enter(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface, surface_x, surface_y);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_pointer_enter(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface, surface_x, surface_y) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -649,8 +651,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_pointer_leave(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_pointer_leave(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -668,8 +672,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_pointer_motion(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, surface_x, surface_y);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_pointer_motion(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, surface_x, surface_y) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -688,8 +694,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_pointer_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, button, state);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event)
+                                                match prepare_event_for_client_pointer_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, button, state) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -707,8 +715,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_pointer_axis(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, axis, value);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_pointer_axis(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, axis, value) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -736,8 +746,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_keyboard_enter(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_keyboard_enter(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -756,8 +768,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_keyboard_leave(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_keyboard_leave(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &surface) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -776,8 +790,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_keyboard_key(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, key, state);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_keyboard_key(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, key, state) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -796,8 +812,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_keyboard_modifiers(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, mods_depressed, mods_latched, mods_locked, group);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_keyboard_modifiers(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, mods_depressed, mods_latched, mods_locked, group) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -821,8 +839,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_touch_down(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, &surface, id, x, y);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_touch_down(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, &surface, id, x, y) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -841,8 +861,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_touch_up(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, id);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_touch_up(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, id) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
@@ -860,8 +882,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                let event = prepare_event_for_client_touch_motion(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, id, x, y);
-                                                handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                                match prepare_event_for_client_touch_motion(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, id, x, y) {
+                                                    Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                    None => (),
+                                                }
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }

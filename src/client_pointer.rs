@@ -12,17 +12,17 @@ use crate::events::*;
 use crate::queue_context::*;
 use crate::window_context::*;
 
-pub(crate) fn prepare_event_for_client_pointer_enter(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _surface: &wl_surface::WlSurface, _surface_x: f64, _surface_y: f64) -> Event
-{ Event::Char('e') }
+pub(crate) fn prepare_event_for_client_pointer_enter(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _surface: &wl_surface::WlSurface, _surface_x: f64, _surface_y: f64) -> Option<Event>
+{ None }
 
-pub(crate) fn prepare_event_for_client_pointer_leave(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _surface: &wl_surface::WlSurface) -> Event
-{ Event::Char('e') }
+pub(crate) fn prepare_event_for_client_pointer_leave(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _surface: &wl_surface::WlSurface) -> Option<Event>
+{ None }
 
-pub(crate) fn prepare_event_for_client_pointer_motion(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _surface_x: f64, _surface_y: f64) -> Event
-{ Event::Char('e') }
+pub(crate) fn prepare_event_for_client_pointer_motion(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _surface_x: f64, _surface_y: f64) -> Option<Event>
+{ None }
 
-pub(crate) fn prepare_event_for_client_pointer_button(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _button: u32, _state: wl_pointer::ButtonState) -> Event
-{ Event::Char('e') }
+pub(crate) fn prepare_event_for_client_pointer_button(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _button: u32, _state: wl_pointer::ButtonState) -> Option<Event>
+{ None }
 
-pub(crate) fn prepare_event_for_client_pointer_axis(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _axis: wl_pointer::Axis, _value: f64) -> Event
-{ Event::Char('e') }
+pub(crate) fn prepare_event_for_client_pointer_axis(_client_context: &mut ClientContext, _window_context: &mut WindowContext, _queue_context: &mut QueueContext, _time: u32, _axis: wl_pointer::Axis, _value: f64) -> Option<Event>
+{ None }

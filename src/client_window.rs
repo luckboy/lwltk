@@ -157,8 +157,10 @@ impl ClientWindow
                              Ok(mut window_context_g) => {
                                  match queue_context2.lock() {
                                      Ok(mut queue_context_g) => {
-                                         let event = prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface, edges, width, height);
-                                         handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                         match prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface, edges, width, height) {
+                                             Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                             None => (),
+                                         }
                                      },
                                      Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                  }
@@ -176,8 +178,10 @@ impl ClientWindow
                              Ok(mut window_context_g) => {
                                  match queue_context2.lock() {
                                      Ok(mut queue_context_g) => {
-                                         let event = prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface);
-                                         handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event);
+                                         match prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface) {
+                                             Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                             None => (),
+                                         }
                                      },
                                      Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                  }
