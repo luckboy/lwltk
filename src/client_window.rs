@@ -152,7 +152,7 @@ impl ClientWindow
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
-                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
+                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
@@ -164,7 +164,7 @@ impl ClientWindow
                          let mut client_context_r = client_context2.borrow_mut();
                          match window_context2.write() {
                              Ok(mut window_context_g) => {
-                                 client_context_r.add_client_windows_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
+                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
