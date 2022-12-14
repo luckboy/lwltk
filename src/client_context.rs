@@ -578,7 +578,7 @@ fn destroy_map_client_windows_from(client_windows: &BTreeMap<WindowIndex, Box<Cl
             Some(client_window) => {
                 visiteds.insert(idx);
                 for child_idx in client_window.child_indices.iter() {
-                    destroy_map_client_windows_from(client_windows, idx, visiteds)?;
+                    destroy_map_client_windows_from(client_windows, *child_idx, visiteds)?;
                 }
                 client_window.destroy();
             },
@@ -910,7 +910,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
         });
         match window_context.write() {
             Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4)?,
-            Err(err) => return Err(ClientError::RwLock),
+            Err(_) => return Err(ClientError::RwLock),
         }
     }
     loop {
