@@ -99,10 +99,10 @@ fn create_buffer(client_context_fields: &ClientContextFields, window: &dyn Windo
     }
 }
 
-fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme)
+fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), CairoError>
 {
-    let res = with_dummy_cairo_context(|cairo_context| {
-            theme.set_cairo_context(cairo_context, client_context_fields.scale); 
+    with_dummy_cairo_context(|cairo_context| {
+            theme.set_cairo_context(cairo_context, client_context_fields.scale)?; 
             let area_width = match (window.preferred_width(), window.min_width()) {
                 (Some(preferred_width), Some(min_width)) => Some(max(preferred_width, min_width)),
                 (Some(preferred_width), None) => Some(preferred_width),
@@ -114,15 +114,9 @@ fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields
                 (None, _) => None,
             };
             let area_size = Size::new(area_width, area_height);
-            match cairo_context.save() {
-                Ok(()) => (),
-                Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-            }
-            window.update_size(cairo_context, theme, area_size);
-            match cairo_context.restore() {
-                Ok(()) => (),
-                Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-            }
+            cairo_context.save()?;
+            window.update_size(cairo_context, theme, area_size)?;
+            cairo_context.restore()?;
             match area_size {
                 Size { width: Some(_), height: Some(_), } => (),
                 _ => {
@@ -135,96 +129,77 @@ fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields
                         None => window.height(),
                     };
                     let area_size2 = Size::new(Some(area_width2), Some(area_height2));
-                    match cairo_context.save() {
-                        Ok(()) => (),
-                        Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-                    }
-                    window.update_size(cairo_context, theme, area_size2);
-                    match cairo_context.restore() {
-                        Ok(()) => (),
-                        Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-                    }
+                    cairo_context.save()?;
+                    window.update_size(cairo_context, theme, area_size2)?;
+                    cairo_context.restore()?;
                 },
             }
             let preferred_size = Size::new(Some(window.width()), Some(window.height()));
             window.set_preferred_size(preferred_size);
             let area_bounds = Rect::new(0, 0, window.width(), window.height());
-            match cairo_context.save() {
-                Ok(()) => (),
-                Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-            }
-            window.update_pos(cairo_context, theme, area_bounds);
-            match cairo_context.restore() {
-                Ok(()) => (),
-                Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-            }
-    });
-    match res {
-        Ok(()) => (),
-        Err(err) => eprintln!("lwltk: {}", err),
-    }
+            cairo_context.save()?;
+            window.update_pos(cairo_context, theme, area_bounds)?;
+            cairo_context.restore()?;
+            Ok(())
+    })
 }
 
 impl ClientWindow
 {
     pub(crate) fn new(client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<ClientWindow, ClientError>
     {
-        update_window_size_and_window_pos(client_context_fields, window, theme);
-        let surface = client_context_fields.compositor.create_surface();
-        let shell_surface = client_context_fields.shell.get_shell_surface(&surface);
-        let size = window.size();
-        let title = window.title().map(|s| String::from(s));
-        match title.clone() {
-            Some(title) => shell_surface.set_title(title),
-            None => (),
+        match update_window_size_and_window_pos(client_context_fields, window, theme) {
+            Ok(()) => {
+                let surface = client_context_fields.compositor.create_surface();
+                let shell_surface = client_context_fields.shell.get_shell_surface(&surface);
+                let size = window.size();
+                let title = window.title().map(|s| String::from(s));
+                match title.clone() {
+                    Some(title) => shell_surface.set_title(title),
+                    None => (),
+                }
+                let is_maximized = window.is_maximized();
+                let (buffer, file, mmap, cairo_surface) = match create_buffer(client_context_fields, window) {
+                    Ok(tuple) => tuple,
+                    Err(err) => {
+                        surface.destroy();
+                        return Err(err);
+                    }
+                };
+                Ok(ClientWindow {
+                        surface,
+                        shell_surface,
+                        buffer,
+                        file,
+                        mmap,
+                        cairo_surface,
+                        size,
+                        unmaximized_size: size,
+                        title,
+                        is_maximized,
+                        parent_index: None,
+                        child_indices: BTreeSet::new(),
+                })
+            },
+            Err(err) => Err(ClientError::Cairo(err)),
         }
-        let is_maximized = window.is_maximized();
-        let (buffer, file, mmap, cairo_surface) = match create_buffer(client_context_fields, window) {
-            Ok(tuple) => tuple,
-            Err(err) => {
-                surface.destroy();
-                return Err(err);
-            }
-        };
-        Ok(ClientWindow {
-                surface,
-                shell_surface,
-                buffer,
-                file,
-                mmap,
-                cairo_surface,
-                size,
-                unmaximized_size: size,
-                title,
-                is_maximized,
-                parent_index: None,
-                child_indices: BTreeSet::new(),
-        })
     }
 
-    fn draw(&self, client_context_fields: &ClientContextFields, window: &dyn Window, theme: &dyn Theme, is_focused_window: bool)
+    fn draw(&self, client_context_fields: &ClientContextFields, window: &dyn Window, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
     {
         match CairoContext::new(&self.cairo_surface) {
             Ok(cairo_context) => {
-                theme.set_cairo_context(&cairo_context, client_context_fields.scale); 
-                match cairo_context.save() {
-                    Ok(()) => (),
-                    Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-                }
+                theme.set_cairo_context(&cairo_context, client_context_fields.scale)?; 
+                cairo_context.save()?;
                 cairo_context.set_source_rgba(0.0, 0.0, 0.0, 0.0);
                 cairo_context.set_operator(Operator::Clear);
                 cairo_context.rectangle(0.0, 0.0, window.width() as f64, window.height() as f64);
-                match cairo_context.fill() {
-                    Ok(()) => (),
-                    Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-                }
-                match cairo_context.restore() {
-                    Ok(()) => (),
-                    Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
-                }
-                window.draw(&cairo_context, theme, is_focused_window);
+                cairo_context.fill()?;
+                cairo_context.restore()?;
+                window.draw(&cairo_context, theme, is_focused_window)?;
+                Ok(())
             },
-            Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
+            Err(err) => Err(err),
         }
     }
     
@@ -347,7 +322,10 @@ impl ClientWindow
         }
         self.set_move(client_context_fields, window)?;
         self.set_resize(client_context_fields, window)?;
-        self.draw(client_context_fields, window, theme, window.is_focused());
+        match self.draw(client_context_fields, window, theme, window.is_focused()) {
+            Ok(()) => (),
+            Err(err) => println!("lwltk: {}", ClientError::Cairo(err)),
+        }
         self.surface.attach(Some(&self.buffer), 0, 0);
         self.surface.commit();
         window.clear_change_flag();
@@ -378,24 +356,34 @@ impl ClientWindow
         self.set_move(client_context_fields, window)?;
         self.set_resize(client_context_fields, window)?;
         if window.is_changed() {
-            update_window_size_and_window_pos(client_context_fields, window, theme);
-            if self.size != window.size() {
-                let (buffer, file, mmap, cairo_surface) = create_buffer(client_context_fields, window)?;
-                self.buffer = buffer;
-                self.mmap = mmap;
-                self.cairo_surface = cairo_surface;
-                self.draw(client_context_fields, window, theme, window.is_focused());
-                self.surface.attach(Some(&self.buffer), 0, 0);
-                self.surface.damage(0, 0, window.width() * scale, window.height() * scale);
-                self.surface.commit();
-                self.file = file;
-            } else {
-                self.draw(client_context_fields, window, theme, window.is_focused());
-                self.surface.attach(Some(&self.buffer), 0, 0);
-                self.surface.damage(0, 0, window.width() * scale, window.height() * scale);
-                self.surface.commit();
+            match update_window_size_and_window_pos(client_context_fields, window, theme) {
+                Ok(()) => {
+                    if self.size != window.size() {
+                        let (buffer, file, mmap, cairo_surface) = create_buffer(client_context_fields, window)?;
+                        self.buffer = buffer;
+                        self.mmap = mmap;
+                        self.cairo_surface = cairo_surface;
+                        match self.draw(client_context_fields, window, theme, window.is_focused()) {
+                            Ok(()) => (),
+                            Err(err) => println!("lwltk: {}", ClientError::Cairo(err)),
+                        }
+                        self.surface.attach(Some(&self.buffer), 0, 0);
+                        self.surface.damage(0, 0, window.width() * scale, window.height() * scale);
+                        self.surface.commit();
+                        self.file = file;
+                    } else {
+                        match self.draw(client_context_fields, window, theme, window.is_focused()) {
+                            Ok(()) => (),
+                            Err(err) => println!("lwltk: {}", ClientError::Cairo(err)),
+                        }
+                        self.surface.attach(Some(&self.buffer), 0, 0);
+                        self.surface.damage(0, 0, window.width() * scale, window.height() * scale);
+                        self.surface.commit();
+                    }
+                    self.size = window.size();
+                },
+                Err(err) => return Err(ClientError::Cairo(err)),
             }
-            self.size = window.size();
             window.clear_change_flag();
         }
         Ok(())

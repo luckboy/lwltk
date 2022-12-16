@@ -7,25 +7,19 @@
 //
 use cairo::Format;
 use cairo::ImageSurface;
-use crate::client_error::*;
 use crate::types::*;
 
-pub fn create_dummy_cairo_surface() -> Result<ImageSurface, ClientError>
-{
-    match ImageSurface::create(Format::ARgb32, 1, 1) {
-        Ok(surface) => Ok(surface),
-        Err(err) => Err(ClientError::Cairo(err)),
-    }
-}
+pub fn create_dummy_cairo_surface() -> Result<ImageSurface, CairoError>
+{ ImageSurface::create(Format::ARgb32, 1, 1) }
 
-pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, ClientError>
-    where F: FnOnce(&CairoContext) -> T
+pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
+    where F: FnOnce(&CairoContext) -> Result<T, CairoError>
 {
     match create_dummy_cairo_surface() {
         Ok(cairo_surface) => {
             match CairoContext::new(&cairo_surface) {
-                Ok(cairo_context) => Ok(f(&cairo_context)),
-                Err(err) => Err(ClientError::Cairo(err)),
+                Ok(cairo_context) => f(&cairo_context),
+                Err(err) => Err(err),
             }
         },
         Err(err) => Err(err),

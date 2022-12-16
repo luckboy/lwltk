@@ -10,7 +10,7 @@ use crate::types::*;
 
 pub trait Theme: Send + Sync
 {
-    fn set_cairo_context(&self, cairo_context: &CairoContext, scala: i32);
+    fn set_cairo_context(&self, cairo_context: &CairoContext, scala: i32) -> Result<(), CairoError>;
 }
 
 pub fn theme_from_env() -> Result<Box<dyn Theme>, ClientError>
