@@ -103,43 +103,43 @@ fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields
 {
     let res = with_dummy_cairo_context(|cairo_context| {
             theme.set_cairo_context(cairo_context, client_context_fields.scale); 
-            let width = match (window.preferred_width(), window.min_width()) {
+            let area_width = match (window.preferred_width(), window.min_width()) {
                 (Some(preferred_width), Some(min_width)) => Some(max(preferred_width, min_width)),
                 (Some(preferred_width), None) => Some(preferred_width),
                 (None, _) => None,
             };
-            let height = match (window.preferred_height(), window.min_height()) {
+            let area_height = match (window.preferred_height(), window.min_height()) {
                 (Some(preferred_height), Some(min_height)) => Some(max(preferred_height, min_height)),
                 (Some(preferred_height), None) => Some(preferred_height),
                 (None, _) => None,
             };
-            let size = Size::new(width, height);
+            let area_size = Size::new(area_width, area_height);
             match cairo_context.save() {
                 Ok(()) => (),
                 Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
             }
-            window.update_size(cairo_context, theme, size);
+            window.update_size(cairo_context, theme, area_size);
             match cairo_context.restore() {
                 Ok(()) => (),
                 Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
             }
-            match size {
+            match area_size {
                 Size { width: Some(_), height: Some(_), } => (),
                 _ => {
-                    let width2 = match window.min_width() {
+                    let area_width2 = match window.min_width() {
                         Some(min_width) => max(window.width(), min_width),
                         None => window.width(),
                     };
-                    let height2 = match window.min_height() {
+                    let area_height2 = match window.min_height() {
                         Some(min_height) => max(window.height(), min_height),
                         None => window.height(),
                     };
-                    let size2 = Size::new(Some(width2), Some(height2));
+                    let area_size2 = Size::new(Some(area_width2), Some(area_height2));
                     match cairo_context.save() {
                         Ok(()) => (),
                         Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
                     }
-                    window.update_size(cairo_context, theme, size2);
+                    window.update_size(cairo_context, theme, area_size2);
                     match cairo_context.restore() {
                         Ok(()) => (),
                         Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
@@ -148,12 +148,12 @@ fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields
             }
             let preferred_size = Size::new(Some(window.width()), Some(window.height()));
             window.set_preferred_size(preferred_size);
-            let bounds = Rect::new(0, 0, window.width(), window.height());
+            let area_bounds = Rect::new(0, 0, window.width(), window.height());
             match cairo_context.save() {
                 Ok(()) => (),
                 Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
             }
-            window.update_pos(cairo_context, theme, bounds);
+            window.update_pos(cairo_context, theme, area_bounds);
             match cairo_context.restore() {
                 Ok(()) => (),
                 Err(err) => eprintln!("lwltk: {}", ClientError::Cairo(err)),
