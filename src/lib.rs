@@ -34,6 +34,7 @@ mod window_context;
 pub mod cursors;
 pub mod events;
 pub mod keys;
+pub mod utils;
 
 #[cfg(test)]
 mod mocks;

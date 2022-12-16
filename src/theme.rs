@@ -6,9 +6,12 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use crate::client_error::*;
+use crate::types::*;
 
 pub trait Theme: Send + Sync
-{}
+{
+    fn set_cairo_context(&self, cairo_context: &CairoContext, scala: i32);
+}
 
 pub fn theme_from_env() -> Result<Box<dyn Theme>, ClientError>
 { Err(ClientError::InvalidThemeName) }
