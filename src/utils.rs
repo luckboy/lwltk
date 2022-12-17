@@ -12,16 +12,20 @@ use crate::types::*;
 pub fn create_dummy_cairo_surface() -> Result<ImageSurface, CairoError>
 { ImageSurface::create(Format::ARgb32, 1, 1) }
 
+pub fn with_cairo_context<T, F>(cairo_surface: &ImageSurface, f: F) -> Result<T, CairoError>
+    where F: FnOnce(&CairoContext) -> Result<T, CairoError>
+{
+    match CairoContext::new(&cairo_surface) {
+        Ok(cairo_context) => f(&cairo_context),
+        Err(err) => Err(err),
+    }
+}
+
 pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
     where F: FnOnce(&CairoContext) -> Result<T, CairoError>
 {
     match create_dummy_cairo_surface() {
-        Ok(cairo_surface) => {
-            match CairoContext::new(&cairo_surface) {
-                Ok(cairo_context) => f(&cairo_context),
-                Err(err) => Err(err),
-            }
-        },
+        Ok(cairo_surface) => with_cairo_context(&cairo_surface, f),
         Err(err) => Err(err),
     }
 }

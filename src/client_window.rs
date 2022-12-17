@@ -187,9 +187,8 @@ impl ClientWindow
 
     fn draw(&self, client_context_fields: &ClientContextFields, window: &dyn Window, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
     {
-        match CairoContext::new(&self.cairo_surface) {
-            Ok(cairo_context) => {
-                theme.set_cairo_context(&cairo_context, client_context_fields.scale)?; 
+        with_cairo_context(&self.cairo_surface, |cairo_context| {
+                theme.set_cairo_context(cairo_context, client_context_fields.scale)?; 
                 cairo_context.save()?;
                 cairo_context.set_source_rgba(0.0, 0.0, 0.0, 0.0);
                 cairo_context.set_operator(Operator::Clear);
@@ -198,9 +197,7 @@ impl ClientWindow
                 cairo_context.restore()?;
                 window.draw(&cairo_context, theme, is_focused_window)?;
                 Ok(())
-            },
-            Err(err) => Err(err),
-        }
+        })
     }
     
     pub(crate) fn assign(&self, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>)
