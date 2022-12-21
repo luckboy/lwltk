@@ -185,7 +185,7 @@ impl ClientWindow
         }
     }
 
-    fn draw(&self, client_context_fields: &ClientContextFields, window: &dyn Window, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
+    fn draw(&self, client_context_fields: &ClientContextFields, window: &dyn Window, theme: &dyn Theme) -> Result<(), CairoError>
     {
         with_cairo_context(&self.cairo_surface, |cairo_context| {
                 theme.set_cairo_context(cairo_context, client_context_fields.scale)?; 
@@ -195,7 +195,7 @@ impl ClientWindow
                 cairo_context.rectangle(0.0, 0.0, window.width() as f64, window.height() as f64);
                 cairo_context.fill()?;
                 cairo_context.restore()?;
-                window.draw(&cairo_context, theme, is_focused_window)?;
+                window.draw(&cairo_context, theme, window.is_focused())?;
                 Ok(())
         })
     }
@@ -319,7 +319,7 @@ impl ClientWindow
         }
         self.set_move(client_context_fields, window)?;
         self.set_resize(client_context_fields, window)?;
-        match self.draw(client_context_fields, window, theme, window.is_focused()) {
+        match self.draw(client_context_fields, window, theme) {
             Ok(()) => (),
             Err(err) => println!("lwltk: {}", ClientError::Cairo(err)),
         }
@@ -360,7 +360,7 @@ impl ClientWindow
                         self.buffer = buffer;
                         self.mmap = mmap;
                         self.cairo_surface = cairo_surface;
-                        match self.draw(client_context_fields, window, theme, window.is_focused()) {
+                        match self.draw(client_context_fields, window, theme) {
                             Ok(()) => (),
                             Err(err) => println!("lwltk: {}", ClientError::Cairo(err)),
                         }
@@ -369,7 +369,7 @@ impl ClientWindow
                         self.surface.commit();
                         self.file = file;
                     } else {
-                        match self.draw(client_context_fields, window, theme, window.is_focused()) {
+                        match self.draw(client_context_fields, window, theme) {
                             Ok(()) => (),
                             Err(err) => println!("lwltk: {}", ClientError::Cairo(err)),
                         }
