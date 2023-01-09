@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,6 +35,7 @@ pub mod cursors;
 pub mod events;
 pub mod keys;
 pub mod utils;
+pub mod windows;
 
 #[cfg(test)]
 mod mocks;
