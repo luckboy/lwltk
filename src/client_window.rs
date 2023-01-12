@@ -310,7 +310,7 @@ impl ClientWindow
                 self.parent_index = Some(parent_idx);
             },
             _ => {
-                if !window.is_maximized() {
+                if window.is_maximized() {
                     self.shell_surface.set_maximized(None);
                 } else {
                     self.shell_surface.set_toplevel();
