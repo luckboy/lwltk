@@ -20,7 +20,7 @@ struct AppData
     window_index: WindowIndex,
 }
 
-fn creating_f(window_context: &mut WindowContext) -> Option<AppData>
+fn create_app_data(window_context: &mut WindowContext) -> Option<AppData>
 {
     let mut window = ToplevelWindow::new();
     window.set_title("empty window");
@@ -31,12 +31,12 @@ fn creating_f(window_context: &mut WindowContext) -> Option<AppData>
     })
 }
 
-fn setting_f(_window_context: &mut WindowContext, _data: Arc<RwLock<AppData>>) -> Option<()>
+fn set_app_data(_window_context: &mut WindowContext, _app_data: Arc<RwLock<AppData>>) -> Option<()>
 { Some(()) }
 
 fn main()
 {
-    match App::new(creating_f, setting_f) {
+    match App::new(create_app_data, set_app_data) {
         Ok(mut app) => {
             match app.run() {
                 Ok(()) => (),
