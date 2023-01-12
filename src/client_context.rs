@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -199,26 +199,26 @@ impl ClientContext
                 display,
                 event_queue,
         }, ClientContext {
-            fields: ClientContextFields {
-                compositor,
-                shell,
-                seat,
-                shm,
-                pointer: None,
-                keyboard: None,
-                touch: None,
-                serial: None,
-                xdg_runtime_dir,
-                scale,
-                key_repeat_delay,
-                key_repeat_time,
-                text_cursor_blink_time,
-                double_click_delay,
-                long_click_delay,
-                has_exit: false,
-            },
-            client_windows: BTreeMap::new(),
-            client_windows_to_destroy: VecDeque::new(),
+                fields: ClientContextFields {
+                    compositor,
+                    shell,
+                    seat,
+                    shm,
+                    pointer: None,
+                    keyboard: None,
+                    touch: None,
+                    serial: None,
+                    xdg_runtime_dir,
+                    scale,
+                    key_repeat_delay,
+                    key_repeat_time,
+                    text_cursor_blink_time,
+                    double_click_delay,
+                    long_click_delay,
+                    has_exit: false,
+                },
+                client_windows: BTreeMap::new(),
+                client_windows_to_destroy: VecDeque::new(),
         }))
     }
     
