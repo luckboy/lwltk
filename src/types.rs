@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,6 +39,41 @@ pub enum VAlign
     Center,
     Bottom,
     Fill,
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct Color
+{
+    pub red: f64,
+    pub green: f64,
+    pub blue: f64,
+    pub alpha: f64,
+}
+
+impl Color
+{
+    pub fn new(red: f64, green: f64, blue: f64, alpha: f64) -> Self
+    { Color { red, green, blue, alpha, } }
+
+    pub fn new_from_rgb(red: f64, green: f64, blue: f64) -> Self
+    { Self::new(red, green, blue, 1.0) }
+
+    pub fn new_from_argb_u32(argb: u32) -> Self
+    {
+        let red = (((argb >> 16) & 0xff) as f64) / 256.0;
+        let green = (((argb >> 8) & 0xff) as f64) / 256.0;
+        let blue = ((argb & 0xff) as f64) / 256.0;
+        let alpha = (((argb >> 24) & 0xff) as f64) / 256.0;
+        Self::new(red, green, blue, alpha)
+    }
+
+    pub fn new_from_rgb_u32(rgb: u32) -> Self
+    {
+        let red = (((rgb >> 16) & 0xff) as f64) / 256.0;
+        let green = (((rgb >> 8) & 0xff) as f64) / 256.0;
+        let blue = ((rgb & 0xff) as f64) / 256.0;
+        Self::new(red, green, blue, 1.0)
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -176,6 +211,21 @@ impl Rect<f64>
             height: self.height as i32,
         }
     }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct Edges<T>
+{
+    pub top: T,
+    pub bottom: T,
+    pub left: T,
+    pub right: T,
+}
+
+impl<T> Edges<T>
+{
+    pub fn new(top: T, bottom: T, left: T, right: T) -> Self
+    { Edges { top, bottom, left, right, } }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
