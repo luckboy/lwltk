@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,7 @@ pub enum ClientError
     RwLock,
     Recv,
     Send,
+    ThreadJoin,
     Io(Error),
     Cairo(CairoError),
     Connect(ConnectError),
@@ -50,6 +51,7 @@ impl fmt::Display for ClientError
             ClientError::RwLock => write!(f, "rwlock error"),
             ClientError::Recv => write!(f, "recv error"),
             ClientError::Send => write!(f, "send error"),
+            ClientError::ThreadJoin => write!(f, "thread join error"),
             ClientError::Io(err) => write!(f, "io: {}", err),
             ClientError::Cairo(err) => write!(f, "cairo: {}", err),
             ClientError::Connect(err) => write!(f, "connect: {}", err),

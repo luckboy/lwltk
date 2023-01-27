@@ -6,15 +6,20 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::cell::*;
+use std::cmp::min;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::VecDeque;
 use std::env;
 use std::io::ErrorKind;
+use std::rc::*;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::RwLock;
-use std::rc::*;
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+use std::time::Instant;
 use nix::errno::Errno;
 use nix::poll::PollFd;
 use nix::poll::PollFlags;
@@ -604,7 +609,29 @@ event_enum!(
     Touch => wl_touch::WlTouch
 );
 
-pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: Rc<RefCell<ClientContext>>, window_context: Arc<RwLock<WindowContext>>, queue_context: Arc<Mutex<QueueContext>>, thread_signal_sender: ThreadSignalSender,thread_signal_receiver: ThreadSignalReceiver) -> Result<(), ClientError>
+enum ThreadTimerRepeat
+{
+    None,
+    OneDelay(Duration),
+    TwoDelays(Duration, Duration),
+}
+
+struct ThreadTimerInfo
+{
+    timer: ThreadTimer,
+    delay: Option<Duration>,
+    repeat: ThreadTimerRepeat,
+}
+
+enum ThreadTimerCommand
+{
+    SetDelay(ThreadTimer, Duration),
+    Start(ThreadTimer),
+    Stop(ThreadTimer),
+    Quit,
+}
+
+pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: Rc<RefCell<ClientContext>>, window_context: Arc<RwLock<WindowContext>>, queue_context: Arc<Mutex<QueueContext>>, thread_signal_sender: ThreadSignalSender, thread_signal_receiver: ThreadSignalReceiver) -> Result<(), ClientError>
 {
     let client_context2 = client_context.clone();
     let window_context2 = window_context.clone();
@@ -613,7 +640,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
     let client_context4 = client_context.clone();
     let window_context4 = window_context.clone();
     let queue_context4 = queue_context.clone();
-    {
+    let (key_repeat_delay, key_repeat_time, text_cursor_blink_time) = {
         let mut client_context_r = client_context.borrow_mut();
         let filter = Filter::new(move |event, _, _| {
                 match event {
@@ -926,7 +953,112 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
             Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4)?,
             Err(_) => return Err(ClientError::RwLock),
         }
-    }
+        (client_context_r.fields.key_repeat_delay, client_context_r.fields.key_repeat_time, client_context_r.fields.text_cursor_blink_time)
+    };
+    let (timer_tx, timer_rx) = mpsc::channel::<ThreadTimerCommand>();
+    let timer_thread = thread::spawn(move || {
+            let mut timer_infos = vec![
+                ThreadTimerInfo {
+                    timer: ThreadTimer::Cursor,
+                    delay: None,
+                    repeat: ThreadTimerRepeat::None,
+                },
+                ThreadTimerInfo {
+                    timer: ThreadTimer::Key,
+                    delay: None,
+                    repeat: ThreadTimerRepeat::TwoDelays(Duration::from_millis(key_repeat_delay), Duration::from_millis(key_repeat_time)),
+                },
+                ThreadTimerInfo {
+                    timer: ThreadTimer::TextCursor,
+                    delay: None,
+                    repeat: ThreadTimerRepeat::OneDelay(Duration::from_millis(text_cursor_blink_time)),
+                }
+            ];
+            timer_infos[2].delay = Some(Duration::from_millis(text_cursor_blink_time));
+            loop {
+                let mut delay: Option<Duration> = None;
+                for timer_info in &timer_infos {
+                    match timer_info.delay {
+                        Some(tmp_delay) => {
+                            match delay {
+                                Some(tmp_delay2) => delay = Some(min(tmp_delay, tmp_delay2)),
+                                None => delay = Some(tmp_delay),
+                            }
+                        },
+                        None => (),
+                    }
+                }
+                let now = Instant::now();
+                let (cmd, duration) = match delay {
+                    Some(tmp_delay) => {
+                        match timer_rx.recv_timeout(tmp_delay) {
+                            Ok(cmd) => (Some(cmd), now.elapsed()),
+                            Err(mpsc::RecvTimeoutError::Timeout) => (None, tmp_delay),
+                            Err(_) => {
+                                eprintln!("lwltk: {}", ClientError::Recv);
+                                break;
+                            },
+                        }
+                    },
+                    None => {
+                        match timer_rx.recv() {
+                            Ok(cmd) =>(Some(cmd), now.elapsed()),
+                            Err(_) => {
+                                eprintln!("lwltk: {}", ClientError::Recv);
+                                break;
+                            },
+                        }
+                    }
+                };
+                for timer_info in &mut timer_infos {
+                    match timer_info.delay {
+                        Some(tmp_delay) => {
+                            if duration < tmp_delay {
+                                timer_info.delay = Some(tmp_delay - duration);
+                            } else {
+                                match timer_info.repeat {
+                                    ThreadTimerRepeat::None => timer_info.delay = None,
+                                    ThreadTimerRepeat::OneDelay(tmp_delay3) => timer_info.delay = Some(tmp_delay3),
+                                    ThreadTimerRepeat::TwoDelays(_, tmp_delay3) => timer_info.delay = Some(tmp_delay3),
+                                }
+                                match thread_signal_sender.commit_timer(timer_info.timer) {
+                                    Ok(()) => (),
+                                    Err(err) => {
+                                        eprintln!("lwltk: {}", err);
+                                        break;
+                                    },
+                                }
+                            }
+                        },
+                        None => (),
+                    }
+                }
+                match cmd {
+                    Some(ThreadTimerCommand::Quit) => break,
+                    Some(cmd) => {
+                        for timer_info in &mut timer_infos {
+                            match cmd {
+                                ThreadTimerCommand::SetDelay(timer, delay) if timer == timer_info.timer => {
+                                    timer_info.delay = Some(delay);
+                                },
+                                ThreadTimerCommand::Start(timer) if timer == timer_info.timer => {
+                                    match timer_info.repeat {
+                                        ThreadTimerRepeat::None => (),
+                                        ThreadTimerRepeat::OneDelay(delay) => timer_info.delay = Some(delay),
+                                        ThreadTimerRepeat::TwoDelays(delay, _) => timer_info.delay = Some(delay),
+                                    }
+                                },
+                                ThreadTimerCommand::Stop(timer) if timer == timer_info.timer => {
+                                    timer_info.delay = None;
+                                },
+                                _ => (),
+                            }
+                        }
+                    },
+                    None => (),
+                }
+            }
+    });
     loop {
         match client_display.display.flush() {
             Err(err) if err.kind() == ErrorKind::WouldBlock => (),
@@ -1015,12 +1147,15 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 },
                             }
                         }
-                        match poll_fds[1].revents() {
+                        match poll_fds[0].revents() {
                             Some(revents) => {
                                 if revents.is_empty() { break; }
                             },
                             None => break,
                         }
+                    }
+                    if is_text_cursor_timer {
+                        eprintln!("text cursor timer");
                     }
                     if is_other {
                         let client_context2 = client_context.clone();
@@ -1055,5 +1190,13 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
     }
     let mut client_context_r = client_context.borrow_mut();
     client_context_r.destroy();
+    match timer_tx.send(ThreadTimerCommand::Quit) {
+        Ok(()) => (),
+        Err(_) => return Err(ClientError::Send),
+    }
+    match timer_thread.join() {
+        Ok(()) => (),
+        Err(_) => return Err(ClientError::ThreadJoin),
+    }
     Ok(())
 }
