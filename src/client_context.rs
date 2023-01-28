@@ -408,7 +408,7 @@ impl ClientContext
                         Some(parent_client_window) => {
                             parent_client_window.remove_child(*idx);
                         },
-                        None => return Err(ClientError::NoClientWindow),
+                        None => (),
                     }
                 },
                 None => (),
