@@ -996,7 +996,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             Err(mpsc::RecvTimeoutError::Timeout) => (None, tmp_delay),
                             Err(_) => {
                                 eprintln!("lwltk: {}", ClientError::Recv);
-                                break;
+                                return;
                             },
                         }
                     },
@@ -1005,7 +1005,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             Ok(cmd) =>(Some(cmd), now.elapsed()),
                             Err(_) => {
                                 eprintln!("lwltk: {}", ClientError::Recv);
-                                break;
+                                return;
                             },
                         }
                     }
@@ -1025,7 +1025,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(()) => (),
                                     Err(err) => {
                                         eprintln!("lwltk: {}", err);
-                                        break;
+                                        return;
                                     },
                                 }
                             }
