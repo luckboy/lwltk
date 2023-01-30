@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -198,7 +198,7 @@ impl Widget for MockLayout
 
     fn update_client_y(&mut self, viewport_height: i32) -> bool
     {
-        if self.bounds.height - self.client_pos.x < viewport_height {
+        if self.bounds.height - self.client_pos.y < viewport_height {
             if self.bounds.height > viewport_height {
                 self.client_pos.y = self.bounds.height - viewport_height;
                 true
