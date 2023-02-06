@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -102,6 +102,13 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn content_index_pair(&self) -> Option<WidgetIndexPair>
     { None }
+
+    fn focused_rel_widget_path(&self) -> Option<&RelWidgetPath>
+    { None }
+
+    #[allow(unused_variables)]
+    fn set_only_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
+    { false }    
     
     fn child_indices(&self) -> ChildWindowIndices<'_>
     { ChildWindowIndices::new(self.child_index_iter()) }
@@ -129,6 +136,52 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn padding_height(&self) -> i32
     { self.padding_bounds().height }
+
+    fn set_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
+    {
+        let saved_old_rel_widget_path = match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+            Some(old_rel_widget_path) => {
+                match self.dyn_widget_mut(&old_rel_widget_path) {
+                    Some(old_widget) => {
+                        old_widget.set_focus(false);
+                    },
+                    None => (),
+                }
+                Some(old_rel_widget_path.clone())
+            },
+            None => None,
+        };
+        if self.set_only_focused_rel_widget_path(rel_widget_path) {
+            match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+                Some(new_rel_widget_path) => {
+                    let is_new_widget = match self.dyn_widget_mut(&new_rel_widget_path) {
+                        Some(new_widget) => new_widget.set_focus(true),
+                        None => false,
+                    };
+                    if !is_new_widget {
+                        self.set_only_focused_rel_widget_path(saved_old_rel_widget_path);
+                        match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+                            Some(old_rel_widget_path) => {
+                                match self.dyn_widget_mut(&old_rel_widget_path) {
+                                    Some(old_widget) => {
+                                        old_widget.set_focus(true);
+                                    },
+                                    None => (),
+                                }
+                            },
+                            None => (),
+                        }
+                        false
+                    } else {
+                        true
+                    }
+                },
+                None => true,
+            }
+        } else {
+            false
+        }
+    }
 }
 
 pub trait WindowIterator<'a>
