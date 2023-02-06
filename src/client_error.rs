@@ -37,6 +37,8 @@ pub enum ClientError
     WindowCycle,
     NoWindow,
     NoClientWindow,
+    EventPreparation,
+    DifferentWindows,
 }
 
 impl error::Error for ClientError
@@ -67,6 +69,8 @@ impl fmt::Display for ClientError
             ClientError::WindowCycle => write!(f, "cycle of windows"),
             ClientError::NoWindow => write!(f, "no window"),
             ClientError::NoClientWindow => write!(f, "no client window"),
+            ClientError::EventPreparation => write!(f, "event preparation error"),
+            ClientError::DifferentWindows => write!(f, "different windows"),
         }
     }
 }

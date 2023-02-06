@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ pub enum ClientEvent
     KeyboardModifiers(KeyModifiers),
     TouchDown(u32, i32, Pos<f64>),
     TouchUp(u32, i32),
-    TouchMotion(u32, i32, Pos<i64>),
+    TouchMotion(u32, i32, Pos<f64>),
     RepeatedKey(Vec<VKey>, String),
 }
 

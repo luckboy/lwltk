@@ -1,21 +1,30 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::collections::HashMap;
 use crate::callback_queue::*;
 use crate::client_context::*;
 use crate::events::*;
 use crate::event_queue::*;
 use crate::window_context::*;
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum CallOnId
+{
+    Pointer,
+    Touch(i32),
+}
+
 pub struct QueueContext
 {
     pub(crate) event_queue: EventQueue,
     pub(crate) callback_queue: CallbackQueue,
     pub(crate) current_call_on_path: Option<CallOnPath>,
+    pub(crate) pressed_call_on_paths: HashMap<CallOnId, CallOnPath>,
 }
 
 impl QueueContext
@@ -26,6 +35,7 @@ impl QueueContext
             event_queue: EventQueue::new(),
             callback_queue: CallbackQueue::new(),
             current_call_on_path: None,
+            pressed_call_on_paths: HashMap::new(),
         }
     }
 
@@ -48,6 +58,15 @@ impl QueueContext
             None => None,
         }
     }
+    
+    pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
+    { self.pressed_call_on_paths.get(&call_on_id) }
+
+    pub fn set_pressed_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
+    { self.pressed_call_on_paths.insert(call_on_id, call_on_path); }
+
+    pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
+    { self.pressed_call_on_paths.remove(&call_on_id); }
 
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {

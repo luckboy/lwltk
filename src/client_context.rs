@@ -9,6 +9,7 @@ use std::cell::*;
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::env;
 use std::io::ErrorKind;
@@ -28,6 +29,7 @@ use wayland_client::protocol::wl_compositor;
 use wayland_client::protocol::wl_keyboard;
 use wayland_client::protocol::wl_pointer;
 use wayland_client::protocol::wl_seat;
+use wayland_client::protocol::wl_shell_surface;
 use wayland_client::protocol::wl_shm;
 use wayland_client::protocol::wl_shell;
 use wayland_client::protocol::wl_surface;
@@ -44,6 +46,7 @@ use crate::client_pointer::*;
 use crate::client_touch::*;
 use crate::client_window::*;
 use crate::event_handler::*;
+use crate::event_queue::*;
 use crate::queue_context::*;
 use crate::thread_signal::*;
 use crate::types::*;
@@ -60,6 +63,13 @@ pub(crate) struct ClientDisplay
 {
     display: Display,
     event_queue: WaylandEventQueue,
+}
+
+pub(crate) struct EventPreparation
+{
+    window_index: WindowIndex,
+    pos: Pos<f64>,
+    call_on_path: CallOnPath,
 }
 
 pub(crate) struct ClientContextFields
@@ -80,6 +90,7 @@ pub(crate) struct ClientContextFields
     pub(crate) double_click_delay: u64,
     pub(crate) long_click_delay: u64,
     pub(crate) has_exit: bool,
+    pub(crate) event_preparations: HashMap<CallOnId, EventPreparation>,
 }
 
 pub struct ClientContext
@@ -221,6 +232,7 @@ impl ClientContext
                     double_click_delay,
                     long_click_delay,
                     has_exit: false,
+                    event_preparations: HashMap::new(),
                 },
                 client_windows: BTreeMap::new(),
                 client_windows_to_destroy: VecDeque::new(),
@@ -555,6 +567,96 @@ impl ClientContext
 
     pub fn exit(&mut self)
     { self.fields.has_exit = true; }
+    
+    pub(crate) fn select_window_index_for_surface(&self, surface: &wl_surface::WlSurface) -> Option<WindowIndex>
+    {
+        self.client_windows.iter().find_map(|p| {
+                if &**p.1.surface == surface {
+                    Some(*p.0)
+                } else {
+                    None
+                }
+        })
+    }
+
+    pub(crate) fn select_window_index_for_shell_surface(&self, shell_surface: &wl_shell_surface::WlShellSurface) -> Option<WindowIndex>
+    {
+        self.client_windows.iter().find_map(|p| {
+                if &**p.1.shell_surface == shell_surface {
+                    Some(*p.0)
+                } else {
+                    None
+                }
+        })
+    }
+
+    pub(crate) fn add_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, idx: WindowIndex, pos: Pos<f64>) -> Option<CallOnPath>
+    {
+        match window_context.window_container.dyn_window(idx) {
+            Some(window) => {
+                let call_on_path = match window.point(pos) {
+                    Some(rel_widget_path) => CallOnPath::Widget(rel_widget_path.to_abs_widget_path(idx)),
+                    None => CallOnPath::Window(idx),
+                };
+                let event_preparation = EventPreparation {
+                    window_index: idx,
+                    pos,
+                    call_on_path: call_on_path.clone(),
+                };
+                self.fields.event_preparations.insert(call_on_id, event_preparation);
+                Some(call_on_path)
+            },
+            None => None,
+        }
+    }
+    
+    pub(crate) fn set_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, pos: Pos<f64>) -> Option<CallOnPath>
+    {
+        let idx = match self.fields.event_preparations.remove(&call_on_id) {
+            Some(event_preparation) => Some(event_preparation.window_index),
+            None => None,
+        };
+        match idx {
+            Some(idx) => self.add_event_preparation(window_context, call_on_id, idx, pos),
+            None => None,
+        }
+    }
+
+    pub(crate) fn update_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId) -> Option<CallOnPath>
+    {
+        match self.fields.event_preparations.get_mut(&call_on_id) {
+            Some(event_preparation) => {
+                let is_widget = match &event_preparation.call_on_path {
+                    CallOnPath::Window(_) => false,
+                    CallOnPath::Widget(abs_widget_path) => window_context.window_container.dyn_widget(abs_widget_path).is_some(),
+                };
+                if is_widget {
+                    Some(event_preparation.call_on_path.clone())
+                } else {
+                    match window_context.window_container.dyn_window(event_preparation.window_index) {
+                        Some(window) => {
+                            let call_on_path = match window.point(event_preparation.pos) {
+                                Some(rel_widget_path) => CallOnPath::Widget(rel_widget_path.to_abs_widget_path(event_preparation.window_index)),
+                                None => CallOnPath::Window(event_preparation.window_index),
+                            };
+                            event_preparation.call_on_path = call_on_path.clone();
+                            Some(call_on_path)
+                        },
+                        None => None,
+                    }
+                }
+            },
+            None => None,
+        }
+    }
+
+    pub(crate) fn remove_event_preparation(&mut self, call_on_id: CallOnId) -> Option<CallOnPath>
+    {
+        match self.fields.event_preparations.remove(&call_on_id) {
+            Some(event_preparation) => Some(event_preparation.call_on_path),
+            None => None,
+        }
+    }
 }
 
 pub(crate) fn map_client_window(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex) -> Option<&ClientWindow>
