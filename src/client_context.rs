@@ -718,7 +718,7 @@ enum ThreadTimerRepeat
     TwoDelays(Duration, Duration),
 }
 
-struct ThreadTimerInfo
+struct ThreadTimerData
 {
     timer: ThreadTimer,
     delay: Option<Duration>,
@@ -1059,28 +1059,28 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
     };
     let (timer_tx, timer_rx) = mpsc::channel::<ThreadTimerCommand>();
     let timer_thread = thread::spawn(move || {
-            let mut timer_infos = vec![
-                ThreadTimerInfo {
+            let mut timer_data_vec = vec![
+                ThreadTimerData {
                     timer: ThreadTimer::Cursor,
                     delay: None,
                     repeat: ThreadTimerRepeat::None,
                 },
-                ThreadTimerInfo {
+                ThreadTimerData {
                     timer: ThreadTimer::Key,
                     delay: None,
                     repeat: ThreadTimerRepeat::TwoDelays(Duration::from_millis(key_repeat_delay), Duration::from_millis(key_repeat_time)),
                 },
-                ThreadTimerInfo {
+                ThreadTimerData {
                     timer: ThreadTimer::TextCursor,
                     delay: None,
                     repeat: ThreadTimerRepeat::OneDelay(Duration::from_millis(text_cursor_blink_time)),
                 }
             ];
-            timer_infos[2].delay = Some(Duration::from_millis(text_cursor_blink_time));
+            timer_data_vec[2].delay = Some(Duration::from_millis(text_cursor_blink_time));
             loop {
                 let mut delay: Option<Duration> = None;
-                for timer_info in &timer_infos {
-                    match timer_info.delay {
+                for timer_data in &timer_data_vec {
+                    match timer_data.delay {
                         Some(tmp_delay) => {
                             match delay {
                                 Some(tmp_delay2) => delay = Some(min(tmp_delay, tmp_delay2)),
@@ -1112,18 +1112,18 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         }
                     }
                 };
-                for timer_info in &mut timer_infos {
-                    match timer_info.delay {
+                for timer_data in &mut timer_data_vec {
+                    match timer_data.delay {
                         Some(tmp_delay) => {
                             if duration < tmp_delay {
-                                timer_info.delay = Some(tmp_delay - duration);
+                                timer_data.delay = Some(tmp_delay - duration);
                             } else {
-                                match timer_info.repeat {
-                                    ThreadTimerRepeat::None => timer_info.delay = None,
-                                    ThreadTimerRepeat::OneDelay(tmp_delay3) => timer_info.delay = Some(tmp_delay3),
-                                    ThreadTimerRepeat::TwoDelays(_, tmp_delay3) => timer_info.delay = Some(tmp_delay3),
+                                match timer_data.repeat {
+                                    ThreadTimerRepeat::None => timer_data.delay = None,
+                                    ThreadTimerRepeat::OneDelay(tmp_delay3) => timer_data.delay = Some(tmp_delay3),
+                                    ThreadTimerRepeat::TwoDelays(_, tmp_delay3) => timer_data.delay = Some(tmp_delay3),
                                 }
-                                match thread_signal_sender.commit_timer(timer_info.timer) {
+                                match thread_signal_sender.commit_timer(timer_data.timer) {
                                     Ok(()) => (),
                                     Err(err) => {
                                         eprintln!("lwltk: {}", err);
@@ -1138,20 +1138,20 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                 match cmd {
                     Some(ThreadTimerCommand::Quit) => break,
                     Some(cmd) => {
-                        for timer_info in &mut timer_infos {
+                        for timer_data in &mut timer_data_vec {
                             match cmd {
-                                ThreadTimerCommand::SetDelay(timer, delay) if timer == timer_info.timer => {
-                                    timer_info.delay = Some(delay);
+                                ThreadTimerCommand::SetDelay(timer, delay) if timer == timer_data.timer => {
+                                    timer_data.delay = Some(delay);
                                 },
-                                ThreadTimerCommand::Start(timer) if timer == timer_info.timer => {
-                                    match timer_info.repeat {
+                                ThreadTimerCommand::Start(timer) if timer == timer_data.timer => {
+                                    match timer_data.repeat {
                                         ThreadTimerRepeat::None => (),
-                                        ThreadTimerRepeat::OneDelay(delay) => timer_info.delay = Some(delay),
-                                        ThreadTimerRepeat::TwoDelays(delay, _) => timer_info.delay = Some(delay),
+                                        ThreadTimerRepeat::OneDelay(delay) => timer_data.delay = Some(delay),
+                                        ThreadTimerRepeat::TwoDelays(delay, _) => timer_data.delay = Some(delay),
                                     }
                                 },
-                                ThreadTimerCommand::Stop(timer) if timer == timer_info.timer => {
-                                    timer_info.delay = None;
+                                ThreadTimerCommand::Stop(timer) if timer == timer_data.timer => {
+                                    timer_data.delay = None;
                                 },
                                 _ => (),
                             }
