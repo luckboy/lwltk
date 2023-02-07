@@ -182,6 +182,19 @@ pub trait Window: Container + MinSize + PreferredSize
             false
         }
     }
+    
+    fn update_focused_rel_widget_path(&mut self) -> bool
+    {
+        let is_widget = match self.focused_rel_widget_path() {
+            Some(rel_widget_path) => self.dyn_widget(rel_widget_path).is_some(),
+            None => true,
+        };
+        if !is_widget {
+            self.set_only_focused_rel_widget_path(None)
+        } else {
+            true
+        }
+    }
 }
 
 pub trait WindowIterator<'a>
