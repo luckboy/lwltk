@@ -9,7 +9,6 @@ use wayland_client::protocol::wl_pointer;
 use wayland_client::protocol::wl_surface;
 use crate::client_context::*;
 use crate::client_error::*;
-use crate::event_queue::*;
 use crate::events::*;
 use crate::queue_context::*;
 use crate::types::*;
@@ -26,6 +25,7 @@ pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut Client
             let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
             match client_context.add_event_preparation(window_context, CallOnId::Pointer, window_idx, pos) {
                 Some(call_on_path) => {
+                    window_context.current_window_index = Some(call_on_path.window_index());
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerEnter(pos)))
                 },
@@ -42,19 +42,16 @@ pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut Client
     }
 }
 
-pub(crate) fn prepare_event_for_client_pointer_leave(client_context: &mut ClientContext, _window_context: &mut WindowContext, queue_context: &mut QueueContext, surface: &wl_surface::WlSurface) -> Option<Event>
+pub(crate) fn prepare_event_for_client_pointer_leave(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, surface: &wl_surface::WlSurface) -> Option<Event>
 {
     match client_context.select_window_index_for_surface(surface) {
         Some(window_idx) => {
             match client_context.remove_event_preparation(CallOnId::Pointer) {
                 Some(call_on_path) => {
-                    let tmp_window_idx = match &call_on_path {
-                        CallOnPath::Window(tmp_window_idx2) => *tmp_window_idx2,
-                        CallOnPath::Widget(abs_widget_path) => abs_widget_path.window_index(),
-                    };
-                    if tmp_window_idx != window_idx {
+                    if call_on_path.window_index() != window_idx {
                         eprintln!("lwltk: {}", ClientError::DifferentWindows);
                     }
+                    window_context.current_window_index = Some(call_on_path.window_index());
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerLeave))
                 },
@@ -76,6 +73,7 @@ pub(crate) fn prepare_event_for_client_pointer_motion(client_context: &mut Clien
     let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
     match client_context.set_event_preparation(window_context, CallOnId::Pointer, pos) {
         Some(call_on_path) => {
+            window_context.current_window_index = Some(call_on_path.window_index());
             queue_context.current_call_on_path = Some(call_on_path);
             Some(Event::Client(ClientEvent::PointerMotion(time, pos)))
         },
@@ -108,6 +106,7 @@ pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut Clien
                 Some(client_state) => {
                     match client_context.update_event_preparation(window_context, CallOnId::Pointer) {
                         Some(call_on_path) => {
+                            window_context.current_window_index = Some(call_on_path.window_index());
                             queue_context.current_call_on_path = Some(call_on_path);
                             Some(Event::Client(ClientEvent::PointerButton(time, client_button, client_state)))
                         },
@@ -135,6 +134,7 @@ pub(crate) fn prepare_event_for_client_pointer_axis(client_context: &mut ClientC
         Some(client_axis) => {
             match client_context.update_event_preparation(window_context, CallOnId::Pointer) {
                 Some(call_on_path) => {
+                    window_context.current_window_index = Some(call_on_path.window_index());
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerAxis(time, client_axis, value)))
                 },

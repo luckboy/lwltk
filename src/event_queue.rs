@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,17 @@ pub enum CallOnPath
 {
     Window(WindowIndex),
     Widget(AbsWidgetPath),
+}
+
+impl CallOnPath
+{
+    pub fn window_index(&self) -> WindowIndex
+    {
+        match self {
+            CallOnPath::Window(window_idx) => *window_idx,
+            CallOnPath::Widget(abs_widget_path) => abs_widget_path.window_index(),
+        }
+    }
 }
 
 #[derive(Clone)]
