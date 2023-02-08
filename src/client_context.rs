@@ -10,6 +10,7 @@ use std::cmp::min;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::env;
 use std::io::ErrorKind;
@@ -40,6 +41,7 @@ use wayland_client::Filter;
 use wayland_client::GlobalManager;
 use wayland_client::Main;
 use wayland_client::event_enum;
+use xkbcommon::xkb;
 use crate::client_error::*;
 use crate::client_keyboard::*;
 use crate::client_pointer::*;
@@ -47,6 +49,7 @@ use crate::client_touch::*;
 use crate::client_window::*;
 use crate::event_handler::*;
 use crate::event_queue::*;
+use crate::keys::*;
 use crate::queue_context::*;
 use crate::thread_signal::*;
 use crate::types::*;
@@ -82,6 +85,15 @@ pub(crate) struct ClientContextFields
     pub(crate) keyboard: Option<Main<wl_keyboard::WlKeyboard>>,
     pub(crate) touch: Option<Main<wl_touch::WlTouch>>,
     pub(crate) serial: Option<u32>,
+    pub(crate) xkb_context: xkb::Context,
+    pub(crate) xkb_keymap: Option<xkb::Keymap>,
+    pub(crate) xkb_state: Option<xkb::State>,
+    pub(crate) xkb_shift_mask: xkb::ModMask,
+    pub(crate) xkb_caps_mask: xkb::ModMask,
+    pub(crate) xkb_ctrl_mask: xkb::ModMask,
+    pub(crate) xkb_alt_mask: xkb::ModMask,
+    pub(crate) xkb_num_mask: xkb::ModMask,
+    pub(crate) xkb_logo_mask: xkb::ModMask,
     pub(crate) xdg_runtime_dir: String,
     pub(crate) scale: i32,
     pub(crate) key_repeat_delay: u64,
@@ -91,6 +103,11 @@ pub(crate) struct ClientContextFields
     pub(crate) long_click_delay: u64,
     pub(crate) has_exit: bool,
     pub(crate) event_preparations: HashMap<CallOnId, EventPreparation>,
+    pub(crate) keyboard_window_index: Option<WindowIndex>,
+    pub(crate) key_codes: BTreeSet<u32>,
+    pub(crate) key_modifiers: KeyModifiers,
+    pub(crate) keys: HashMap<xkb::Keysym, VKey>,
+    pub(crate) modifier_keys: HashSet<VKey>,
 }
 
 pub struct ClientContext
@@ -131,6 +148,7 @@ impl ClientContext
             Ok(tmp_shm) => tmp_shm,
             Err(err) => return Err(ClientError::Global(err)),
         };
+        let xkb_context = xkb::Context::new(0);
         let xdg_runtime_dir = match env::var("XDG_RUNTIME_DIR") {
             Ok(tmp_xdg_runtime_dir) => tmp_xdg_runtime_dir,
             Err(_) => return Err(ClientError::NoXdgRuntimeDir),
@@ -224,6 +242,15 @@ impl ClientContext
                     keyboard: None,
                     touch: None,
                     serial: None,
+                    xkb_context,
+                    xkb_keymap: None,
+                    xkb_state: None,
+                    xkb_shift_mask: 0 as xkb::ModMask,
+                    xkb_caps_mask: 0 as xkb::ModMask,
+                    xkb_ctrl_mask: 0 as xkb::ModMask,
+                    xkb_alt_mask: 0 as xkb::ModMask,
+                    xkb_num_mask: 0 as xkb::ModMask,
+                    xkb_logo_mask: 0 as xkb::ModMask,
                     xdg_runtime_dir,
                     scale,
                     key_repeat_delay,
@@ -233,6 +260,11 @@ impl ClientContext
                     long_click_delay,
                     has_exit: false,
                     event_preparations: HashMap::new(),
+                    keyboard_window_index: None,
+                    key_codes: BTreeSet::new(),
+                    key_modifiers: KeyModifiers::EMPTY,
+                    keys: HashMap::new(),
+                    modifier_keys: HashSet::new(),
                 },
                 client_windows: BTreeMap::new(),
                 client_windows_to_destroy: VecDeque::new(),
@@ -725,7 +757,7 @@ struct ThreadTimerData
     repeat: ThreadTimerRepeat,
 }
 
-enum ThreadTimerCommand
+pub(crate) enum ThreadTimerCommand
 {
     SetDelay(ThreadTimer, Duration),
     Start(ThreadTimer),
@@ -742,7 +774,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
     let client_context4 = client_context.clone();
     let window_context4 = window_context.clone();
     let queue_context4 = queue_context.clone();
+    let (timer_tx, timer_rx) = mpsc::channel::<ThreadTimerCommand>();
     let (key_repeat_delay, key_repeat_time, text_cursor_blink_time) = {
+        let timer_tx2 = timer_tx.clone();
         let mut client_context_r = client_context.borrow_mut();
         let filter = Filter::new(move |event, _, _| {
                 match event {
@@ -919,7 +953,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                match prepare_event_for_client_keyboard_key(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, key, state) {
+                                                match prepare_event_for_client_keyboard_key(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, key, state, &timer_tx2) {
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
@@ -1057,7 +1091,6 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
         }
         (client_context_r.fields.key_repeat_delay, client_context_r.fields.key_repeat_time, client_context_r.fields.text_cursor_blink_time)
     };
-    let (timer_tx, timer_rx) = mpsc::channel::<ThreadTimerCommand>();
     let timer_thread = thread::spawn(move || {
             let mut timer_data_vec = vec![
                 ThreadTimerData {
@@ -1254,6 +1287,31 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 if revents.is_empty() { break; }
                             },
                             None => break,
+                        }
+                    }
+                    if is_key_timer {
+                        let mut client_context_r = client_context.borrow_mut();
+                        client_context_r.fields.serial = None;
+                        let key_codes: Vec<u32> = client_context_r.fields.key_codes.iter().map(|kc| *kc).collect();
+                        for key_code in &key_codes {
+                            let client_context2 = client_context.clone();
+                            let window_context2 = window_context.clone();
+                            let queue_context2 = queue_context.clone();
+                            match window_context.write() {
+                                Ok(mut window_context_g) => {
+                                    match queue_context.lock() {
+                                        Ok(mut queue_context_g) => {
+                                            match prepare_event_for_client_repeated_key(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, *key_code) {
+                                                Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                None => (),
+                                            }
+                                        },
+                                        Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                    }
+                                    client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2);
+                                },
+                                Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                            }
                         }
                     }
                     if is_text_cursor_timer {

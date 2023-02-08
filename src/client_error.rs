@@ -39,6 +39,10 @@ pub enum ClientError
     NoClientWindow,
     EventPreparation,
     DifferentWindows,
+    UnsupportedXkbKeymapFormat,
+    NoXkbKeymap,
+    NoXkbState,
+    NoKeyboardWindowIndex,
 }
 
 impl error::Error for ClientError
@@ -71,6 +75,10 @@ impl fmt::Display for ClientError
             ClientError::NoClientWindow => write!(f, "no client window"),
             ClientError::EventPreparation => write!(f, "event preparation error"),
             ClientError::DifferentWindows => write!(f, "different windows"),
+            ClientError::UnsupportedXkbKeymapFormat => write!(f, "unsupported xkb keynmap format"),
+            ClientError::NoXkbKeymap => write!(f, "no xkb keymap"),
+            ClientError::NoXkbState => write!(f, "no xkb state"),
+            ClientError::NoKeyboardWindowIndex => write!(f, "no keyboard window index"),
         }
     }
 }
