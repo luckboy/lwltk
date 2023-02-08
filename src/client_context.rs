@@ -689,6 +689,9 @@ impl ClientContext
             None => None,
         }
     }
+    
+    pub fn key_modifiers(&self) -> KeyModifiers
+    { self.fields.key_modifiers }
 }
 
 pub(crate) fn map_client_window(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex) -> Option<&ClientWindow>
