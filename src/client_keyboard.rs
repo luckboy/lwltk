@@ -157,7 +157,7 @@ pub(crate) fn prepare_event_for_client_keyboard_key(client_context: &mut ClientC
                             let key_code = key + 8;
                             match decode_key_code(client_context, key_code) {
                                 Some(Some((keys, s))) => {
-                                    let are_only_modifiers = keys.iter().all(|k| client_context.fields.modifier_keys.contains(k));
+                                    let are_only_modifiers = keys.iter().all(|k| client_context.fields.modifier_keys.contains(k)) && s.is_empty();
                                     if !are_only_modifiers {
                                         match client_state {
                                             ClientState::Pressed => {
