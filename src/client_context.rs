@@ -1299,6 +1299,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     }
                     if is_key_timer {
                         let mut client_context_r = client_context.borrow_mut();
+                        let saved_serial = client_context_r.fields.serial;
                         client_context_r.fields.serial = None;
                         let key_codes: Vec<u32> = client_context_r.fields.key_codes.iter().map(|kc| *kc).collect();
                         for key_code in &key_codes {
@@ -1321,6 +1322,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                             }
                         }
+                        client_context_r.fields.serial = saved_serial;
                     }
                     if is_text_cursor_timer {
                         eprintln!("text cursor timer");
