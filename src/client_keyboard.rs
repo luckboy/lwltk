@@ -84,7 +84,7 @@ pub(crate) fn initialize_keyboard(client_context: &mut ClientContext, format: wl
 
 pub(crate) fn prepare_event_for_client_keyboard_enter(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, surface: &wl_surface::WlSurface) -> Option<Event>
 {
-    match client_context.select_window_index_for_surface(surface) {
+    match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             match update_focused_rel_widget_path(window_context, window_idx) {
                 Some(call_on_path) => {
@@ -108,7 +108,7 @@ pub(crate) fn prepare_event_for_client_keyboard_enter(client_context: &mut Clien
 
 pub(crate) fn prepare_event_for_client_keyboard_leave(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, surface: &wl_surface::WlSurface) -> Option<Event>
 {
-    match client_context.select_window_index_for_surface(surface) {
+    match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             match update_focused_rel_widget_path(window_context, window_idx) {
                 Some(call_on_path) => {

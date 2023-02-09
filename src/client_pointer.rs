@@ -20,7 +20,7 @@ const BTN_MIDDLE: u32 = 0x112;
 
 pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, surface: &wl_surface::WlSurface, surface_x: f64, surface_y: f64) -> Option<Event>
 {
-    match client_context.select_window_index_for_surface(surface) {
+    match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
             match client_context.add_event_preparation(window_context, CallOnId::Pointer, window_idx, pos) {
@@ -44,7 +44,7 @@ pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut Client
 
 pub(crate) fn prepare_event_for_client_pointer_leave(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, surface: &wl_surface::WlSurface) -> Option<Event>
 {
-    match client_context.select_window_index_for_surface(surface) {
+    match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             match client_context.remove_event_preparation(CallOnId::Pointer) {
                 Some(call_on_path) => {

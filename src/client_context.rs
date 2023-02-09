@@ -600,7 +600,7 @@ impl ClientContext
     pub fn exit(&mut self)
     { self.fields.has_exit = true; }
     
-    pub(crate) fn select_window_index_for_surface(&self, surface: &wl_surface::WlSurface) -> Option<WindowIndex>
+    pub(crate) fn window_index_for_surface(&self, surface: &wl_surface::WlSurface) -> Option<WindowIndex>
     {
         self.client_windows.iter().find_map(|p| {
                 if &**p.1.surface == surface {
@@ -611,7 +611,7 @@ impl ClientContext
         })
     }
 
-    pub(crate) fn select_window_index_for_shell_surface(&self, shell_surface: &wl_shell_surface::WlShellSurface) -> Option<WindowIndex>
+    pub(crate) fn window_index_for_shell_surface(&self, shell_surface: &wl_shell_surface::WlShellSurface) -> Option<WindowIndex>
     {
         self.client_windows.iter().find_map(|p| {
                 if &**p.1.shell_surface == shell_surface {
