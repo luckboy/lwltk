@@ -49,7 +49,9 @@ use crate::client_touch::*;
 use crate::client_window::*;
 use crate::event_handler::*;
 use crate::event_queue::*;
+use crate::key_map_init::*;
 use crate::keys::*;
+use crate::mod_key_set_init::*;
 use crate::queue_context::*;
 use crate::thread_signal::*;
 use crate::types::*;
@@ -229,46 +231,49 @@ impl ClientContext
             },
             Err(_) => DEFAULT_LONG_CLICK_DELAY,
         };
+        let mut client_context = ClientContext {
+            fields: ClientContextFields {
+                compositor,
+                shell,
+                seat,
+                shm,
+                pointer: None,
+                keyboard: None,
+                touch: None,
+                serial: None,
+                xkb_context,
+                xkb_keymap: None,
+                xkb_state: None,
+                xkb_shift_mask: 0 as xkb::ModMask,
+                xkb_caps_mask: 0 as xkb::ModMask,
+                xkb_ctrl_mask: 0 as xkb::ModMask,
+                xkb_alt_mask: 0 as xkb::ModMask,
+                xkb_num_mask: 0 as xkb::ModMask,
+                xkb_logo_mask: 0 as xkb::ModMask,
+                xdg_runtime_dir,
+                scale,
+                key_repeat_delay,
+                key_repeat_time,
+                text_cursor_blink_time,
+                double_click_delay,
+                long_click_delay,
+                has_exit: false,
+                event_preparations: HashMap::new(),
+                keyboard_window_index: None,
+                key_codes: BTreeSet::new(),
+                key_modifiers: KeyModifiers::EMPTY,
+                keys: HashMap::new(),
+                modifier_keys: HashSet::new(),
+            },
+            client_windows: BTreeMap::new(),
+            client_windows_to_destroy: VecDeque::new(),
+        };
+        initialize_keys(&mut client_context.fields.keys);
+        initialize_modifier_keys(&mut client_context.fields.modifier_keys);
         Ok((ClientDisplay {
                 display,
                 event_queue,
-        }, ClientContext {
-                fields: ClientContextFields {
-                    compositor,
-                    shell,
-                    seat,
-                    shm,
-                    pointer: None,
-                    keyboard: None,
-                    touch: None,
-                    serial: None,
-                    xkb_context,
-                    xkb_keymap: None,
-                    xkb_state: None,
-                    xkb_shift_mask: 0 as xkb::ModMask,
-                    xkb_caps_mask: 0 as xkb::ModMask,
-                    xkb_ctrl_mask: 0 as xkb::ModMask,
-                    xkb_alt_mask: 0 as xkb::ModMask,
-                    xkb_num_mask: 0 as xkb::ModMask,
-                    xkb_logo_mask: 0 as xkb::ModMask,
-                    xdg_runtime_dir,
-                    scale,
-                    key_repeat_delay,
-                    key_repeat_time,
-                    text_cursor_blink_time,
-                    double_click_delay,
-                    long_click_delay,
-                    has_exit: false,
-                    event_preparations: HashMap::new(),
-                    keyboard_window_index: None,
-                    key_codes: BTreeSet::new(),
-                    key_modifiers: KeyModifiers::EMPTY,
-                    keys: HashMap::new(),
-                    modifier_keys: HashSet::new(),
-                },
-                client_windows: BTreeMap::new(),
-                client_windows_to_destroy: VecDeque::new(),
-        }))
+        }, client_context))
     }
     
     pub(crate) fn client_window(&self, idx: WindowIndex) -> Option<&ClientWindow>
