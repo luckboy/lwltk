@@ -29,7 +29,7 @@ pub(crate) fn prepare_event_for_client_shell_surface_configure(client_context: &
     };
     match client_context.window_index_for_shell_surface(shell_surface) {
         Some(window_idx) => {
-            let size = Size::new((width + 1) / client_context.fields.scale, (height + 1) / client_context.fields.scale);
+            let size = Size::new((width + client_context.fields.scale - 1) / client_context.fields.scale, (height + client_context.fields.scale - 1) / client_context.fields.scale);
             window_context.current_window_index = Some(window_idx);
             queue_context.current_call_on_path = Some(CallOnPath::Window(window_idx));
             Some(Event::Client(ClientEvent::ShellSurfaceConfigure(client_resize, size)))
