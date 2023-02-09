@@ -209,12 +209,12 @@ pub(crate) fn prepare_event_for_client_keyboard_key(client_context: &mut ClientC
 
 pub(crate) fn prepare_event_for_client_keyboard_modifiers(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, mods_depressed: u32, mods_latched: u32, mods_locked: u32, group: u32) -> Option<Event>
 {
-    match client_context.fields.keyboard_window_index {
-        Some(keyboard_window_index) => {
-            match update_focused_rel_widget_path(window_context, keyboard_window_index) {
-                Some(call_on_path) => {
-                    match &mut client_context.fields.xkb_state {
-                        Some(xkb_state) => {
+    match &mut client_context.fields.xkb_state {
+        Some(xkb_state) => {
+            match client_context.fields.keyboard_window_index {
+                Some(keyboard_window_index) => {
+                    match update_focused_rel_widget_path(window_context, keyboard_window_index) {
+                        Some(call_on_path) => {
                             xkb_state.update_mask(mods_depressed, mods_latched, mods_locked, 0, 0, group);
                             let mask = xkb_state.serialize_mods(xkb::STATE_MODS_DEPRESSED | xkb::STATE_MODS_LATCHED | xkb::STATE_MODS_LOCKED);
                             let mut key_modifiers = KeyModifiers::EMPTY;
@@ -242,19 +242,19 @@ pub(crate) fn prepare_event_for_client_keyboard_modifiers(client_context: &mut C
                             Some(Event::Client(ClientEvent::KeyboardModifiers(key_modifiers)))
                         },
                         None => {
-                            eprintln!("lwltk: {}", ClientError::NoXkbState);
+                            eprintln!("lwltk: {}", ClientError::NoWindow);
                             None
                         },
                     }
                 },
                 None => {
-                    eprintln!("lwltk: {}", ClientError::NoWindow);
+                    eprintln!("lwltk: {}", ClientError::NoKeyboardWindowIndex);
                     None
                 },
             }
         },
         None => {
-            eprintln!("lwltk: {}", ClientError::NoKeyboardWindowIndex);
+            eprintln!("lwltk: {}", ClientError::NoXkbState);
             None
         },
     }
