@@ -211,32 +211,32 @@ pub(crate) fn prepare_event_for_client_keyboard_modifiers(client_context: &mut C
 {
     match &mut client_context.fields.xkb_state {
         Some(xkb_state) => {
+            xkb_state.update_mask(mods_depressed, mods_latched, mods_locked, 0, 0, group);
+            let mask = xkb_state.serialize_mods(xkb::STATE_MODS_DEPRESSED | xkb::STATE_MODS_LATCHED | xkb::STATE_MODS_LOCKED);
+            let mut key_modifiers = KeyModifiers::EMPTY;
+            if (mask & client_context.fields.xkb_shift_mask) != 0 {
+                key_modifiers |= KeyModifiers::SHIFT;
+            }
+            if (mask & client_context.fields.xkb_caps_mask) != 0 {
+                key_modifiers |= KeyModifiers::CAPS;
+            }
+            if (mask & client_context.fields.xkb_ctrl_mask) != 0 {
+                key_modifiers |= KeyModifiers::CTRL;
+            }
+            if (mask & client_context.fields.xkb_alt_mask) != 0 {
+                key_modifiers |= KeyModifiers::ALT;
+            }
+            if (mask & client_context.fields.xkb_num_mask) != 0 {
+                key_modifiers |= KeyModifiers::NUM;
+            }
+            if (mask & client_context.fields.xkb_logo_mask) != 0 {
+                key_modifiers |= KeyModifiers::LOGO;
+            }
+            client_context.fields.key_modifiers = key_modifiers;
             match client_context.fields.keyboard_window_index {
                 Some(keyboard_window_index) => {
                     match update_focused_rel_widget_path(window_context, keyboard_window_index) {
                         Some(call_on_path) => {
-                            xkb_state.update_mask(mods_depressed, mods_latched, mods_locked, 0, 0, group);
-                            let mask = xkb_state.serialize_mods(xkb::STATE_MODS_DEPRESSED | xkb::STATE_MODS_LATCHED | xkb::STATE_MODS_LOCKED);
-                            let mut key_modifiers = KeyModifiers::EMPTY;
-                            if (mask & client_context.fields.xkb_shift_mask) != 0 {
-                                key_modifiers |= KeyModifiers::SHIFT;
-                            }
-                            if (mask & client_context.fields.xkb_caps_mask) != 0 {
-                                key_modifiers |= KeyModifiers::CAPS;
-                            }
-                            if (mask & client_context.fields.xkb_ctrl_mask) != 0 {
-                                key_modifiers |= KeyModifiers::CTRL;
-                            }
-                            if (mask & client_context.fields.xkb_alt_mask) != 0 {
-                                key_modifiers |= KeyModifiers::ALT;
-                            }
-                            if (mask & client_context.fields.xkb_num_mask) != 0 {
-                                key_modifiers |= KeyModifiers::NUM;
-                            }
-                            if (mask & client_context.fields.xkb_logo_mask) != 0 {
-                                key_modifiers |= KeyModifiers::LOGO;
-                            }
-                            client_context.fields.key_modifiers = key_modifiers;
                             window_context.current_window_index = Some(call_on_path.window_index());
                             queue_context.current_call_on_path = Some(call_on_path);
                             Some(Event::Client(ClientEvent::KeyboardModifiers(key_modifiers)))
@@ -247,10 +247,7 @@ pub(crate) fn prepare_event_for_client_keyboard_modifiers(client_context: &mut C
                         },
                     }
                 },
-                None => {
-                    eprintln!("lwltk: {}", ClientError::NoKeyboardWindowIndex);
-                    None
-                },
+                None => None,
             }
         },
         None => {
