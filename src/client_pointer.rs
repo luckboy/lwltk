@@ -116,10 +116,16 @@ pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut Clien
                         },
                     }
                 },
-                None => None,
+                None => {
+                    eprintln!("lwltk: {}", ClientError::InvalidState);
+                    None
+                },
             }
         },
-        None => None,
+        None => {
+            eprintln!("lwltk: {}", ClientError::InvalidButton);
+            None
+        },
     }
 }
 

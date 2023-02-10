@@ -203,7 +203,10 @@ pub(crate) fn prepare_event_for_client_keyboard_key(client_context: &mut ClientC
                 },
             }
         },
-        None => None,
+        None => {
+            eprintln!("lwltk: {}", ClientError::InvalidState);
+            None
+        },
     }
 }
 
