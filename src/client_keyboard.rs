@@ -39,7 +39,7 @@ fn decode_key_code(client_context: &ClientContext, key_code: u32) -> Option<Opti
     match &client_context.fields.xkb_state {
         Some(xkb_state) => {
             let keys: Vec<VKey> = xkb_state.key_get_syms(key_code).iter().map(|ks| client_context.fields.keys.get(ks).map(|k| *k)).flatten().collect();
-            let s = if client_context.fields.key_modifiers & (KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::NUM | KeyModifiers::LOGO) != KeyModifiers::EMPTY {
+            let s = if (client_context.fields.key_modifiers & (KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::LOGO)) == KeyModifiers::EMPTY {
                 xkb_state.key_get_utf8(key_code)
             } else {
                 String::new()
