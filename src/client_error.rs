@@ -37,6 +37,7 @@ pub enum ClientError
     WindowCycle,
     NoWindow,
     NoClientWindow,
+    NoWidget,
     EventPreparation,
     DifferentWindows,
     InvalidButton,
@@ -46,6 +47,7 @@ pub enum ClientError
     NoXkbKeymap,
     NoXkbState,
     NoKeyboardWindowIndex,
+    NoCurrentCallOnPath,
 }
 
 impl error::Error for ClientError
@@ -76,6 +78,7 @@ impl fmt::Display for ClientError
             ClientError::WindowCycle => write!(f, "cycle of windows"),
             ClientError::NoWindow => write!(f, "no window"),
             ClientError::NoClientWindow => write!(f, "no client window"),
+            ClientError::NoWidget => write!(f, "no widget"),
             ClientError::EventPreparation => write!(f, "event preparation error"),
             ClientError::DifferentWindows => write!(f, "different windows"),
             ClientError::InvalidButton => write!(f, "invalid button"),
@@ -85,6 +88,7 @@ impl fmt::Display for ClientError
             ClientError::NoXkbKeymap => write!(f, "no xkb keymap"),
             ClientError::NoXkbState => write!(f, "no xkb state"),
             ClientError::NoKeyboardWindowIndex => write!(f, "no keyboard window index"),
+            ClientError::NoCurrentCallOnPath => write!(f, "no current call on path"),
         }
     }
 }
