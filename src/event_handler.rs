@@ -76,6 +76,7 @@ fn handle_only_event_with_propagation(client_context: &mut ClientContext, window
             None => break,
         }
     }
+    window_context.current_window_index = None;
     queue_context.current_call_on_path = None;
 }
 
@@ -93,6 +94,7 @@ pub(crate) fn handle_event(client_context: &mut ClientContext, window_context: &
         loop {
             match queue_context.event_queue.pop() {
                 Some(event_pair) => {
+                    window_context.current_window_index = Some(event_pair.call_on_path.window_index());
                     queue_context.current_call_on_path = Some(event_pair.call_on_path);
                     handle_only_event_with_propagation(client_context, window_context, queue_context, &event_pair.event);
                 },
