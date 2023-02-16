@@ -1440,6 +1440,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                             }
                         }
+                        client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.fields.serial = saved_serial;
                     }
                     if is_text_cursor_timer {
@@ -1466,6 +1467,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 return Err(ClientError::RwLock);
                             },
                         }
+                        client_context_r.update_cursor_surface(&timer_tx);
                     }
                 }
             },
