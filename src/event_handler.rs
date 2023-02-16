@@ -87,9 +87,8 @@ fn handle_only_callback(client_context: &mut ClientContext, window_context: &mut
     }
 }
 
-pub(crate) fn handle_event(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, event: &Event)
+pub(crate) fn handle_events_and_callbacks_from_queues(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext)
 {
-    handle_only_event_with_propagation(client_context, window_context, queue_context, event);
     while !queue_context.event_queue.is_empty() || !queue_context.callback_queue.is_empty() {
         loop {
             match queue_context.event_queue.pop() {
@@ -108,4 +107,10 @@ pub(crate) fn handle_event(client_context: &mut ClientContext, window_context: &
             }
         }
     }
+}
+
+pub(crate) fn handle_event(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, event: &Event)
+{
+    handle_only_event_with_propagation(client_context, window_context, queue_context, event);
+    handle_events_and_callbacks_from_queues(client_context, window_context, queue_context);
 }

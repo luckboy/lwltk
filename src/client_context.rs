@@ -1452,6 +1452,13 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         let mut client_context_r = client_context.borrow_mut();
                         match window_context.write() {
                             Ok(mut window_context_g) => {
+                                match queue_context.lock() {
+                                    Ok(mut queue_context_g) => handle_events_and_callbacks_from_queues(&mut *client_context_r, &mut *window_context_g, &mut *queue_context_g),
+                                    Err(_) => {
+                                        client_context_r.destroy();
+                                        return Err(ClientError::Mutex);
+                                    },
+                                }
                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2);
                             },
                             Err(_) => {
