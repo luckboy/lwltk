@@ -41,12 +41,15 @@ use wayland_client::Filter;
 use wayland_client::GlobalManager;
 use wayland_client::Main;
 use wayland_client::event_enum;
+use wayland_cursor::CursorTheme;
+use wayland_cursor::Cursor as WaylandCursor;
 use xkbcommon::xkb;
 use crate::client_error::*;
 use crate::client_keyboard::*;
 use crate::client_pointer::*;
 use crate::client_touch::*;
 use crate::client_window::*;
+use crate::cursors::*;
 use crate::event_handler::*;
 use crate::event_queue::*;
 use crate::key_map_init::*;
@@ -87,6 +90,9 @@ pub(crate) struct ClientContextFields
     pub(crate) keyboard: Option<Main<wl_keyboard::WlKeyboard>>,
     pub(crate) touch: Option<Main<wl_touch::WlTouch>>,
     pub(crate) serial: Option<u32>,
+    pub(crate) cursor_theme: CursorTheme,
+    pub(crate) cursors: HashMap<Cursor, WaylandCursor>,
+    pub(crate) cursor_surface: Main<wl_surface::WlSurface>,
     pub(crate) xkb_context: xkb::Context,
     pub(crate) xkb_keymap: Option<xkb::Keymap>,
     pub(crate) xkb_state: Option<xkb::State>,
@@ -103,6 +109,7 @@ pub(crate) struct ClientContextFields
     pub(crate) text_cursor_blink_time: u64,
     pub(crate) double_click_delay: u64,
     pub(crate) long_click_delay: u64,
+    pub(crate) start_time: Instant,
     pub(crate) has_exit: bool,
     pub(crate) event_preparations: HashMap<CallOnId, EventPreparation>,
     pub(crate) keyboard_window_index: Option<WindowIndex>,
@@ -110,6 +117,10 @@ pub(crate) struct ClientContextFields
     pub(crate) key_modifiers: KeyModifiers,
     pub(crate) keys: HashMap<xkb::Keysym, VKey>,
     pub(crate) modifier_keys: HashSet<VKey>,
+    pub(crate) has_cursor: bool,
+    pub(crate) cursor: Cursor,
+    pub(crate) has_old_cursor: bool,
+    pub(crate) old_cursor: Cursor,
 }
 
 pub struct ClientContext
@@ -150,6 +161,35 @@ impl ClientContext
             Ok(tmp_shm) => tmp_shm,
             Err(err) => return Err(ClientError::Global(err)),
         };
+        let mut cursor_theme = CursorTheme::load(32, &shm);
+        let cursor_name_pairs = vec![
+            (Cursor::Default, "left_ptr"),
+            (Cursor::Text, "xterm"),
+            (Cursor::Hand, "hand1"),
+            (Cursor::Pencil, "pencil"),
+            (Cursor::Cross, "cross"),
+            (Cursor::Wait, "watch"),
+            (Cursor::TopLeftCorner, "top_left_corner"),
+            (Cursor::TopRightCorner, "top_right_corner"),
+            (Cursor::TopSide, "top_side"),
+            (Cursor::LeftSide, "left_side"),
+            (Cursor::BottomLeftCorner, "bottom_left_corner"),
+            (Cursor::BottomRightCorner, "bottom_right_corner"),
+            (Cursor::BottomSide, "bottom_side"),
+            (Cursor::RightSide, "right_side"),
+            (Cursor::HDoubleArrow, "sb_h_double_arrow"),
+            (Cursor::VDoubleArrow, "sb_v_double_arrow")
+        ];
+        let mut cursors: HashMap<Cursor, WaylandCursor> = HashMap::new();
+        for pair in &cursor_name_pairs {
+            match cursor_theme.get_cursor(pair.1) {
+                Some(cursor) => {
+                    cursors.insert(pair.0, cursor.clone());
+                },
+                None => return Err(ClientError::Cursor),
+            }
+        }
+        let cursor_surface = compositor.create_surface();
         let xkb_context = xkb::Context::new(0);
         let xdg_runtime_dir = match env::var("XDG_RUNTIME_DIR") {
             Ok(tmp_xdg_runtime_dir) => tmp_xdg_runtime_dir,
@@ -240,6 +280,9 @@ impl ClientContext
                 pointer: None,
                 keyboard: None,
                 touch: None,
+                cursor_theme,
+                cursors,
+                cursor_surface,
                 serial: None,
                 xkb_context,
                 xkb_keymap: None,
@@ -257,6 +300,7 @@ impl ClientContext
                 text_cursor_blink_time,
                 double_click_delay,
                 long_click_delay,
+                start_time: Instant::now(),
                 has_exit: false,
                 event_preparations: HashMap::new(),
                 keyboard_window_index: None,
@@ -264,6 +308,10 @@ impl ClientContext
                 key_modifiers: KeyModifiers::EMPTY,
                 keys: HashMap::new(),
                 modifier_keys: HashSet::new(),
+                has_cursor: false,
+                cursor: Cursor::Default,
+                has_old_cursor: false,
+                old_cursor: Cursor::Default,
             },
             client_windows: BTreeMap::new(),
             client_windows_to_destroy: VecDeque::new(),
@@ -697,6 +745,60 @@ impl ClientContext
     
     pub fn key_modifiers(&self) -> KeyModifiers
     { self.fields.key_modifiers }
+    
+    pub fn cursor(&self) -> Cursor
+    { self.fields.cursor }
+
+    pub fn set_cursor(&mut self, cursor: Cursor)
+    { self.fields.cursor = cursor; }
+
+    fn set_cursor_surface(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    {
+        let cursor = self.fields.cursor;
+        match self.fields.cursors.get(&cursor) {
+            Some(wayland_cursor) => {
+                let millis = self.fields.start_time.elapsed().as_millis();
+                let frame_info = wayland_cursor.frame_and_duration(millis as u32);
+                let buffer = wayland_cursor[frame_info.frame_index].clone();
+                self.fields.cursor_surface.attach(Some(&buffer), 0, 0);
+                self.fields.cursor_surface.damage(0, 0, buffer.dimensions().0 as i32, buffer.dimensions().1 as i32);
+                self.fields.cursor_surface.commit();
+                match self.fields.serial {
+                    Some(serial) => {
+                        match &self.fields.pointer {
+                            Some(pointer) => pointer.set_cursor(serial, Some(&self.fields.cursor_surface), buffer.hotspot().0 as i32, buffer.hotspot().1 as i32),
+                            None => (),
+                        }
+                    },
+                    None => (),
+                }
+                let duration = Duration::from_millis(frame_info.frame_duration as u64);
+                match timer_tx.send(ThreadTimerCommand::SetDelay(ThreadTimer::Cursor, duration)) {
+                    Ok(()) => (),
+                    Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+                }
+            },
+            None => eprintln!("lwltk: {}", ClientError::NoCursor),
+        }
+    }
+
+    pub(crate) fn update_cursor_surface(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    {
+        if self.fields.has_cursor != self.fields.has_old_cursor || self.fields.cursor != self.fields.old_cursor {
+            if self.fields.has_cursor {
+                self.set_cursor_surface(timer_tx);
+            }
+        }
+        self.fields.has_old_cursor = self.fields.has_cursor;
+        self.fields.old_cursor = self.fields.cursor;
+    }
+
+    pub(crate) fn update_cursor_surface_for_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    {
+        if self.fields.has_cursor {
+            self.set_cursor_surface(timer_tx);
+        }
+    }
 }
 
 pub(crate) fn map_client_window(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex) -> Option<&ClientWindow>
@@ -811,6 +913,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_pointer::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -833,6 +936,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_pointer::Event::Motion { time, surface_x, surface_y, } => {
                                 let client_context3 = client_context2.clone();
@@ -854,6 +958,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_pointer::Event::Button { serial, time, button, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -876,6 +981,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_pointer::Event::Axis { time, axis, value, } => {
                                 let client_context3 = client_context2.clone();
@@ -897,6 +1003,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -928,6 +1035,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_keyboard::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -950,6 +1058,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_keyboard::Event::Key { serial, time, key, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -972,6 +1081,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_keyboard::Event::Modifiers { serial, mods_depressed, mods_latched, mods_locked, group, } => {
                                 let client_context3 = client_context2.clone();
@@ -994,6 +1104,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1021,6 +1132,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_touch::Event::Up { serial, time, id,  } => {
                                 let client_context3 = client_context2.clone();
@@ -1043,6 +1155,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             wl_touch::Event::Motion { time, id, x, y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1064,6 +1177,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
+                                client_context_r.update_cursor_surface(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1296,6 +1410,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             },
                             None => break,
                         }
+                    }
+                    if is_cursor_timer {
+                        let mut client_context_r = client_context.borrow_mut();
+                        client_context_r.update_cursor_surface_for_timer(&timer_tx);
                     }
                     if is_key_timer {
                         let mut client_context_r = client_context.borrow_mut();

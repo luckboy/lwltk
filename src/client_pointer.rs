@@ -25,6 +25,7 @@ pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut Client
             let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
             match client_context.add_event_preparation(window_context, CallOnId::Pointer, window_idx, pos) {
                 Some(call_on_path) => {
+                    client_context.fields.has_cursor = true;
                     window_context.current_window_index = Some(call_on_path.window_index());
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerEnter(pos)))
@@ -51,6 +52,7 @@ pub(crate) fn prepare_event_for_client_pointer_leave(client_context: &mut Client
                     if call_on_path.window_index() != window_idx {
                         eprintln!("lwltk: {}", ClientError::DifferentWindows);
                     }
+                    client_context.fields.has_cursor = false;
                     window_context.current_window_index = Some(call_on_path.window_index());
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerLeave))

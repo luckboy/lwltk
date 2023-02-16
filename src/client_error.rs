@@ -27,6 +27,7 @@ pub enum ClientError
     Connect(ConnectError),
     Global(GlobalError),
     Nix(Errno),
+    Cursor,
     NoXdgRuntimeDir,
     InvalidThemeName,
     InvalidTheme,
@@ -48,6 +49,7 @@ pub enum ClientError
     NoXkbState,
     NoKeyboardWindowIndex,
     NoCurrentCallOnPath,
+    NoCursor,
 }
 
 impl error::Error for ClientError
@@ -68,6 +70,7 @@ impl fmt::Display for ClientError
             ClientError::Connect(err) => write!(f, "connect: {}", err),
             ClientError::Global(err) => write!(f, "global: {}", err),
             ClientError::Nix(err) => write!(f, "nix: {}", err),
+            ClientError::Cursor => write!(f, "cursor loading error"),
             ClientError::NoXdgRuntimeDir => write!(f, "no XDG_RUNTIME_DIR variable"),
             ClientError::InvalidThemeName => write!(f, "invalid theme name"),
             ClientError::InvalidTheme => write!(f, "invalid theme"),
@@ -89,6 +92,7 @@ impl fmt::Display for ClientError
             ClientError::NoXkbState => write!(f, "no xkb state"),
             ClientError::NoKeyboardWindowIndex => write!(f, "no keyboard window index"),
             ClientError::NoCurrentCallOnPath => write!(f, "no current call on path"),
+            ClientError::NoCursor => write!(f, "no cursor"),
         }
     }
 }
