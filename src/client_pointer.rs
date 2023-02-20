@@ -48,7 +48,7 @@ pub(crate) fn prepare_event_for_client_pointer_leave(client_context: &mut Client
 {
     match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
-            match client_context.remove_event_preparation(CallOnId::Pointer) {
+            match client_context.remove_event_preparation(window_context, CallOnId::Pointer) {
                 Some((call_on_path, pos)) => {
                     if call_on_path.window_index() != window_idx {
                         eprintln!("lwltk: {}", ClientError::DifferentWindows);

@@ -40,7 +40,7 @@ pub(crate) fn prepare_event_for_client_touch_down(client_context: &mut ClientCon
 
 pub(crate) fn prepare_event_for_client_touch_up(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, time: u32, id: i32) -> Option<Event>
 {
-    match client_context.remove_event_preparation(CallOnId::Touch(id)) {
+    match client_context.remove_event_preparation(window_context, CallOnId::Touch(id)) {
         Some((call_on_path, pos)) => {
             window_context.current_window_index = Some(call_on_path.window_index());
             window_context.current_pos = Some(pos);

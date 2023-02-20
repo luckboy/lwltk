@@ -735,10 +735,29 @@ impl ClientContext
         }
     }
 
-    pub(crate) fn remove_event_preparation(&mut self, call_on_id: CallOnId) -> Option<(CallOnPath, Pos<f64>)>
+    pub(crate) fn remove_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId) -> Option<(CallOnPath, Pos<f64>)>
     {
         match self.fields.event_preparations.remove(&call_on_id) {
-            Some(event_preparation) => Some((event_preparation.call_on_path, event_preparation.pos)),
+            Some(event_preparation) => {
+                let is_widget = match &event_preparation.call_on_path {
+                    CallOnPath::Window(_) => false,
+                    CallOnPath::Widget(abs_widget_path) => window_context.window_container.dyn_widget(abs_widget_path).is_some(),
+                };
+                if is_widget {
+                    Some((event_preparation.call_on_path, event_preparation.pos))
+                } else {
+                    match window_context.window_container.dyn_window(event_preparation.window_index) {
+                        Some(window) => {
+                            let call_on_path = match window.point(event_preparation.pos) {
+                                Some(rel_widget_path) => CallOnPath::Widget(rel_widget_path.to_abs_widget_path(event_preparation.window_index)),
+                                None => CallOnPath::Window(event_preparation.window_index),
+                            };
+                            Some((call_on_path, event_preparation.pos))
+                        },
+                        None => None,
+                    }
+                }
+            },
             None => None,
         }
     }
