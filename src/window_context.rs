@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,6 +18,7 @@ pub struct WindowContext
     pub(crate) theme: Box<dyn Theme>,
     pub(crate) window_container: WindowContainer,
     pub(crate) current_window_index: Option<WindowIndex>,
+    pub(crate) current_pos: Option<Pos<f64>>,
     pub(crate) focused_window_index: Option<WindowIndex>,
     pub(crate) old_focused_window_index: Option<WindowIndex>,
 }
@@ -30,6 +31,7 @@ impl WindowContext
             theme,
             window_container: WindowContainer::new(),
             current_window_index: None,
+            current_pos: None,
             focused_window_index: None,
             old_focused_window_index: None,
         }
@@ -47,6 +49,9 @@ impl WindowContext
     pub fn current_window_index(&self) -> Option<WindowIndex>
     { self.current_window_index }
 
+    pub fn current_pos(&self) -> Option<Pos<f64>>
+    { self.current_pos }
+    
     pub fn focused_window_index(&self) -> Option<WindowIndex>
     { self.focused_window_index }
     

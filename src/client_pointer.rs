@@ -24,9 +24,10 @@ pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut Client
         Some(window_idx) => {
             let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
             match client_context.add_event_preparation(window_context, CallOnId::Pointer, window_idx, pos) {
-                Some(call_on_path) => {
+                Some((call_on_path, pos)) => {
                     client_context.fields.has_cursor = true;
                     window_context.current_window_index = Some(call_on_path.window_index());
+                    window_context.current_pos = Some(pos);
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerEnter(pos)))
                 },
@@ -48,12 +49,13 @@ pub(crate) fn prepare_event_for_client_pointer_leave(client_context: &mut Client
     match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             match client_context.remove_event_preparation(CallOnId::Pointer) {
-                Some(call_on_path) => {
+                Some((call_on_path, pos)) => {
                     if call_on_path.window_index() != window_idx {
                         eprintln!("lwltk: {}", ClientError::DifferentWindows);
                     }
                     client_context.fields.has_cursor = false;
                     window_context.current_window_index = Some(call_on_path.window_index());
+                    window_context.current_pos = Some(pos);
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerLeave))
                 },
@@ -74,8 +76,9 @@ pub(crate) fn prepare_event_for_client_pointer_motion(client_context: &mut Clien
 {
     let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
     match client_context.set_event_preparation(window_context, CallOnId::Pointer, pos) {
-        Some(call_on_path) => {
+        Some((call_on_path, pos)) => {
             window_context.current_window_index = Some(call_on_path.window_index());
+            window_context.current_pos = Some(pos);
             queue_context.current_call_on_path = Some(call_on_path);
             Some(Event::Client(ClientEvent::PointerMotion(time, pos)))
         },
@@ -107,8 +110,9 @@ pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut Clien
             match client_state {
                 Some(client_state) => {
                     match client_context.update_event_preparation(window_context, CallOnId::Pointer) {
-                        Some(call_on_path) => {
+                        Some((call_on_path, pos)) => {
                             window_context.current_window_index = Some(call_on_path.window_index());
+                            window_context.current_pos = Some(pos);
                             queue_context.current_call_on_path = Some(call_on_path);
                             Some(Event::Client(ClientEvent::PointerButton(time, client_button, client_state)))
                         },
@@ -141,8 +145,9 @@ pub(crate) fn prepare_event_for_client_pointer_axis(client_context: &mut ClientC
     match client_axis {
         Some(client_axis) => {
             match client_context.update_event_preparation(window_context, CallOnId::Pointer) {
-                Some(call_on_path) => {
+                Some((call_on_path, pos)) => {
                     window_context.current_window_index = Some(call_on_path.window_index());
+                    window_context.current_pos = Some(pos);
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::PointerAxis(time, client_axis, value)))
                 },

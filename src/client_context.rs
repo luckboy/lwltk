@@ -675,7 +675,7 @@ impl ClientContext
         })
     }
 
-    pub(crate) fn add_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, idx: WindowIndex, pos: Pos<f64>) -> Option<CallOnPath>
+    pub(crate) fn add_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, idx: WindowIndex, pos: Pos<f64>) -> Option<(CallOnPath, Pos<f64>)>
     {
         match window_context.window_container.dyn_window(idx) {
             Some(window) => {
@@ -689,13 +689,13 @@ impl ClientContext
                     call_on_path: call_on_path.clone(),
                 };
                 self.fields.event_preparations.insert(call_on_id, event_preparation);
-                Some(call_on_path)
+                Some((call_on_path, pos))
             },
             None => None,
         }
     }
     
-    pub(crate) fn set_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, pos: Pos<f64>) -> Option<CallOnPath>
+    pub(crate) fn set_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, pos: Pos<f64>) -> Option<(CallOnPath, Pos<f64>)>
     {
         let idx = match self.fields.event_preparations.remove(&call_on_id) {
             Some(event_preparation) => Some(event_preparation.window_index),
@@ -707,7 +707,7 @@ impl ClientContext
         }
     }
 
-    pub(crate) fn update_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId) -> Option<CallOnPath>
+    pub(crate) fn update_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId) -> Option<(CallOnPath, Pos<f64>)>
     {
         match self.fields.event_preparations.get_mut(&call_on_id) {
             Some(event_preparation) => {
@@ -716,7 +716,7 @@ impl ClientContext
                     CallOnPath::Widget(abs_widget_path) => window_context.window_container.dyn_widget(abs_widget_path).is_some(),
                 };
                 if is_widget {
-                    Some(event_preparation.call_on_path.clone())
+                    Some((event_preparation.call_on_path.clone(), event_preparation.pos))
                 } else {
                     match window_context.window_container.dyn_window(event_preparation.window_index) {
                         Some(window) => {
@@ -725,7 +725,7 @@ impl ClientContext
                                 None => CallOnPath::Window(event_preparation.window_index),
                             };
                             event_preparation.call_on_path = call_on_path.clone();
-                            Some(call_on_path)
+                            Some((call_on_path, event_preparation.pos))
                         },
                         None => None,
                     }
@@ -735,10 +735,10 @@ impl ClientContext
         }
     }
 
-    pub(crate) fn remove_event_preparation(&mut self, call_on_id: CallOnId) -> Option<CallOnPath>
+    pub(crate) fn remove_event_preparation(&mut self, call_on_id: CallOnId) -> Option<(CallOnPath, Pos<f64>)>
     {
         match self.fields.event_preparations.remove(&call_on_id) {
-            Some(event_preparation) => Some(event_preparation.call_on_path),
+            Some(event_preparation) => Some((event_preparation.call_on_path, event_preparation.pos)),
             None => None,
         }
     }
