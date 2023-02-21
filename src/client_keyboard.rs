@@ -90,6 +90,7 @@ pub(crate) fn prepare_event_for_client_keyboard_enter(client_context: &mut Clien
                 Some(call_on_path) => {
                     client_context.fields.keyboard_window_index = Some(call_on_path.window_index());
                     window_context.current_window_index = Some(call_on_path.window_index());
+                    window_context.current_pos = None;
                     queue_context.current_call_on_path = Some(call_on_path);
                     Some(Event::Client(ClientEvent::KeyboardEnter))
                 },
@@ -119,6 +120,7 @@ pub(crate) fn prepare_event_for_client_keyboard_leave(client_context: &mut Clien
                             }
                             client_context.fields.keyboard_window_index = None;
                             window_context.current_window_index = Some(call_on_path.window_index());
+                            window_context.current_pos = None;
                             queue_context.current_call_on_path = Some(call_on_path);
                             Some(Event::Client(ClientEvent::KeyboardEnter))
                         },
@@ -181,6 +183,7 @@ pub(crate) fn prepare_event_for_client_keyboard_key(client_context: &mut ClientC
                                         }
                                     }
                                     window_context.current_window_index = Some(call_on_path.window_index());
+                                    window_context.current_pos = None;
                                     queue_context.current_call_on_path = Some(call_on_path);
                                     Some(Event::Client(ClientEvent::KeyboardKey(time, keys, s, client_state)))
                                 },
@@ -241,6 +244,7 @@ pub(crate) fn prepare_event_for_client_keyboard_modifiers(client_context: &mut C
                     match update_focused_rel_widget_path(window_context, keyboard_window_index) {
                         Some(call_on_path) => {
                             window_context.current_window_index = Some(call_on_path.window_index());
+                            window_context.current_pos = None;
                             queue_context.current_call_on_path = Some(call_on_path);
                             Some(Event::Client(ClientEvent::KeyboardModifiers(key_modifiers)))
                         },
@@ -269,6 +273,7 @@ pub(crate) fn prepare_event_for_client_repeated_key(client_context: &mut ClientC
                     match update_focused_rel_widget_path(window_context, keyboard_window_index) {
                         Some(call_on_path) => {
                             window_context.current_window_index = Some(call_on_path.window_index());
+                            window_context.current_pos = None;
                             queue_context.current_call_on_path = Some(call_on_path);
                             Some(Event::Client(ClientEvent::RepeatedKey(keys, s)))
                         },
