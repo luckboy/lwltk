@@ -17,6 +17,8 @@ mod mock_parent_window;
 mod mock_widget;
 #[allow(dead_code)]
 mod mock_window;
+#[allow(dead_code)]
+mod mock_window_with_focused_widget;
 
 pub(crate) use mock_child_window::*;
 pub(crate) use mock_empty_window::*;
@@ -24,3 +26,4 @@ pub(crate) use mock_layout::*;
 pub(crate) use mock_parent_window::*;
 pub(crate) use mock_widget::*;
 pub(crate) use mock_window::*;
+pub(crate) use mock_window_with_focused_widget::*;
