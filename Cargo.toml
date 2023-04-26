@@ -9,7 +9,7 @@ license = "MPL-2.0"
 
 [dependencies]
 cairo-rs = { version = "0.15", default-features = false, features = ["png"] }
-compact_str = { version = "0.7", default-features = false }
+compact_str = "0.7"
 gapbuf = "0.1.4"
 memmap2 = "0.5"
 nix = "0.24.1"
