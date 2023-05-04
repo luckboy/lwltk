@@ -838,7 +838,7 @@ impl ClientContext
     pub fn unsend_after_button_release(&mut self)
     { self.fields.post_button_release_call_on_path = None; }
     
-    pub(crate) fn after_button_release(&self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    pub(crate) fn send_post_button_release(&self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
         if self.fields.post_button_release_call_on_path.is_some() {
             let duration = Duration::from_millis(self.fields.double_click_delay);
@@ -963,7 +963,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -987,7 +987,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Motion { time, surface_x, surface_y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1010,7 +1010,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Button { serial, time, button, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -1034,7 +1034,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Axis { time, axis, value, } => {
                                 let client_context3 = client_context2.clone();
@@ -1057,7 +1057,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1090,7 +1090,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_keyboard::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -1114,7 +1114,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_keyboard::Event::Key { serial, time, key, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -1138,7 +1138,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_keyboard::Event::Modifiers { serial, mods_depressed, mods_latched, mods_locked, group, } => {
                                 let client_context3 = client_context2.clone();
@@ -1162,7 +1162,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1191,7 +1191,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_touch::Event::Up { serial, time, id,  } => {
                                 let client_context3 = client_context2.clone();
@@ -1215,7 +1215,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_touch::Event::Motion { time, id, x, y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1238,7 +1238,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.after_button_release(&timer_tx2);
+                                client_context_r.send_post_button_release(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1507,7 +1507,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             }
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
-                        client_context_r.after_button_release(&timer_tx);
+                        client_context_r.send_post_button_release(&timer_tx);
                     }
                     if is_text_cursor_timer {
                         eprintln!("text cursor timer");
@@ -1533,7 +1533,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
-                        client_context_r.after_button_release(&timer_tx);
+                        client_context_r.send_post_button_release(&timer_tx);
                     }
                     if is_other {
                         let client_context2 = client_context.clone();
@@ -1557,7 +1557,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             },
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
-                        client_context_r.after_button_release(&timer_tx);
+                        client_context_r.send_post_button_release(&timer_tx);
                     }
                 }
             },

@@ -232,7 +232,7 @@ impl ClientWindow
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
                          client_context_r.update_cursor_surface(&timer_tx2);
-                         client_context_r.after_button_release(&timer_tx2);
+                         client_context_r.send_post_button_release(&timer_tx2);
                      },
                      wl_shell_surface::Event::PopupDone => {
                          let client_context_fields3 = client_context2.clone();
@@ -255,7 +255,7 @@ impl ClientWindow
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
                          client_context_r.update_cursor_surface(&timer_tx2);
-                         client_context_r.after_button_release(&timer_tx2);
+                         client_context_r.send_post_button_release(&timer_tx2);
                      },
                      _ => (),
                  }
