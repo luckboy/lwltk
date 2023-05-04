@@ -1521,7 +1521,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             Ok(mut window_context_g) => {
                                 match queue_context.lock() {
                                     Ok(mut queue_context_g) => {
-                                        match prepare_event_for_post_button_release(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g) {
+                                        match prepare_event_for_client_post_button_release(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g) {
                                             Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                             None => (),
                                         }

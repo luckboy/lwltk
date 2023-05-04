@@ -164,7 +164,7 @@ pub(crate) fn prepare_event_for_client_pointer_axis(client_context: &mut ClientC
     }
 }
 
-pub(crate) fn prepare_event_for_post_button_release(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext) -> Option<Event>
+pub(crate) fn prepare_event_for_client_post_button_release(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext) -> Option<Event>
 {
     match &client_context.fields.post_button_release_call_on_path {
         Some(call_on_path) => {
