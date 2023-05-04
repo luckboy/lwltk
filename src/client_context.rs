@@ -121,6 +121,7 @@ pub(crate) struct ClientContextFields
     pub(crate) cursor: Cursor,
     pub(crate) has_old_cursor: bool,
     pub(crate) old_cursor: Cursor,
+    pub(crate) post_button_release_call_on_path: Option<CallOnPath>,
 }
 
 pub struct ClientContext
@@ -312,6 +313,7 @@ impl ClientContext
                 cursor: Cursor::Default,
                 has_old_cursor: false,
                 old_cursor: Cursor::Default,
+                post_button_release_call_on_path: None,
             },
             client_windows: BTreeMap::new(),
             client_windows_to_destroy: VecDeque::new(),
@@ -346,7 +348,7 @@ impl ClientContext
     pub(crate) fn remove_client_window(&mut self, idx: WindowIndex) -> Option<Box<ClientWindow>>
     { self.client_windows.remove(&idx) }
 
-    fn create_client_windows_from(&mut self, window_context: &mut WindowContext, idx: WindowIndex, visiteds: &mut BTreeSet<WindowIndex>, parent_surface: Option<&wl_surface::WlSurface>, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
+    fn create_client_windows_from(&mut self, window_context: &mut WindowContext, idx: WindowIndex, visiteds: &mut BTreeSet<WindowIndex>, parent_surface: Option<&wl_surface::WlSurface>, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Result<(), ClientError>
     {
         if visiteds.contains(&idx) {
             return Err(ClientError::WindowCycle);
@@ -354,7 +356,7 @@ impl ClientContext
         let child_idxs = match window_context.window_container.dyn_window_mut(idx) {
             Some(window) => {
                 let mut client_window = ClientWindow::new(&self.fields, window, &*window_context.theme)?;
-                client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone());
+                client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx);
                 match client_window.set(&self.fields, window, &*window_context.theme, parent_surface) {
                     Ok(()) => (),
                     Err(err) => {
@@ -373,7 +375,7 @@ impl ClientContext
             None => return Err(ClientError::NoWindow),
         };
         for child_idx in &child_idxs {
-            self.create_client_windows_from(window_context, *child_idx, visiteds, Some(&surface), client_context2.clone(), window_context2.clone(), queue_context2.clone())?;
+            self.create_client_windows_from(window_context, *child_idx, visiteds, Some(&surface), client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx)?;
             match self.client_window_mut(idx) {
                 Some(client_window) => client_window.add_child(*child_idx),
                 None => return Err(ClientError::NoWindow),
@@ -382,7 +384,7 @@ impl ClientContext
         Ok(())
     }
     
-    fn create_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
+    fn create_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Result<(), ClientError>
     {
         match (window_context.focused_window_index, window_context.old_focused_window_index) {
             (Some(idx), Some(old_idx)) => {
@@ -420,7 +422,7 @@ impl ClientContext
                 None => return Err(ClientError::NoWindow),
             };
             if is_creating {
-                self.create_client_windows_from(window_context, *idx, &mut visiteds, None, client_context2.clone(), window_context2.clone(), queue_context2.clone())?;
+                self.create_client_windows_from(window_context, *idx, &mut visiteds, None, client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx)?;
             }
         }
         Ok(())
@@ -515,7 +517,7 @@ impl ClientContext
         Ok(())
     }
     
-    fn create_or_update_client_windows_from(&mut self, window_context: &mut WindowContext, idx: WindowIndex, visiteds: &mut BTreeSet<WindowIndex>, parent_surface: Option<&wl_surface::WlSurface>, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
+    fn create_or_update_client_windows_from(&mut self, window_context: &mut WindowContext, idx: WindowIndex, visiteds: &mut BTreeSet<WindowIndex>, parent_surface: Option<&wl_surface::WlSurface>, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Result<(), ClientError>
     {
         if visiteds.contains(&idx) {
             return Err(ClientError::WindowCycle);
@@ -534,7 +536,7 @@ impl ClientContext
                 match window_context.window_container.dyn_window_mut(idx) {
                     Some(window) => {
                         let mut client_window = ClientWindow::new(&self.fields, window, &*window_context.theme)?;
-                        client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone());
+                        client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx);
                         match client_window.set(&self.fields, window, &*window_context.theme, parent_surface) {
                             Ok(()) => (),
                             Err(err) => {
@@ -555,7 +557,7 @@ impl ClientContext
             None => return Err(ClientError::NoWindow),
         };
         for child_idx in &child_idxs {
-            self.create_or_update_client_windows_from(window_context, *child_idx, visiteds, Some(&surface), client_context2.clone(), window_context2.clone(), queue_context2.clone())?;
+            self.create_or_update_client_windows_from(window_context, *child_idx, visiteds, Some(&surface), client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx)?;
             match self.client_window_mut(idx) {
                 Some(client_window) => client_window.add_child(*child_idx),
                 None => return Err(ClientError::NoWindow),
@@ -564,7 +566,7 @@ impl ClientContext
         Ok(())
     }
     
-    fn create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
+    fn create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Result<(), ClientError>
     {
         match (window_context.focused_window_index, window_context.old_focused_window_index) {
             (Some(idx), Some(old_idx)) => {
@@ -602,19 +604,19 @@ impl ClientContext
                 None => return Err(ClientError::NoWindow),
             };
             if is_creating {
-                self.create_or_update_client_windows_from(window_context, *idx, &mut visiteds, None, client_context2.clone(), window_context2.clone(), queue_context2.clone())?;
+                self.create_or_update_client_windows_from(window_context, *idx, &mut visiteds, None, client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx)?;
             }
         }
         Ok(())
     }
     
-    pub(crate) fn add_to_destroy_and_create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>)
+    pub(crate) fn add_to_destroy_and_create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
         match self.add_client_windows_to_destroy(window_context) {
             Ok(()) => (),
             Err(err) => eprintln!("lwltk: {}", err),
         }
-        match self.create_or_update_client_windows(window_context, client_context2, window_context2, queue_context2) {
+        match self.create_or_update_client_windows(window_context, client_context2, window_context2, queue_context2, timer_tx) {
             Ok(()) => (),
             Err(err) => eprintln!("lwltk: {}", err),
         }
@@ -818,6 +820,34 @@ impl ClientContext
             self.set_cursor_surface(timer_tx);
         }
     }
+    
+    pub fn post_button_release_call_on_path(&self) -> Option<&CallOnPath>
+    {
+        match &self.fields.post_button_release_call_on_path {
+            Some(call_on_path) => Some(call_on_path),
+            None => None,
+        }
+    }
+
+    pub fn set_post_button_release_call_on_path(&mut self, call_on_path: Option<CallOnPath>)
+    { self.fields.post_button_release_call_on_path = call_on_path; }
+    
+    pub fn send_after_button_release(&mut self, call_on_path: CallOnPath)
+    { self.fields.post_button_release_call_on_path = Some(call_on_path); }
+
+    pub fn unsend_after_button_release(&mut self)
+    { self.fields.post_button_release_call_on_path = None; }
+    
+    pub(crate) fn after_button_release(&self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    {
+        if self.fields.post_button_release_call_on_path.is_some() {
+            let duration = Duration::from_millis(self.fields.double_click_delay);
+            match timer_tx.send(ThreadTimerCommand::SetDelay(ThreadTimer::PostButtonRelease, duration)) {
+                Ok(()) => (),
+                Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+            }
+        }
+    }
 }
 
 pub(crate) fn map_client_window(client_windows: &BTreeMap<WindowIndex, Box<ClientWindow>>, idx: WindowIndex) -> Option<&ClientWindow>
@@ -928,11 +958,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -951,11 +982,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Motion { time, surface_x, surface_y, } => {
                                 let client_context3 = client_context2.clone();
@@ -973,11 +1005,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Button { serial, time, button, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -996,11 +1029,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Axis { time, axis, value, } => {
                                 let client_context3 = client_context2.clone();
@@ -1018,11 +1052,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1050,11 +1085,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_keyboard::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -1073,11 +1109,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_keyboard::Event::Key { serial, time, key, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -1096,11 +1133,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_keyboard::Event::Modifiers { serial, mods_depressed, mods_latched, mods_locked, group, } => {
                                 let client_context3 = client_context2.clone();
@@ -1119,11 +1157,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1147,11 +1186,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_touch::Event::Up { serial, time, id,  } => {
                                 let client_context3 = client_context2.clone();
@@ -1170,11 +1210,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             wl_touch::Event::Motion { time, id, x, y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1192,11 +1233,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3);
+                                        client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
+                                client_context_r.after_button_release(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1227,7 +1269,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                 }
         });
         match window_context.write() {
-            Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4)?,
+            Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4, &timer_tx)?,
             Err(_) => return Err(ClientError::RwLock),
         }
         (client_context_r.fields.key_repeat_delay, client_context_r.fields.key_repeat_time, client_context_r.fields.text_cursor_blink_time)
@@ -1248,6 +1290,11 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     timer: ThreadTimer::TextCursor,
                     delay: None,
                     repeat: ThreadTimerRepeat::OneDelay(Duration::from_millis(text_cursor_blink_time)),
+                },
+                ThreadTimerData {
+                    timer: ThreadTimer::PostButtonRelease,
+                    delay: None,
+                    repeat: ThreadTimerRepeat::None,
                 }
             ];
             timer_data_vec[2].delay = Some(Duration::from_millis(text_cursor_blink_time));
@@ -1395,12 +1442,14 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     let mut is_cursor_timer = false;
                     let mut is_key_timer = false;
                     let mut is_text_cursor_timer = false;
+                    let mut is_post_button_release_timer = false;
                     let mut is_other = false;
                     loop {
                         match thread_signal_receiver.recv() {
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::Cursor))) => is_cursor_timer = true,
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::Key))) => is_key_timer = true,
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::TextCursor))) => is_text_cursor_timer = true,
+                            Ok(Some(ThreadSignal::Timer(ThreadTimer::PostButtonRelease))) => is_post_button_release_timer = true,
                             Ok(Some(ThreadSignal::Other)) => is_other = true,
                             Ok(None) => (),
                             Err(err) => {
@@ -1452,15 +1501,39 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                         },
                                         Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                     }
-                                    client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2);
+                                    client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
                                 },
                                 Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                             }
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
+                        client_context_r.after_button_release(&timer_tx);
                     }
                     if is_text_cursor_timer {
                         eprintln!("text cursor timer");
+                    }
+                    if is_post_button_release_timer {
+                        let mut client_context_r = client_context.borrow_mut();
+                        let client_context2 = client_context.clone();
+                        let window_context2 = window_context.clone();
+                        let queue_context2 = queue_context.clone();
+                        match window_context.write() {
+                            Ok(mut window_context_g) => {
+                                match queue_context.lock() {
+                                    Ok(mut queue_context_g) => {
+                                        match prepare_event_for_post_button_release(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g) {
+                                            Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            None => (),
+                                        }
+                                    },
+                                    Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                }
+                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
+                            },
+                            Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                        }
+                        client_context_r.update_cursor_surface(&timer_tx);
+                        client_context_r.after_button_release(&timer_tx);
                     }
                     if is_other {
                         let client_context2 = client_context.clone();
@@ -1476,7 +1549,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                         return Err(ClientError::Mutex);
                                     },
                                 }
-                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2);
+                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
                             },
                             Err(_) => {
                                 client_context_r.destroy();
@@ -1484,6 +1557,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             },
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
+                        client_context_r.after_button_release(&timer_tx);
                     }
                 }
             },

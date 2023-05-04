@@ -163,3 +163,20 @@ pub(crate) fn prepare_event_for_client_pointer_axis(client_context: &mut ClientC
         },
     }
 }
+
+pub(crate) fn prepare_event_for_post_button_release(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext) -> Option<Event>
+{
+    match &client_context.fields.post_button_release_call_on_path {
+        Some(call_on_path) => {
+            window_context.current_window_index = Some(call_on_path.window_index());
+            window_context.current_pos = None;
+            queue_context.current_call_on_path = Some(call_on_path.clone());
+            client_context.fields.post_button_release_call_on_path = None;
+            Some(Event::Client(ClientEvent::PostButtonRelease))
+        },
+        None => {
+            eprintln!("lwltk: {}", ClientError::NoPostButtonReleaseOnCallPath);
+            None
+        },
+    }
+}

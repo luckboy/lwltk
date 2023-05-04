@@ -51,6 +51,7 @@ pub enum ClientError
     NoCurrentCallOnPath,
     NoWidgetIndexPair,
     NoCursor,
+    NoPostButtonReleaseOnCallPath,
 }
 
 impl error::Error for ClientError
@@ -95,6 +96,7 @@ impl fmt::Display for ClientError
             ClientError::NoCurrentCallOnPath => write!(f, "no current call on path"),
             ClientError::NoWidgetIndexPair => write!(f, "no widget index pair"),
             ClientError::NoCursor => write!(f, "no cursor"),
+            ClientError::NoPostButtonReleaseOnCallPath => write!(f, "no post-button release on call path"),
         }
     }
 }

@@ -53,6 +53,7 @@ pub enum ClientEvent
     TouchUp(u32, i32),
     TouchMotion(u32, i32, Pos<f64>),
     RepeatedKey(Vec<VKey>, String),
+    PostButtonRelease,
 }
 
 #[derive(Clone)]

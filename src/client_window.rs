@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@ use std::os::unix::io::AsRawFd;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::RwLock;
+use std::sync::mpsc;
 use std::rc::*;
 use cairo::Format;
 use cairo::ImageSurface;
@@ -200,8 +201,9 @@ impl ClientWindow
         })
     }
     
-    pub(crate) fn assign(&self, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>)
+    pub(crate) fn assign(&self, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
+         let timer_tx2 = timer_tx.clone();
          self.shell_surface.quick_assign(move |shell_surface, event, _| {
                  match  event {
                      wl_shell_surface::Event::Ping { serial, } => {
@@ -225,10 +227,12 @@ impl ClientWindow
                                      },
                                      Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                  }
-                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
+                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3, &timer_tx2);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
+                         client_context_r.update_cursor_surface(&timer_tx2);
+                         client_context_r.after_button_release(&timer_tx2);
                      },
                      wl_shell_surface::Event::PopupDone => {
                          let client_context_fields3 = client_context2.clone();
@@ -246,10 +250,12 @@ impl ClientWindow
                                      },
                                      Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                  }
-                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3);
+                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3, &timer_tx2);
                              },
                              Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                          }
+                         client_context_r.update_cursor_surface(&timer_tx2);
+                         client_context_r.after_button_release(&timer_tx2);
                      },
                      _ => (),
                  }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@ pub(crate) enum ThreadTimer
     Cursor,
     Key,
     TextCursor,
+    PostButtonRelease,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -40,6 +41,7 @@ impl ThreadSignalSender
             ThreadTimer::Cursor => buf[0] = 0,
             ThreadTimer::Key => buf[0] = 1,
             ThreadTimer::TextCursor => buf[0] = 2,
+            ThreadTimer::PostButtonRelease => buf[0] = 3,
         }
         match write(self.0, &buf) {
             Ok(_) => Ok(()),
@@ -82,6 +84,8 @@ impl ThreadSignalReceiver
                     Ok(Some(ThreadSignal::Timer(ThreadTimer::Key)))
                 } else if buf[0] == 2 {
                     Ok(Some(ThreadSignal::Timer(ThreadTimer::TextCursor)))
+                } else if buf[0] == 3 {
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::PostButtonRelease)))
                 } else {
                     Ok(Some(ThreadSignal::Other))
                 }
