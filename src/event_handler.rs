@@ -58,6 +58,7 @@ fn handle_only_event(client_context: &mut ClientContext, window_context: &mut Wi
 
 fn handle_only_event_with_propagation(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, event: &Event)
 {
+    queue_context.current_descendant_index_pairs.clear();
     let mut new_event = handle_only_event(client_context, window_context, queue_context, event);
     loop {
         match &new_event {
@@ -65,6 +66,10 @@ fn handle_only_event_with_propagation(client_context: &mut ClientContext, window
                 match &mut queue_context.current_call_on_path {
                     Some(CallOnPath::Window(_)) => break,
                     Some(CallOnPath::Widget(abs_widget_path)) => {
+                        match abs_widget_path.widget_index_pairs().rev().next() {
+                            Some(idx_pair) => queue_context.current_descendant_index_pairs.push(idx_pair),
+                            None => eprintln!("lwltk: {}", ClientError::NoWidgetIndexPair),
+                        }
                         if abs_widget_path.pop().is_none() {
                             queue_context.current_call_on_path = Some(CallOnPath::Window(abs_widget_path.window_index()))
                         }
@@ -79,6 +84,7 @@ fn handle_only_event_with_propagation(client_context: &mut ClientContext, window
     window_context.current_window_index = None;
     window_context.current_pos = None;
     queue_context.current_call_on_path = None;
+    queue_context.current_descendant_index_pairs.clear();
 }
 
 fn handle_only_callback(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, callback: &mut (dyn FnMut(&mut ClientContext, &mut WindowContext, &mut QueueContext) -> Option<()> + Send + Sync + 'static))

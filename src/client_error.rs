@@ -49,6 +49,7 @@ pub enum ClientError
     NoXkbState,
     NoKeyboardWindowIndex,
     NoCurrentCallOnPath,
+    NoWidgetIndexPair,
     NoCursor,
 }
 
@@ -92,6 +93,7 @@ impl fmt::Display for ClientError
             ClientError::NoXkbState => write!(f, "no xkb state"),
             ClientError::NoKeyboardWindowIndex => write!(f, "no keyboard window index"),
             ClientError::NoCurrentCallOnPath => write!(f, "no current call on path"),
+            ClientError::NoWidgetIndexPair => write!(f, "no widget index pair"),
             ClientError::NoCursor => write!(f, "no cursor"),
         }
     }

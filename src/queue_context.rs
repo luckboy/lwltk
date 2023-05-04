@@ -6,10 +6,13 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::collections::HashMap;
+use std::iter::FusedIterator;
+use std::slice::Iter;
 use crate::callback_queue::*;
 use crate::client_context::*;
 use crate::events::*;
 use crate::event_queue::*;
+use crate::types::*;
 use crate::window_context::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -19,11 +22,47 @@ pub enum CallOnId
     Touch(i32),
 }
 
+#[derive(Clone)]
+pub struct QueueContextIter<'a>
+{
+    iter: Iter<'a, WidgetIndexPair>,
+}
+
+impl<'a> QueueContextIter<'a>
+{
+    fn new(slice: &'a [WidgetIndexPair]) -> Self
+    { QueueContextIter { iter: slice.iter(), } }
+}
+
+impl<'a> ExactSizeIterator for QueueContextIter<'a>
+{}
+
+impl<'a> FusedIterator for QueueContextIter<'a>
+{}
+
+impl<'a> DoubleEndedIterator for QueueContextIter<'a>
+{
+    fn next_back(&mut self) -> Option<Self::Item>
+    { self.iter.next_back().map(|ip| *ip) }
+}
+
+impl<'a> Iterator for QueueContextIter<'a>
+{
+    type Item = WidgetIndexPair;
+    
+    fn next(&mut self) -> Option<Self::Item>
+    { self.iter.next().map(|x| *x) }
+    
+    fn size_hint(&self) -> (usize, Option<usize>)
+    { self.iter.size_hint() }
+}
+
 pub struct QueueContext
 {
     pub(crate) event_queue: EventQueue,
     pub(crate) callback_queue: CallbackQueue,
     pub(crate) current_call_on_path: Option<CallOnPath>,
+    pub(crate) current_descendant_index_pairs: Vec<WidgetIndexPair>,
     pub(crate) pressed_call_on_paths: HashMap<CallOnId, CallOnPath>,
 }
 
@@ -35,6 +74,7 @@ impl QueueContext
             event_queue: EventQueue::new(),
             callback_queue: CallbackQueue::new(),
             current_call_on_path: None,
+            current_descendant_index_pairs: Vec::new(),
             pressed_call_on_paths: HashMap::new(),
         }
     }
@@ -58,6 +98,9 @@ impl QueueContext
             None => None,
         }
     }
+    
+    pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
+    { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
