@@ -256,8 +256,8 @@ pub trait Window: Container + MinSize + PreferredSize
                     match elem.widget.prev_or_next(elem.widget_index_pair, dir) {
                         Some(idx_pair) => {
                             let widget = elem.widget.dyn_widget_for_index_pair(idx_pair)?;
+                            elem.widget_index_pair = Some(idx_pair);
                             if widget.is_focusable() {
-                                elem.widget_index_pair = Some(idx_pair);
                                 break;
                             } else {
                                 stack.push(StackElement::new(widget));
