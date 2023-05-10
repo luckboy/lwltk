@@ -37,16 +37,16 @@ impl ChildWindowIndex
     { self.0 }
 }
 
-struct StackElement<'a>
+struct StackElem<'a>
 {
     widget: &'a dyn Widget,
     widget_index_pair: Option<WidgetIndexPair>,
 }
 
-impl<'a> StackElement<'a>
+impl<'a> StackElem<'a>
 {
     fn new(widget: &'a dyn Widget) -> Self
-    { StackElement { widget, widget_index_pair: None, } }
+    { StackElem { widget, widget_index_pair: None, } }
 }
 
 pub trait Window: Container + MinSize + PreferredSize
@@ -211,10 +211,10 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn prev_or_next_focused_widget(&self, dir: Direction, is_down: bool) -> Option<Option<RelWidgetPath>>
     {
-        let mut stack: Vec<StackElement<'_>> = Vec::new();
+        let mut stack: Vec<StackElem<'_>> = Vec::new();
         let (first_idx_pair, is_stop_for_none) = match self.focused_rel_widget_path() {
-            Some(path) => {
-                for idx_pair in path.widget_index_pairs() {
+            Some(rel_widget_path) => {
+                for idx_pair in rel_widget_path.widget_index_pairs() {
                     let widget = match stack.last_mut() {
                         Some(elem) => {
                             elem.widget_index_pair = Some(idx_pair);
@@ -222,7 +222,7 @@ pub trait Window: Container + MinSize + PreferredSize
                         },
                         None => self.dyn_widget_for_index_pair(idx_pair)?,
                     };
-                    stack.push(StackElement::new(widget));
+                    stack.push(StackElem::new(widget));
                 }
                 if !is_down {
                     if stack.len() > 1 {
@@ -231,7 +231,7 @@ pub trait Window: Container + MinSize + PreferredSize
                         return Some(Some(RelWidgetPath::new(stack[0].widget_index_pair?)));
                     }
                 }
-                (path.widget_index_pairs().next()?, is_down)
+                (rel_widget_path.widget_index_pairs().next()?, is_down)
             },
             None => {
                 match self.content_index_pair() {
@@ -240,7 +240,7 @@ pub trait Window: Container + MinSize + PreferredSize
                         if widget.is_focusable() {
                             return Some(Some(RelWidgetPath::new(idx_pair)));
                         } else {
-                            stack.push(StackElement::new(widget));
+                            stack.push(StackElem::new(widget));
                             (idx_pair, true)
                         }
                     },
@@ -260,7 +260,7 @@ pub trait Window: Container + MinSize + PreferredSize
                             if widget.is_focusable() {
                                 break;
                             } else {
-                                stack.push(StackElement::new(widget));
+                                stack.push(StackElem::new(widget));
                             }
                         },
                         None => {
