@@ -11,6 +11,7 @@ use crate::events::*;
 use crate::min_size::*;
 use crate::preferred_size::*;
 use crate::types::*;
+use crate::widget::*;
 
 #[derive(Copy, Clone, Debug)]
 pub struct ParentWindowIndex(WindowIndex);
@@ -34,6 +35,18 @@ impl ChildWindowIndex
 
     pub fn window_index(&self) -> WindowIndex
     { self.0 }
+}
+
+struct StackElement<'a>
+{
+    widget: &'a dyn Widget,
+    widget_index_pair: Option<WidgetIndexPair>,
+}
+
+impl<'a> StackElement<'a>
+{
+    fn new(widget: &'a dyn Widget) -> Self
+    { StackElement { widget, widget_index_pair: None, } }
 }
 
 pub trait Window: Container + MinSize + PreferredSize
@@ -193,6 +206,144 @@ pub trait Window: Container + MinSize + PreferredSize
             self.set_only_focused_rel_widget_path(None)
         } else {
             true
+        }
+    }
+    
+    fn prev_or_next_focused_widget(&self, dir: Direction, is_down: bool) -> Option<Option<RelWidgetPath>>
+    {
+        let mut stack: Vec<StackElement<'_>> = Vec::new();
+        let (first_idx_pair, is_stop_for_none) = match self.focused_rel_widget_path() {
+            Some(path) => {
+                for idx_pair in path.widget_index_pairs() {
+                    let widget = match stack.last_mut() {
+                        Some(elem) => {
+                            elem.widget_index_pair = Some(idx_pair);
+                            elem.widget.dyn_widget_for_index_pair(idx_pair)?
+                        },
+                        None => self.dyn_widget_for_index_pair(idx_pair)?,
+                    };
+                    stack.push(StackElement::new(widget));
+                }
+                if !is_down {
+                    if stack.len() > 1 {
+                        stack.pop();
+                    } else {
+                        return Some(Some(RelWidgetPath::new(stack[0].widget_index_pair?)));
+                    }
+                }
+                (path.widget_index_pairs().next()?, is_down)
+            },
+            None => {
+                match self.content_index_pair() {
+                    Some(idx_pair) => {
+                        let widget = self.dyn_widget_for_index_pair(idx_pair)?;
+                        if widget.is_focusable() {
+                            return Some(Some(RelWidgetPath::new(idx_pair)));
+                        } else {
+                            stack.push(StackElement::new(widget));
+                            (idx_pair, true)
+                        }
+                    },
+                    None => return Some(None),
+                }
+            },
+        };
+        let mut is_path = true;
+        loop {
+            let stack_len = stack.len();
+            match stack.last_mut() {
+                Some(elem) => {
+                    match elem.widget.prev_or_next(elem.widget_index_pair, dir) {
+                        Some(idx_pair) => {
+                            let widget = elem.widget.dyn_widget_for_index_pair(idx_pair)?;
+                            if widget.is_focusable() {
+                                elem.widget_index_pair = Some(idx_pair);
+                                break;
+                            } else {
+                                stack.push(StackElement::new(widget));
+                            }
+                        },
+                        None => {
+                            if elem.widget.is_focusable() || stack_len == 1 {
+                                if is_stop_for_none {
+                                    is_path = false;
+                                    break;
+                                } else {
+                                    elem.widget_index_pair = None;
+                                }
+                            } else {
+                                stack.pop();
+                            }
+                        },
+                    }
+                },
+                None => break,
+            }
+        }
+        if is_path {
+            let mut rel_widget_path = RelWidgetPath::new(first_idx_pair);
+            for elem in &stack {
+                rel_widget_path.push(elem.widget_index_pair?);
+            }
+            Some(Some(rel_widget_path))
+        } else {
+            Some(None)
+        }
+    }
+    
+    fn prev_focused_widget(&mut self) -> Option<()>
+    {
+        if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Direction::Prev, false)?) {
+            Some(())
+        } else {
+            None
+        }
+    }
+
+    fn next_focused_widget(&mut self) -> Option<()>
+    {
+        if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Direction::Next, false)?) {
+            Some(())
+        } else {
+            None
+        }
+    }
+    
+    fn up_focused_widget(&mut self) -> Option<()>
+    {
+        match self.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut tmp_rel_widget_path = rel_widget_path.clone();
+                loop {
+                    if tmp_rel_widget_path.pop().is_some() {
+                        if self.dyn_widget(&tmp_rel_widget_path)?.is_focusable() {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                if self.set_focused_rel_widget_path(Some(tmp_rel_widget_path)) {
+                    Some(())
+                } else {
+                    None
+                }
+            },
+            None => Some(()),
+        }
+    }
+
+    fn down_focused_widget(&mut self) -> Option<()>
+    {
+        match self.prev_or_next_focused_widget(Direction::Next, true)? {
+            Some(rel_widget_path) => {
+                if self.set_focused_rel_widget_path(Some(rel_widget_path)) {
+                    Some(())
+                } else {
+                    None
+                }
+            },
+            None => Some(()),
         }
     }
 }
