@@ -214,6 +214,10 @@ pub trait Window: Container + MinSize + PreferredSize
         let mut stack: Vec<StackElem<'_>> = Vec::new();
         let (first_idx_pair, is_stop_for_none) = match self.focused_rel_widget_path() {
             Some(rel_widget_path) => {
+                let widget = self.dyn_widget(rel_widget_path)?;
+                if !widget.is_focusable() {
+                    return None; 
+                }
                 for idx_pair in rel_widget_path.widget_index_pairs() {
                     let widget = match stack.last_mut() {
                         Some(elem) => {
@@ -313,6 +317,10 @@ pub trait Window: Container + MinSize + PreferredSize
     {
         match self.focused_rel_widget_path() {
             Some(rel_widget_path) => {
+                let widget = self.dyn_widget(rel_widget_path)?;
+                if !widget.is_focusable() {
+                    return None; 
+                }
                 let mut tmp_rel_widget_path = rel_widget_path.clone();
                 loop {
                     if tmp_rel_widget_path.pop().is_some() {
