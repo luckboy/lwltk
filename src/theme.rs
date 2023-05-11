@@ -14,6 +14,10 @@ pub trait Theme: Send + Sync
     fn set_cairo_context(&self, cairo_context: &CairoContext, scale: i32) -> Result<(), CairoError>;
     
     fn draw_window_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>) -> Result<(), CairoError>;
+
+    fn window_edges(&self) -> Edges<i32>;
+
+    fn window_corners(&self) -> Corners<i32>;
 }
 
 pub fn theme_from_env() -> Result<Box<dyn Theme>, ClientError>
