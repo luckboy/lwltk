@@ -322,16 +322,18 @@ pub trait Window: Container + MinSize + PreferredSize
                     return None; 
                 }
                 let mut tmp_rel_widget_path = rel_widget_path.clone();
+                let mut new_rel_widget_path = tmp_rel_widget_path.clone();
                 loop {
                     if tmp_rel_widget_path.pop().is_some() {
                         if self.dyn_widget(&tmp_rel_widget_path)?.is_focusable() {
+                            new_rel_widget_path = tmp_rel_widget_path.clone();
                             break;
                         }
                     } else {
                         break;
                     }
                 }
-                if self.set_focused_rel_widget_path(Some(tmp_rel_widget_path)) {
+                if self.set_focused_rel_widget_path(Some(new_rel_widget_path)) {
                     Some(())
                 } else {
                     None
