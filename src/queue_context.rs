@@ -71,6 +71,7 @@ pub struct QueueContext
     pub(crate) current_pointer_pos: Option<Pos<f64>>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
+    pub(crate) active_counts: HashMap<CallOnPath, usize>,
 }
 
 impl QueueContext
@@ -89,6 +90,7 @@ impl QueueContext
             current_pointer_pos: None,
             has_double_click: false,
             has_long_click: false,
+            active_counts: HashMap::new(),
         }
     }
 
@@ -170,7 +172,37 @@ impl QueueContext
 
     pub fn set_long_click(&mut self, flag: bool)
     { self.has_long_click = flag }
+    
+    pub fn increase_active_count(&mut self, call_on_path: &CallOnPath) -> bool
+    {
+        match self.active_counts.get_mut(call_on_path) {
+            Some(count) => {
+                *count += 1;
+                false
+            },
+            None => {
+                self.active_counts.insert(call_on_path.clone(), 1);
+                true
+            },
+        }
+    }
 
+    pub fn decrease_active_count(&mut self, call_on_path: &CallOnPath) -> bool
+    {
+        match self.active_counts.get_mut(call_on_path) {
+            Some(count) => {
+                *count -= 1;
+                if *count <= 0 {
+                    self.active_counts.remove(call_on_path);
+                    true
+                } else {
+                    false
+                }
+            },
+            None => true,
+        }
+    }    
+    
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {
         match self.current_call_on_path.clone() {

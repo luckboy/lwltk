@@ -57,8 +57,11 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 match motion_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
-                        queue_context.push_callback(move |_, window_context, _| {
-                                window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.decrease_active_count(&tmp_call_on_path) {
+                                    window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                }
                                 Some(())
                         });
                     },
@@ -68,9 +71,12 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
             queue_context.set_current_pointer_pos(Some(*pos));
             if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Pointer) {
-                widget.set_state(WidgetState::Active);
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.increase_active_count(&current_call_on_path) {
+                    widget.set_state(WidgetState::Active);
+                }
             } else {
-                widget.set_state(WidgetState::Hover);
+                widget.set_state(WidgetState::Active);
             }
             Some(Some(None))
         },
@@ -79,7 +85,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             queue_context.set_pressed_instant(CallOnId::Pointer, Instant::now());
             queue_context.set_long_click(false);
             if client_context.post_button_release_call_on_path().is_none() {
-                widget.set_state(WidgetState::Active);
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.increase_active_count(&current_call_on_path) {
+                    widget.set_state(WidgetState::Active);
+                }
                 queue_context.set_double_click(false);
             }
             queue_context.push_callback(move |_, window_context, queue_context| {
@@ -107,8 +116,11 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
-                        queue_context.push_callback(move |_, window_context, _| {
-                                window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.decrease_active_count(&tmp_call_on_path) {
+                                    window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                }
                                 Some(())
                         });
                     },
@@ -120,7 +132,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
         },
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Pressed)) => {
             queue_context.set_pressed_call_on_path_for_popup_click(Some(queue_context.current_call_on_path()?.clone()));
-            widget.set_state(WidgetState::Active);
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.increase_active_count(&current_call_on_path) {
+                widget.set_state(WidgetState::Active);
+            }
             queue_context.push_callback(move |_, window_context, queue_context| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_index = window_context.focused_window_index()?;
@@ -134,14 +149,20 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Released)) => {
             let pressed_call_on_path = queue_context.pressed_call_on_path_for_popup_click();
             if pressed_call_on_path == queue_context.current_call_on_path() {
-                widget.set_state(WidgetState::Hover);
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.decrease_active_count(&current_call_on_path) {
+                    widget.set_state(WidgetState::Hover);
+                }
                 queue_context.push_event(Event::PopupClick);
             } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
-                        queue_context.push_callback(move |_, window_context, _| {
-                                window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.decrease_active_count(&tmp_call_on_path) {
+                                    window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                }
                                 Some(())
                         });
                     },
@@ -153,6 +174,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
         },
         Event::Client(ClientEvent::PostButtonRelease) => {
             widget.set_state(WidgetState::Hover);
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.decrease_active_count(&current_call_on_path) {
+                widget.set_state(WidgetState::Hover);
+            }
             if queue_context.has_double_click() {
                 queue_context.push_event(Event::DoubleClick);
             } else if queue_context.has_long_click() {
@@ -181,7 +206,10 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
             }
             if widget.is_clickable() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
-                    widget.set_state(WidgetState::Active);
+                    let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                    if queue_context.increase_active_count(&current_call_on_path) {
+                        widget.set_state(WidgetState::Active);
+                    }
                 }
             }
             for c in s.chars() {
@@ -192,7 +220,14 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
         Event::Client(ClientEvent::KeyboardKey(_, keys, _, ClientState::Released)) => {
             if widget.is_clickable() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
-                    widget.set_state(WidgetState::None);
+                    let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                    if queue_context.decrease_active_count(&current_call_on_path) {
+                        if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
+                            widget.set_state(WidgetState::Hover);
+                        } else {
+                            widget.set_state(WidgetState::None);
+                        }
+                    }
                     queue_context.push_event(Event::Click);
                 }
             }
@@ -212,14 +247,17 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
     }
 }
 
-pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
         Event::Client(ClientEvent::TouchDown(_, id, pos)) => {
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
             queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
             queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
-            widget.set_state(WidgetState::Active);
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.increase_active_count(&current_call_on_path) {
+                widget.set_state(WidgetState::Active);
+            }
             let tmp_pos = *pos;
             queue_context.push_callback(move |_, window_context, _| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
@@ -233,14 +271,33 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
         Event::Client(ClientEvent::TouchUp(_, id)) => {
             let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Touch(*id));
             if pressed_call_on_path == queue_context.current_call_on_path() {
-                widget.set_state(WidgetState::None);
-                queue_context.push_event(Event::Click);
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.decrease_active_count(&current_call_on_path) {
+                    if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
+                        widget.set_state(WidgetState::Hover);
+                    } else {
+                        widget.set_state(WidgetState::None);
+                    }
+                }
+                let duration = Duration::from_millis(client_context.long_click_delay());
+                if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
+                    queue_context.push_event(Event::LongClick);
+                } else {
+                    queue_context.push_event(Event::Click);
+                }
             } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
-                        queue_context.push_callback(move |_, window_context, _| {
-                                window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.decrease_active_count(&tmp_call_on_path) {
+                                    if queue_context.motion_call_on_path(CallOnId::Pointer) == Some(&tmp_call_on_path) {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::Hover);
+                                    } else {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                    }
+                                }
                                 Some(())
                         });
                     },
@@ -256,8 +313,15 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
                 match motion_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
-                        queue_context.push_callback(move |_, window_context, _| {
-                                window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.decrease_active_count(&tmp_call_on_path) {
+                                    if queue_context.motion_call_on_path(CallOnId::Pointer) == Some(&tmp_call_on_path) {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::Hover);
+                                    } else {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                    }
+                                }
                                 Some(())
                         });
                     },
@@ -266,9 +330,10 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
             }
             queue_context.set_motion_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());            
             if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Touch(*id)) {
-                widget.set_state(WidgetState::Active);
-            } else {
-                widget.set_state(WidgetState::Hover);
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.increase_active_count(&current_call_on_path) {
+                    widget.set_state(WidgetState::Active);
+                }
             }
             Some(Some(None))
         },
