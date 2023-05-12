@@ -42,10 +42,12 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
 {
     match event {
         Event::Client(ClientEvent::PointerEnter(pos)) => {
+            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());     
             queue_context.set_current_pointer_pos(Some(*pos));
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerLeave) => {
+            queue_context.unset_motion_call_on_path(CallOnId::Pointer);
             queue_context.set_current_pointer_pos(None);
             Some(Some(None))
         },
@@ -65,7 +67,11 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             }
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
             queue_context.set_current_pointer_pos(Some(*pos));
-            widget.set_state(WidgetState::Hover);
+            if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Pointer) {
+                widget.set_state(WidgetState::Active);
+            } else {
+                widget.set_state(WidgetState::Hover);
+            }
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) => {
@@ -210,6 +216,7 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
 {
     match event {
         Event::Client(ClientEvent::TouchDown(_, id, pos)) => {
+            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
             queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
             queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
             widget.set_state(WidgetState::Active);
@@ -240,6 +247,7 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
                     _ => (),
                 }
             }
+            queue_context.unset_pressed_call_on_path(CallOnId::Pointer);            
             Some(Some(None))
         },
         Event::Client(ClientEvent::TouchMotion(_, id, _)) => {
@@ -256,8 +264,12 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
                     _ => (),
                 }
             }
-            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
-            widget.set_state(WidgetState::Hover);
+            queue_context.set_motion_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());            
+            if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Touch(*id)) {
+                widget.set_state(WidgetState::Active);
+            } else {
+                widget.set_state(WidgetState::Hover);
+            }
             Some(Some(None))
         },
         _ => Some(None),
