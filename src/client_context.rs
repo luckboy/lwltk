@@ -646,6 +646,9 @@ impl ClientContext
         self.client_windows.clear();
     }
     
+    pub fn long_click_delay(&self) -> u64
+    { self.fields.long_click_delay }
+    
     pub fn has_exit(&self) -> bool
     { self.fields.has_exit }
 

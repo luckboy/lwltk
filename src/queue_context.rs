@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 use std::iter::FusedIterator;
 use std::slice::Iter;
+use std::time::Instant;
 use crate::callback_queue::*;
 use crate::client_context::*;
 use crate::events::*;
@@ -63,7 +64,13 @@ pub struct QueueContext
     pub(crate) callback_queue: CallbackQueue,
     pub(crate) current_call_on_path: Option<CallOnPath>,
     pub(crate) current_descendant_index_pairs: Vec<WidgetIndexPair>,
+    pub(crate) motion_call_on_paths: HashMap<CallOnId, CallOnPath>,
     pub(crate) pressed_call_on_paths: HashMap<CallOnId, CallOnPath>,
+    pub(crate) pressed_call_on_path_for_popup_click: Option<CallOnPath>,
+    pub(crate) pressed_instants: HashMap<CallOnId, Instant>,
+    pub(crate) current_pointer_pos: Option<Pos<f64>>,
+    pub(crate) has_double_click: bool,
+    pub(crate) has_long_click: bool,
 }
 
 impl QueueContext
@@ -75,7 +82,13 @@ impl QueueContext
             callback_queue: CallbackQueue::new(),
             current_call_on_path: None,
             current_descendant_index_pairs: Vec::new(),
+            motion_call_on_paths: HashMap::new(),
             pressed_call_on_paths: HashMap::new(),
+            pressed_call_on_path_for_popup_click: None,
+            pressed_instants: HashMap::new(),
+            current_pointer_pos: None,
+            has_double_click: false,
+            has_long_click: false,
         }
     }
 
@@ -102,6 +115,15 @@ impl QueueContext
     pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
     { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
+    pub fn motion_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
+    { self.motion_call_on_paths.get(&call_on_id) }
+
+    pub fn set_motion_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
+    { self.motion_call_on_paths.insert(call_on_id, call_on_path); }
+
+    pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
+    { self.motion_call_on_paths.remove(&call_on_id); }
+
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
 
@@ -110,6 +132,44 @@ impl QueueContext
 
     pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
     { self.pressed_call_on_paths.remove(&call_on_id); }
+
+    pub fn pressed_call_on_path_for_popup_click(&self) -> Option<&CallOnPath>
+    { 
+        match &self.pressed_call_on_path_for_popup_click {
+            Some(call_on_path) => Some(call_on_path),
+            None => None,
+        }
+    }
+
+    pub fn set_pressed_call_on_path_for_popup_click(&mut self, call_on_path: Option<CallOnPath>)
+    { self.pressed_call_on_path_for_popup_click = call_on_path; }    
+    
+    pub fn pressed_instant(&self, call_on_id: CallOnId) -> Option<&Instant>
+    { self.pressed_instants.get(&call_on_id) }
+
+    pub fn set_pressed_instant(&mut self, call_on_id: CallOnId, instant: Instant)
+    { self.pressed_instants.insert(call_on_id, instant); }
+
+    pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
+    { self.pressed_instants.remove(&call_on_id); }
+    
+    pub fn current_pointer_pos(&self) -> Option<Pos<f64>>
+    { self.current_pointer_pos }
+
+    pub fn set_current_pointer_pos(&mut self, pos: Option<Pos<f64>>)
+    { self.current_pointer_pos = pos; }
+    
+    pub fn has_double_click(&self) -> bool
+    { self.has_double_click }
+
+    pub fn set_double_click(&mut self, flag: bool)
+    { self.has_double_click = flag }
+    
+    pub fn has_long_click(&self) -> bool
+    { self.has_long_click }
+
+    pub fn set_long_click(&mut self, flag: bool)
+    { self.has_long_click = flag }
 
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {

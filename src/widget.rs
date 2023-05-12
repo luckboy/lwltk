@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,6 +35,9 @@ pub trait Widget: Container + PreferredSize
     
     fn is_focused(&self) -> bool
     { false }
+    
+    fn is_clickable(&self) -> bool
+    { self.is_focusable() }
     
     #[allow(unused_variables)]
     fn set_focus(&mut self, is_focused: bool) -> bool
