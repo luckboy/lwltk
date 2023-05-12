@@ -128,8 +128,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Released)) => {
             let pressed_call_on_path = queue_context.pressed_call_on_path_for_popup_click();
             if pressed_call_on_path == queue_context.current_call_on_path() {
-                queue_context.push_event(Event::PopupClick);
                 widget.set_state(WidgetState::Hover);
+                queue_context.push_event(Event::PopupClick);
             } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
@@ -146,6 +146,7 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             Some(Some(None))
         },
         Event::Client(ClientEvent::PostButtonRelease) => {
+            widget.set_state(WidgetState::Hover);
             if queue_context.has_double_click() {
                 queue_context.push_event(Event::DoubleClick);
             } else if queue_context.has_long_click() {
@@ -153,7 +154,6 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             } else {
                 queue_context.push_event(Event::Click);
             }
-            widget.set_state(WidgetState::Hover);
             Some(Some(None))
         },
         _ => Some(None),
@@ -186,8 +186,8 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
         Event::Client(ClientEvent::KeyboardKey(_, keys, _, ClientState::Released)) => {
             if widget.is_clickable() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
-                    queue_context.push_event(Event::Click);
                     widget.set_state(WidgetState::None);
+                    queue_context.push_event(Event::Click);
                 }
             }
             Some(Some(None))
@@ -226,8 +226,8 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
         Event::Client(ClientEvent::TouchUp(_, id)) => {
             let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Touch(*id));
             if pressed_call_on_path == queue_context.current_call_on_path() {
-                queue_context.push_event(Event::PopupClick);
                 widget.set_state(WidgetState::None);
+                queue_context.push_event(Event::Click);
             } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
