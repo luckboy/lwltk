@@ -68,7 +68,6 @@ pub struct QueueContext
     pub(crate) pressed_call_on_paths: HashMap<CallOnId, CallOnPath>,
     pub(crate) pressed_call_on_path_for_popup_click: Option<CallOnPath>,
     pub(crate) pressed_instants: HashMap<CallOnId, Instant>,
-    pub(crate) current_pointer_pos: Option<Pos<f64>>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
     pub(crate) active_counts: HashMap<CallOnPath, usize>,
@@ -87,7 +86,6 @@ impl QueueContext
             pressed_call_on_paths: HashMap::new(),
             pressed_call_on_path_for_popup_click: None,
             pressed_instants: HashMap::new(),
-            current_pointer_pos: None,
             has_double_click: false,
             has_long_click: false,
             active_counts: HashMap::new(),
@@ -154,13 +152,7 @@ impl QueueContext
 
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
-    
-    pub fn current_pointer_pos(&self) -> Option<Pos<f64>>
-    { self.current_pointer_pos }
-
-    pub fn set_current_pointer_pos(&mut self, pos: Option<Pos<f64>>)
-    { self.current_pointer_pos = pos; }
-    
+       
     pub fn has_double_click(&self) -> bool
     { self.has_double_click }
 

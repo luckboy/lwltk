@@ -81,8 +81,6 @@ fn handle_only_event_with_propagation(client_context: &mut ClientContext, window
             None => break,
         }
     }
-    window_context.current_window_index = None;
-    window_context.current_pos = None;
     queue_context.current_call_on_path = None;
     queue_context.current_descendant_index_pairs.clear();
 }
@@ -115,6 +113,8 @@ pub(crate) fn handle_events_and_callbacks_from_queues(client_context: &mut Clien
             }
         }
     }
+    window_context.current_window_index = None;
+    window_context.current_pos = None;
 }
 
 pub(crate) fn handle_event(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, event: &Event)

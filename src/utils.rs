@@ -41,9 +41,8 @@ pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
 pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
-        Event::Client(ClientEvent::PointerEnter(pos)) => {
+        Event::Client(ClientEvent::PointerEnter(_)) => {
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());     
-            queue_context.set_current_pointer_pos(Some(*pos));
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerLeave) => {
@@ -64,10 +63,9 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
             queue_context.set_pressed_call_on_path_for_popup_click(None);
             queue_context.unset_pressed_instant(CallOnId::Pointer);
-            queue_context.set_current_pointer_pos(None);
             Some(Some(None))
         },
-        Event::Client(ClientEvent::PointerMotion(_, pos)) => {
+        Event::Client(ClientEvent::PointerMotion(_, _)) => {
             let motion_call_on_path = queue_context.motion_call_on_path(CallOnId::Pointer);
             if motion_call_on_path != queue_context.current_call_on_path() {
                 match motion_call_on_path {
@@ -85,7 +83,6 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 }
             }
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
-            queue_context.set_current_pointer_pos(Some(*pos));
             if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Pointer) {
                 let current_call_on_path = queue_context.current_call_on_path()?.clone();
                 if queue_context.increase_active_count(&current_call_on_path) {
@@ -107,10 +104,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 }
                 queue_context.set_double_click(false);
             }
-            queue_context.push_callback(move |_, window_context, queue_context| {
+            queue_context.push_callback(move |_, window_context, _| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_index = window_context.focused_window_index()?;
-                    let current_pos = queue_context.current_pointer_pos()?;
+                    let current_pos = window_context.current_pos()?;
                     let window = window_context.dyn_window_mut(focused_window_index)?;
                     window.set_focused_rel_widget_path(window.point_focusable(current_pos));
                     Some(())
@@ -153,10 +150,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             if queue_context.increase_active_count(&current_call_on_path) {
                 widget.set_state(WidgetState::Active);
             }
-            queue_context.push_callback(move |_, window_context, queue_context| {
+            queue_context.push_callback(move |_, window_context, _| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_index = window_context.focused_window_index()?;
-                    let current_pos = queue_context.current_pointer_pos()?;
+                    let current_pos = window_context.current_pos()?;
                     let window = window_context.dyn_window_mut(focused_window_index)?;
                     window.set_focused_rel_widget_path(window.point_focusable(current_pos));
                     Some(())
@@ -268,7 +265,7 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
 pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
-        Event::Client(ClientEvent::TouchDown(_, id, pos)) => {
+        Event::Client(ClientEvent::TouchDown(_, id, _)) => {
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());            
             queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
             queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
@@ -276,12 +273,12 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
             if queue_context.increase_active_count(&current_call_on_path) {
                 widget.set_state(WidgetState::Active);
             }
-            let tmp_pos = *pos;
             queue_context.push_callback(move |_, window_context, _| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_index = window_context.focused_window_index()?;
+                    let current_pos = window_context.current_pos()?;
                     let window = window_context.dyn_window_mut(focused_window_index)?;
-                    window.set_focused_rel_widget_path(window.point_focusable(tmp_pos));
+                    window.set_focused_rel_widget_path(window.point_focusable(current_pos));
                     Some(())
             });
             Some(Some(None))
