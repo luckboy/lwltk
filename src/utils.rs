@@ -263,3 +263,42 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, _client_conte
         _ => Some(None),
     }
 }
+
+pub fn default_widget_on_for_clicks(widget: &mut dyn Widget, _client_context: &mut ClientContext, _queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+{
+    match event {
+        Event::Click | Event::DoubleClick | Event::LongClick | Event::PopupClick => {
+            if widget.is_clickable() {
+                Some(Some(None))
+            } else {
+                Some(Some(Some(event.clone())))
+            }
+        },
+        _ => Some(None),
+    }
+}
+
+pub fn default_widget_on_for_key_and_char(_widget: &mut dyn Widget, _client_context: &mut ClientContext, _queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+{
+    match event {
+        Event::Key(_, _) | Event::Char(_) => Some(Some(Some(event.clone()))),
+        _ => Some(None),
+    }
+}
+
+pub fn default_widget_on(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+{
+    if let Some(res) = default_widget_on_for_client_pointer(widget, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else if let Some(res) = default_widget_on_for_client_keyboard(widget, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else if let Some(res) = default_widget_on_for_client_touch(widget, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else if let Some(res) = default_widget_on_for_clicks(widget, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else if let Some(res) = default_widget_on_for_key_and_char(widget, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else {
+        Some(None)
+    }
+}
