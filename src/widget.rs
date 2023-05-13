@@ -66,7 +66,8 @@ pub trait Widget: Container + PreferredSize
     
     fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
     
-    fn cursor(&self, is_wait_cursor: bool) -> Cursor
+    #[allow(unused_variables)]
+    fn cursor(&self, pos: Pos<f64>, is_wait_cursor: bool) -> Cursor
     {
         if !is_wait_cursor {
             Cursor::Default

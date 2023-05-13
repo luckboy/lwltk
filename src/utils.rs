@@ -41,8 +41,8 @@ pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
 pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
-        Event::Client(ClientEvent::PointerEnter(_)) => {
-            client_context.set_cursor(widget.cursor(queue_context.has_wait_cursor()));
+        Event::Client(ClientEvent::PointerEnter(pos)) => {
+            client_context.set_cursor(widget.cursor(*pos, queue_context.has_wait_cursor()));
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
             Some(Some(None))
         },
@@ -66,8 +66,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             queue_context.unset_pressed_instant(CallOnId::Pointer);
             Some(Some(None))
         },
-        Event::Client(ClientEvent::PointerMotion(_, _)) => {
-            client_context.set_cursor(widget.cursor(queue_context.has_wait_cursor()));
+        Event::Client(ClientEvent::PointerMotion(_, pos)) => {
+            client_context.set_cursor(widget.cursor(*pos, queue_context.has_wait_cursor()));
             let motion_call_on_path = queue_context.motion_call_on_path(CallOnId::Pointer);
             if motion_call_on_path != queue_context.current_call_on_path() {
                 match motion_call_on_path {
