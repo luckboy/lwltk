@@ -9,6 +9,7 @@ use std::any::Any;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use crate::container::*;
+use crate::cursors::*;
 use crate::preferred_size::*;
 use crate::types::*;
 
@@ -44,7 +45,7 @@ pub trait Widget: Container + PreferredSize
     { false }
     
     #[allow(unused_variables)]
-    fn set_viewport(&mut self, size: Size<i32>, is_focused_window: bool)
+    fn set_viewport(&mut self, size: Size<i32>)
     {}
     
     fn h_scroll_bar_slider_x(&self, viewport_width: i32, trough_width: i32) -> f64;
@@ -65,6 +66,15 @@ pub trait Widget: Container + PreferredSize
     
     fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
     
+    fn cursor(&self, is_wait_cursor: bool) -> Cursor
+    {
+        if !is_wait_cursor {
+            Cursor::Default
+        } else {
+            Cursor::Wait
+        }
+    }
+
     fn margin_pos(&self) -> Pos<i32>
     { self.margin_bounds().pos() }
 

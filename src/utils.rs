@@ -42,7 +42,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
 {
     match event {
         Event::Client(ClientEvent::PointerEnter(_)) => {
-            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());     
+            client_context.set_cursor(widget.cursor(queue_context.has_wait_cursor()));
+            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerLeave) => {
@@ -66,6 +67,7 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerMotion(_, _)) => {
+            client_context.set_cursor(widget.cursor(queue_context.has_wait_cursor()));
             let motion_call_on_path = queue_context.motion_call_on_path(CallOnId::Pointer);
             if motion_call_on_path != queue_context.current_call_on_path() {
                 match motion_call_on_path {
@@ -358,7 +360,8 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
     }
 }
 
-pub fn default_widget_on_for_clicks(widget: &mut dyn Widget, _client_context: &mut ClientContext, _queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+#[allow(unused_variables)]
+pub fn default_widget_on_for_clicks(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
         Event::Click | Event::DoubleClick | Event::LongClick | Event::PopupClick => {
@@ -372,7 +375,8 @@ pub fn default_widget_on_for_clicks(widget: &mut dyn Widget, _client_context: &m
     }
 }
 
-pub fn default_widget_on_for_key_and_char(_widget: &mut dyn Widget, _client_context: &mut ClientContext, _queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+#[allow(unused_variables)]
+pub fn default_widget_on_for_key_and_char(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
         Event::Key(_, _) | Event::Char(_) => Some(Some(Some(event.clone()))),

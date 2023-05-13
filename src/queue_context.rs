@@ -71,6 +71,7 @@ pub struct QueueContext
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
     pub(crate) active_counts: HashMap<CallOnPath, usize>,
+    pub(crate) has_wait_cursor: bool,
 }
 
 impl QueueContext
@@ -89,6 +90,7 @@ impl QueueContext
             has_double_click: false,
             has_long_click: false,
             active_counts: HashMap::new(),
+            has_wait_cursor: false,
         }
     }
 
@@ -194,6 +196,12 @@ impl QueueContext
             None => true,
         }
     }    
+
+    pub fn has_wait_cursor(&self) -> bool
+    { self.has_wait_cursor }
+
+    pub fn set_wait_cursor(&mut self, flag: bool)
+    { self.has_wait_cursor = flag }
     
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {
