@@ -51,7 +51,7 @@ impl ThreadSignalSender
 
     pub fn commit(&self) -> Result<(), ClientError>
     {
-        let mut buf: [u8; 1] = [3];
+        let mut buf: [u8; 1] = [4];
         match write(self.0, &mut buf) {
             Ok(_) => Ok(()),
             Err(err) => Err(ClientError::Nix(err)),
