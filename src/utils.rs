@@ -190,7 +190,6 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 }
             }
             queue_context.set_pressed_call_on_path_for_popup_click(None);
-            queue_context.unset_pressed_instant(CallOnId::Pointer);
             Some(Some(None))
         },
         Event::Client(ClientEvent::PostButtonRelease) => {
