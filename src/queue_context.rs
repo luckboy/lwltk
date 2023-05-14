@@ -66,7 +66,6 @@ pub struct QueueContext
     pub(crate) current_descendant_index_pairs: Vec<WidgetIndexPair>,
     pub(crate) motion_call_on_paths: HashMap<CallOnId, CallOnPath>,
     pub(crate) pressed_call_on_paths: HashMap<CallOnId, CallOnPath>,
-    pub(crate) pressed_call_on_path_for_popup_click: Option<CallOnPath>,
     pub(crate) pressed_instants: HashMap<CallOnId, Instant>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
@@ -85,7 +84,6 @@ impl QueueContext
             current_descendant_index_pairs: Vec::new(),
             motion_call_on_paths: HashMap::new(),
             pressed_call_on_paths: HashMap::new(),
-            pressed_call_on_path_for_popup_click: None,
             pressed_instants: HashMap::new(),
             has_double_click: false,
             has_long_click: false,
@@ -134,17 +132,6 @@ impl QueueContext
 
     pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
     { self.pressed_call_on_paths.remove(&call_on_id); }
-
-    pub fn pressed_call_on_path_for_popup_click(&self) -> Option<&CallOnPath>
-    { 
-        match &self.pressed_call_on_path_for_popup_click {
-            Some(call_on_path) => Some(call_on_path),
-            None => None,
-        }
-    }
-
-    pub fn set_pressed_call_on_path_for_popup_click(&mut self, call_on_path: Option<CallOnPath>)
-    { self.pressed_call_on_path_for_popup_click = call_on_path; }    
     
     pub fn pressed_instant(&self, call_on_id: CallOnId) -> Option<&Instant>
     { self.pressed_instants.get(&call_on_id) }
@@ -210,14 +197,6 @@ impl QueueContext
         }).map(|p| *(p.0)).collect();
         for call_on_id in &pressed_call_on_ids {
             self.pressed_call_on_paths.remove(call_on_id);
-        }
-        match &self.pressed_call_on_path_for_popup_click {
-            Some(call_on_path) => {
-                if window_context.window_container.indices_to_destroy().iter().any(|i| *i == call_on_path.window_index()) {
-                    self.pressed_call_on_path_for_popup_click = None;
-                }
-            },
-            None => (),
         }
         for call_on_id in &pressed_call_on_ids {
             self.pressed_instants.remove(call_on_id);
