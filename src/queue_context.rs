@@ -195,7 +195,40 @@ impl QueueContext
             },
             None => true,
         }
-    }    
+    }
+    
+    pub(crate) fn clear_for_windows_to_destroy(&mut self, window_context: &WindowContext)
+    {
+        let motion_call_on_ids: Vec<CallOnId> = self.motion_call_on_paths.iter().filter(|p| {
+                window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.window_index())
+        }).map(|p| *(p.0)).collect();
+        for call_on_id in &motion_call_on_ids {
+            self.motion_call_on_paths.remove(call_on_id);
+        }
+        let pressed_call_on_ids: Vec<CallOnId> = self.pressed_call_on_paths.iter().filter(|p| {
+                window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.window_index())
+        }).map(|p| *(p.0)).collect();
+        for call_on_id in &pressed_call_on_ids {
+            self.pressed_call_on_paths.remove(call_on_id);
+        }
+        match &self.pressed_call_on_path_for_popup_click {
+            Some(call_on_path) => {
+                if window_context.window_container.indices_to_destroy().iter().any(|i| *i == call_on_path.window_index()) {
+                    self.pressed_call_on_path_for_popup_click = None;
+                }
+            },
+            None => (),
+        }
+        for call_on_id in &pressed_call_on_ids {
+            self.pressed_instants.remove(call_on_id);
+        }
+        let active_call_on_paths: Vec<CallOnPath> = self.active_counts.keys().filter(|k| {
+                window_context.window_container.indices_to_destroy().iter().any(|i| *i == k.window_index()) 
+        }).map(|k| k.clone()).collect();
+        for call_on_path in &active_call_on_paths {
+            self.active_counts.remove(call_on_path);
+        }
+    }
 
     pub fn has_wait_cursor(&self) -> bool
     { self.has_wait_cursor }
