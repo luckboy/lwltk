@@ -156,12 +156,13 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             if queue_context.increase_active_count(&current_call_on_path) {
                 widget.set_state(WidgetState::Active);
             }
-            queue_context.push_callback(move |_, window_context, _| {
+            queue_context.push_callback(move |_, window_context, queue_context| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_index = window_context.focused_window_index()?;
                     let current_pos = window_context.current_pos()?;
                     let window = window_context.dyn_window_mut(focused_window_index)?;
                     window.set_focused_rel_widget_path(window.point_focusable(current_pos));
+                    queue_context.event_queue_mut().push(EventPair::new(current_call_on_path.clone(), Event::PopupClick));
                     Some(())
             });
             Some(Some(None))
@@ -173,7 +174,6 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 if queue_context.decrease_active_count(&current_call_on_path) {
                     widget.set_state(WidgetState::Hover);
                 }
-                queue_context.push_event(Event::PopupClick);
             } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
