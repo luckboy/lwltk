@@ -60,6 +60,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 },
                 _ => (),
             }
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.decrease_active_count(&current_call_on_path) {
+                widget.set_state(WidgetState::Hover);
+            }
             queue_context.unset_motion_call_on_path(CallOnId::Pointer);
             queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
             queue_context.set_pressed_call_on_path_for_popup_click(None);
@@ -221,6 +225,9 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
             for key in keys {
                 queue_context.push_event(Event::Key(*key, client_context.key_modifiers()));
             }
+            for c in s.chars() {
+                queue_context.push_event(Event::Char(c));
+            }
             if widget.is_clickable() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
                     let current_call_on_path = queue_context.current_call_on_path()?.clone();
@@ -228,9 +235,6 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
                         widget.set_state(WidgetState::Active);
                     }
                 }
-            }
-            for c in s.chars() {
-                queue_context.push_event(Event::Char(c));
             }
             Some(Some(None))
         },
