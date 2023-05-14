@@ -5,7 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::iter::FusedIterator;
 use std::slice::Iter;
 use std::time::Instant;
@@ -64,12 +64,12 @@ pub struct QueueContext
     pub(crate) callback_queue: CallbackQueue,
     pub(crate) current_call_on_path: Option<CallOnPath>,
     pub(crate) current_descendant_index_pairs: Vec<WidgetIndexPair>,
-    pub(crate) motion_call_on_paths: HashMap<CallOnId, CallOnPath>,
-    pub(crate) pressed_call_on_paths: HashMap<CallOnId, CallOnPath>,
-    pub(crate) pressed_instants: HashMap<CallOnId, Instant>,
+    pub(crate) motion_call_on_paths: BTreeMap<CallOnId, CallOnPath>,
+    pub(crate) pressed_call_on_paths: BTreeMap<CallOnId, CallOnPath>,
+    pub(crate) pressed_instants: BTreeMap<CallOnId, Instant>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
-    pub(crate) active_counts: HashMap<CallOnPath, usize>,
+    pub(crate) active_counts: BTreeMap<CallOnPath, usize>,
     pub(crate) has_wait_cursor: bool,
 }
 
@@ -82,12 +82,12 @@ impl QueueContext
             callback_queue: CallbackQueue::new(),
             current_call_on_path: None,
             current_descendant_index_pairs: Vec::new(),
-            motion_call_on_paths: HashMap::new(),
-            pressed_call_on_paths: HashMap::new(),
-            pressed_instants: HashMap::new(),
+            motion_call_on_paths: BTreeMap::new(),
+            pressed_call_on_paths: BTreeMap::new(),
+            pressed_instants: BTreeMap::new(),
             has_double_click: false,
             has_long_click: false,
-            active_counts: HashMap::new(),
+            active_counts: BTreeMap::new(),
             has_wait_cursor: false,
         }
     }
