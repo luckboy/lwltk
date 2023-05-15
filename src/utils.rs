@@ -364,6 +364,15 @@ pub fn default_widget_on_for_key_and_char(widget: &mut dyn Widget, client_contex
     }
 }
 
+#[allow(unused_variables)]
+pub fn default_widget_on_for_window_events(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+{
+    match event {
+        Event::Menu | Event::Close | Event::Maximize=> Some(Some(Some(event.clone()))),
+        _ => Some(None),
+    }
+}
+
 pub fn default_widget_on(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     if let Some(res) = default_widget_on_for_client_pointer(widget, client_context, queue_context, event)? {
@@ -375,6 +384,8 @@ pub fn default_widget_on(widget: &mut dyn Widget, client_context: &mut ClientCon
     } else if let Some(res) = default_widget_on_for_clicks(widget, client_context, queue_context, event)? {
         Some(Some(res))
     } else if let Some(res) = default_widget_on_for_key_and_char(widget, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else if let Some(res) = default_widget_on_for_window_events(widget, client_context, queue_context, event)? {
         Some(Some(res))
     } else {
         Some(None)
