@@ -759,7 +759,7 @@ pub fn default_window_on_for_clicks(window: &mut dyn Window, client_context: &mu
 }
 
 #[allow(unused_variables)]
-pub fn default_window_on_for_key_and_char(window: &mut dyn Window, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+pub fn default_window_on_for_key(window: &mut dyn Window, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     match event {
         Event::Key(key, modifiers) => {
@@ -795,7 +795,6 @@ pub fn default_window_on_for_key_and_char(window: &mut dyn Window, client_contex
                 Some(None)
             }
         },
-        Event::Char(_) => Some(Some(None)),
         _ => Some(None),
     }
 }
@@ -812,7 +811,7 @@ pub fn default_window_on(window: &mut dyn Window, client_context: &mut ClientCon
         Some(Some(res))
     } else if let Some(res) = default_window_on_for_clicks(window, client_context, queue_context, event)? {
         Some(Some(res))
-    } else if let Some(res) = default_window_on_for_key_and_char(window, client_context, queue_context, event)? {
+    } else if let Some(res) = default_window_on_for_key(window, client_context, queue_context, event)? {
         Some(Some(res))
     } else {
         Some(None)
