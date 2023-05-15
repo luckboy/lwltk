@@ -769,11 +769,13 @@ impl ClientContext
     
     pub(crate) fn clear_for_windows_to_destroy(&mut self, window_context: &WindowContext)
     {
-        let call_on_ids: Vec<CallOnId> = self.fields.event_preparations.iter().filter(|p| {
-                window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.call_on_path.window_index())
-        }).map(|p| *(p.0)).collect();
-        for call_on_id in &call_on_ids {
-            self.fields.event_preparations.remove(call_on_id);
+        if !window_context.window_container.indices_to_destroy().is_empty() {
+            let call_on_ids: Vec<CallOnId> = self.fields.event_preparations.iter().filter(|p| {
+                    window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.call_on_path.window_index())
+            }).map(|p| *(p.0)).collect();
+            for call_on_id in &call_on_ids {
+                self.fields.event_preparations.remove(call_on_id);
+            }
         }
     }
     
