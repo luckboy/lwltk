@@ -595,12 +595,15 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
         },
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Pressed)) => {
             let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            let are_motion_resize_edges = queue_context.motion_resize_edges(CallOnId::Pointer).is_some();
             queue_context.push_callback(move |_, window_context, queue_context| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_idx = window_context.focused_window_index()?;
                     let window = window_context.dyn_window_mut(focused_window_idx)?;
                     window.set_focused_rel_widget_path(None);
-                    queue_context.event_queue_mut().push(EventPair::new(current_call_on_path.clone(), Event::PopupClick));
+                    if !are_motion_resize_edges {
+                        queue_context.event_queue_mut().push(EventPair::new(current_call_on_path.clone(), Event::PopupClick));
+                    }
                     Some(())
             });
             Some(Some(None))
