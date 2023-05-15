@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,6 +46,7 @@ pub(crate) struct MockParentWindow
     title: String,
     size: Size<i32>,
     padding_bounds: Rect<i32>,
+    corners: Corners<i32>,
     is_visible: bool,
     is_focused: bool,
     change_flag_arc: Arc<AtomicBool>,
@@ -62,6 +63,7 @@ impl MockParentWindow
             title: String::from(title),
             size: Size::new(0, 0),
             padding_bounds: Rect::new(0, 0, 0, 0),
+            corners: Corners::new(0, 0, 0, 0, 0, 0, 0, 0),
             is_visible: true,
             is_focused: false,
             change_flag_arc: Arc::new(AtomicBool::new(false)),
@@ -91,6 +93,9 @@ impl Window for MockParentWindow
 
     fn padding_bounds(&self) -> Rect<i32>
     { self.padding_bounds }
+
+    fn corners(&self) -> Corners<i32>
+    { self.corners }
 
     fn is_visible(&self) -> bool
     { self.is_visible }

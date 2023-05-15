@@ -280,7 +280,7 @@ impl ClientWindow
 
     fn set_resize(&self, client_context_fields: &ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
     {
-        match window.resize_egdes() {
+        match window.resize_edges() {
             Some(edges) => {
                 let wayland_edges = match edges {
                     ClientResize::None => wl_shell_surface::Resize::None,

@@ -32,10 +32,4 @@ impl Theme for DefaultTheme
         cairo_context.fill()?;
         Ok(())
     }
-
-    fn window_edges(&self) -> Edges<i32>
-    { Edges::new(0, 0, 0, 0) }
-
-    fn window_corners(&self) -> Corners<i32>
-    { Corners::new(0, 0, 0, 0) }
 }

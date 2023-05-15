@@ -65,6 +65,7 @@ pub struct QueueContext
     pub(crate) current_call_on_path: Option<CallOnPath>,
     pub(crate) current_descendant_index_pairs: Vec<WidgetIndexPair>,
     pub(crate) motion_call_on_paths: BTreeMap<CallOnId, CallOnPath>,
+    pub(crate) motion_resize_edge_map: BTreeMap<CallOnId, ClientResize>,
     pub(crate) pressed_call_on_paths: BTreeMap<CallOnId, CallOnPath>,
     pub(crate) pressed_instants: BTreeMap<CallOnId, Instant>,
     pub(crate) has_double_click: bool,
@@ -83,6 +84,7 @@ impl QueueContext
             current_call_on_path: None,
             current_descendant_index_pairs: Vec::new(),
             motion_call_on_paths: BTreeMap::new(),
+            motion_resize_edge_map: BTreeMap::new(),
             pressed_call_on_paths: BTreeMap::new(),
             pressed_instants: BTreeMap::new(),
             has_double_click: false,
@@ -124,6 +126,20 @@ impl QueueContext
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
     { self.motion_call_on_paths.remove(&call_on_id); }
 
+    pub fn motion_resize_edges(&self, call_on_id: CallOnId) -> Option<ClientResize>
+    {
+        match self.motion_resize_edge_map.get(&call_on_id) {
+            Some(edges) => Some(*edges),
+            None => None,
+        }
+    }
+    
+    pub fn set_motion_resize_edges(&mut self, call_on_id: CallOnId, edges: ClientResize)
+    { self.motion_resize_edge_map.insert(call_on_id, edges); }
+    
+    pub fn unset_motion_resize_edges(&mut self, call_on_id: CallOnId)
+    { self.motion_resize_edge_map.remove(&call_on_id); }
+    
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
 
@@ -141,7 +157,7 @@ impl QueueContext
 
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
-       
+
     pub fn has_double_click(&self) -> bool
     { self.has_double_click }
 
@@ -192,6 +208,9 @@ impl QueueContext
             }).map(|p| *(p.0)).collect();
             for call_on_id in &motion_call_on_ids {
                 self.motion_call_on_paths.remove(call_on_id);
+            }
+            for call_on_id in &motion_call_on_ids {
+                self.motion_resize_edge_map.remove(call_on_id);
             }
             let pressed_call_on_ids: Vec<CallOnId> = self.pressed_call_on_paths.iter().filter(|p| {
                     window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.window_index())

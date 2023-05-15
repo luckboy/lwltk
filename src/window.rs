@@ -55,6 +55,8 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn padding_bounds(&self) -> Rect<i32>;
 
+    fn corners(&self) -> Corners<i32>;
+    
     fn is_visible(&self) -> bool;
     
     fn is_focused(&self) -> bool;
@@ -107,9 +109,13 @@ pub trait Window: Container + MinSize + PreferredSize
     fn clear_move_flag(&mut self) -> bool
     { false }
 
-    fn resize_egdes(&self) -> Option<ClientResize>
+    fn resize_edges(&self) -> Option<ClientResize>
     { None }
 
+    #[allow(unused_variables)]
+    fn resize(&mut self, edges: ClientResize) -> bool
+    { false }
+    
     fn clear_resize_edges(&mut self) -> bool
     { false }    
     
@@ -150,6 +156,9 @@ pub trait Window: Container + MinSize + PreferredSize
     fn padding_height(&self) -> i32
     { self.padding_bounds().height }
 
+    fn edges(&self) -> Edges<i32>
+    { Edges::new(self.padding_y(), self.height() - (self.padding_height() + self.padding_y()), self.padding_x(), self.width() - (self.padding_width() - self.padding_x())) }
+    
     fn set_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
     {
         let saved_old_rel_widget_path = match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {

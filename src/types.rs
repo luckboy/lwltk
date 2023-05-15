@@ -231,18 +231,32 @@ impl<T> Edges<T>
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Corners<T>
 {
-    pub top_left: T,
-    pub top_right: T,
-    pub bottom_left: T,
-    pub bottom_right: T,
+    pub top_left_width: T,
+    pub top_left_height: T,
+    pub top_right_width: T,
+    pub top_right_height: T,
+    pub bottom_left_width: T,
+    pub bottom_left_height: T,
+    pub bottom_right_width: T,
+    pub bottom_right_height: T,
 }
 
 impl<T> Corners<T>
 {
-    pub fn new(top_left: T, top_right: T, bottom_left: T, bottom_right: T) -> Self
-    { Corners { top_left, top_right, bottom_left, bottom_right, } }
+    pub fn new(top_left_width: T, top_left_height: T, top_right_width: T, top_right_height: T, bottom_left_width: T, bottom_left_height: T, bottom_right_width: T, bottom_right_height: T) -> Self
+    {
+        Corners {
+            top_left_width,
+            top_left_height,
+            top_right_width,
+            top_right_height,
+            bottom_left_width,
+            bottom_left_height,
+            bottom_right_width,
+            bottom_right_height,
+        }
+    }
 }
-
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct WindowIndex(pub usize);
