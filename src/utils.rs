@@ -434,18 +434,22 @@ pub fn client_resize_for_pos(pos: Pos<f64>, size: Size<i32>, edges: Edges<i32>, 
     None
 }
 
-pub fn cursor_for_client_resize(edges: Option<ClientResize>) -> Cursor
+pub fn cursor_for_client_resize_and_resizable(edges: Option<ClientResize>, is_resizable: bool) -> Cursor
 {
-    match edges {
-        Some(ClientResize::Top) => Cursor::TopSide,
-        Some(ClientResize::Bottom) => Cursor::BottomSide,
-        Some(ClientResize::Left) => Cursor::LeftSide,
-        Some(ClientResize::Right) => Cursor::RightSide,
-        Some(ClientResize::TopLeft) => Cursor::TopLeftCorner,
-        Some(ClientResize::TopRight) => Cursor::TopRightCorner,
-        Some(ClientResize::BottomLeft) => Cursor::BottomLeftCorner,
-        Some(ClientResize::BottomRight) => Cursor::BottomRightCorner,
-        _ => Cursor::Default,
+    if is_resizable {
+        match edges {
+            Some(ClientResize::Top) => Cursor::TopSide,
+            Some(ClientResize::Bottom) => Cursor::BottomSide,
+            Some(ClientResize::Left) => Cursor::LeftSide,
+            Some(ClientResize::Right) => Cursor::RightSide,
+            Some(ClientResize::TopLeft) => Cursor::TopLeftCorner,
+            Some(ClientResize::TopRight) => Cursor::TopRightCorner,
+            Some(ClientResize::BottomLeft) => Cursor::BottomLeftCorner,
+            Some(ClientResize::BottomRight) => Cursor::BottomRightCorner,
+            _ => Cursor::Default,
+        }
+    } else {
+        Cursor::Default
     }
 }
 
@@ -467,7 +471,7 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
     match event {
         Event::Client(ClientEvent::PointerEnter(pos)) => {
             let resize_edges = client_resize_for_pos(*pos, window.size(), window.edges(), window.corners());
-            client_context.set_cursor(cursor_for_client_resize(resize_edges));
+            client_context.set_cursor(cursor_for_client_resize_and_resizable(resize_edges, window.is_resizable()));
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
             match resize_edges {
                 Some(resize_edges) => queue_context.set_motion_resize_edges(CallOnId::Pointer, resize_edges),
@@ -497,7 +501,7 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
         },
         Event::Client(ClientEvent::PointerMotion(_, pos)) => {
             let resize_edges = client_resize_for_pos(*pos, window.size(), window.edges(), window.corners());
-            client_context.set_cursor(cursor_for_client_resize(resize_edges));
+            client_context.set_cursor(cursor_for_client_resize_and_resizable(resize_edges, window.is_resizable()));
             let motion_call_on_path = queue_context.motion_call_on_path(CallOnId::Pointer);
             if motion_call_on_path != queue_context.current_call_on_path() {
                 match motion_call_on_path {
@@ -524,7 +528,9 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) => {
             match queue_context.motion_resize_edges(CallOnId::Pointer) {
                 Some(resize_edges) => {
-                    window.resize(resize_edges);
+                    if window.is_resizable() {
+                        window.resize(resize_edges);
+                    }
                 },
                 None => {
                     queue_context.set_pressed_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());

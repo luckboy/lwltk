@@ -74,6 +74,9 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn is_maximized(&self) -> bool
     { false }
+
+    fn is_resizable(&self) -> bool
+    { false }    
     
     fn parent_index(&self) -> Option<WindowIndex>
     { None }
