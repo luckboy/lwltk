@@ -19,6 +19,10 @@ use crate::types::*;
 use crate::widget::*;
 use crate::window::*;
 
+mod call_on_fun;
+
+pub use call_on_fun::*;
+
 pub fn create_dummy_cairo_surface() -> Result<ImageSurface, CairoError>
 { ImageSurface::create(Format::ARgb32, 1, 1) }
 
