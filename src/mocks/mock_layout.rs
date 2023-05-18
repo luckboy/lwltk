@@ -143,20 +143,20 @@ impl Widget for MockLayout
     
     fn h_scroll_bar_slider_x(&self, viewport_width: i32, trough_width: i32) -> f64
     { 
-        let client_width = max(viewport_width, self.bounds.width);
-        (self.client_pos.x as f64) * (trough_width as f64) / (client_width as f64)
+        let max_width = max(viewport_width, self.bounds.width);
+        (self.client_pos.x as f64) * (trough_width as f64) / (max_width as f64)
     }
 
     fn h_scroll_bar_slider_width(&self, viewport_width: i32, trough_width: i32) -> f64
     { 
-        let client_width = max(viewport_width, self.bounds.width);
-        (viewport_width as f64) * (trough_width as f64) / (client_width as f64)
+        let max_width = max(viewport_width, self.bounds.width);
+        (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
     }
 
     fn set_client_x(&mut self, viewport_width: i32, slider_x: f64, trough_width: i32)
     {
-        let client_width = max(viewport_width, self.bounds.width);
-        self.client_pos.x = ((slider_x * (client_width as f64)) / (trough_width as f64)) as i32;
+        let max_width = max(viewport_width, self.bounds.width);
+        self.client_pos.x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as i32;
     }
 
     fn update_client_x(&mut self, viewport_width: i32) -> bool
@@ -180,20 +180,20 @@ impl Widget for MockLayout
     
     fn v_scroll_bar_slider_y(&self, viewport_height: i32, trough_height: i32) -> f64
     {
-        let client_height = max(viewport_height, self.bounds.height);
-        (self.client_pos.y as f64) * (trough_height as f64) / (client_height as f64)
+        let max_height = max(viewport_height, self.bounds.height);
+        (self.client_pos.y as f64) * (trough_height as f64) / (max_height as f64)
     }
     
     fn v_scroll_bar_slider_height(&self, viewport_height: i32, trough_height: i32) -> f64
     {
-        let client_height = max(viewport_height, self.bounds.height);
-        (viewport_height as f64) * (trough_height as f64) / (client_height as f64)
+        let max_height = max(viewport_height, self.bounds.height);
+        (viewport_height as f64) * (trough_height as f64) / (max_height as f64)
     }
 
     fn set_client_y(&mut self, viewport_height: i32, slider_y: f64, trough_height: i32)
     {
-        let client_height = max(viewport_height, self.bounds.height);
-        self.client_pos.y = ((slider_y * (client_height as f64)) / (trough_height as f64)) as i32;
+        let max_height = max(viewport_height, self.bounds.height);
+        self.client_pos.y = ((slider_y * (max_height as f64)) / (trough_height as f64)) as i32;
     }
 
     fn update_client_y(&mut self, viewport_height: i32) -> bool
