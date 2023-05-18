@@ -5,6 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::cmp::max;
 use std::time::Duration;
 use std::time::Instant;
 use cairo::Format;
@@ -43,6 +44,104 @@ pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
         Err(err) => Err(err),
     }
 }
+
+pub fn h_scroll_bar_slider_x(client_x: i32, client_width: i32, viewport_width: i32, trough_width: i32) -> f64
+{
+    let max_width = max(viewport_width, client_width);
+    (client_x as f64) * (trough_width as f64) / (max_width as f64)
+}
+
+pub fn h_scroll_bar_slider_width(client_width: i32, viewport_width: i32, trough_width: i32) -> f64
+{
+    let max_width = max(viewport_width, client_width);
+    (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
+}
+
+pub fn set_client_x(client_x: &mut i32, client_width: i32, viewport_width: i32, slider_x: f64, trough_width: i32)
+{
+    let max_width = max(viewport_width, client_width);
+    *client_x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as i32;
+}
+
+pub fn update_client_x(client_x: &mut i32, width: i32, viewport_width: i32) -> bool
+{
+    if width - *client_x < viewport_width {
+        if width > viewport_width {
+            *client_x = width - viewport_width;
+            true
+        } else {
+            if *client_x != 0 {
+                *client_x = 0;
+                true
+            } else {
+                false
+            }
+        }
+    } else {
+        false
+    }
+}
+
+pub fn v_scroll_bar_slider_y(client_y: i32, client_height: i32, viewport_height: i32, trough_height: i32) -> f64
+{ h_scroll_bar_slider_x(client_y, client_height, viewport_height, trough_height) }
+
+pub fn v_scroll_bar_slider_height(client_height: i32, viewport_height: i32, trough_height: i32) -> f64
+{ h_scroll_bar_slider_width(client_height, viewport_height, trough_height) }
+
+pub fn set_client_y(client_y: &mut i32, client_height: i32, viewport_height: i32, slider_y: f64, trough_height: i32)
+{ set_client_x(client_y, client_height, viewport_height, slider_y, trough_height); }
+
+pub fn update_client_y(client_y: &mut i32, client_height: i32, viewport_height: i32) -> bool
+{ update_client_x(client_y, client_height, viewport_height) }
+
+pub fn h_scroll_bar_slider_x_for_i32size(client_x: I32Size, client_width: I32Size, viewport_width: i32, trough_width: i32) -> f64
+{
+    let max_width = max(viewport_width as I32Size, client_width);
+    (client_x as f64) * (trough_width as f64) / (max_width as f64)
+}
+
+pub fn h_scroll_bar_slider_width_for_i32size(client_width: I32Size, viewport_width: i32, trough_width: i32) -> f64
+{
+    let max_width = max(viewport_width as I32Size, client_width);
+    (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
+}
+
+pub fn set_client_x_for_i32size(client_x: &mut I32Size, client_width: I32Size, viewport_width: i32, slider_x: f64, trough_width: i32)
+{
+    let max_width = max(viewport_width as I32Size, client_width);
+    *client_x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as I32Size;
+}
+
+pub fn update_client_x_for_i32size(client_x: &mut I32Size, client_width: I32Size, viewport_width: i32) -> bool
+{
+    if client_width - *client_x < (viewport_width as I32Size) {
+        if client_width > (viewport_width as I32Size) {
+            *client_x = client_width - (viewport_width as I32Size);
+            true
+        } else {
+            if *client_x != 0 {
+                *client_x = 0;
+                true
+            } else {
+                false
+            }
+        }
+    } else {
+        false
+    }
+}
+
+pub fn v_scroll_bar_slider_y_for_i32size(client_y: I32Size, client_height: I32Size, viewport_height: i32, trough_height: i32) -> f64
+{ h_scroll_bar_slider_x_for_i32size(client_y, client_height, viewport_height, trough_height) }
+
+pub fn v_scroll_bar_slider_height_for_i32size(client_height: I32Size, viewport_height: i32, trough_height: i32) -> f64
+{ h_scroll_bar_slider_width_for_i32size(client_height, viewport_height, trough_height) }
+
+pub fn set_client_y_for_i32size(client_y: &mut I32Size, client_height: I32Size, viewport_height: i32, slider_y: f64, trough_height: i32)
+{ set_client_x_for_i32size(client_y, client_height, viewport_height, slider_y, trough_height); }
+
+pub fn update_client_y_for_i32size(client_y: &mut I32Size, client_height: I32Size, viewport_height: i32) -> bool
+{ update_client_x_for_i32size(client_y, client_height, viewport_height) }
 
 pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {

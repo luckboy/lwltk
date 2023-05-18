@@ -15,6 +15,13 @@ pub type CairoContext = cairo::Context;
 
 pub type CairoError = cairo::Error;
 
+#[cfg(target_pointer_width = "16")]
+pub type I32Size = i64;
+#[cfg(target_pointer_width = "32")]
+pub type I32Size = i64;
+#[cfg(target_pointer_width = "64")]
+pub type I32Size = i128;
+
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum WidgetState
 {
