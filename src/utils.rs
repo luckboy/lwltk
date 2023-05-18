@@ -48,19 +48,31 @@ pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
 pub fn h_scroll_bar_slider_x(client_x: i32, client_width: i32, viewport_width: i32, trough_width: i32) -> f64
 {
     let max_width = max(viewport_width, client_width);
-    (client_x as f64) * (trough_width as f64) / (max_width as f64)
+    if max_width > 0 {
+        (client_x as f64) * (trough_width as f64) / (max_width as f64)
+    } else {
+        0.0
+    }
 }
 
 pub fn h_scroll_bar_slider_width(client_width: i32, viewport_width: i32, trough_width: i32) -> f64
 {
     let max_width = max(viewport_width, client_width);
-    (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
+    if max_width > 0 {
+        (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
+    } else {
+        0.0
+    }
 }
 
 pub fn set_client_x(client_x: &mut i32, client_width: i32, viewport_width: i32, slider_x: f64, trough_width: i32)
 {
     let max_width = max(viewport_width, client_width);
-    *client_x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as i32;
+    if trough_width > 0 {
+        *client_x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as i32;
+    } else {
+        *client_x = 0;
+    }
 }
 
 pub fn update_client_x(client_x: &mut i32, width: i32, viewport_width: i32) -> bool
@@ -97,19 +109,31 @@ pub fn update_client_y(client_y: &mut i32, client_height: i32, viewport_height: 
 pub fn h_scroll_bar_slider_x_for_i32size(client_x: I32Size, client_width: I32Size, viewport_width: i32, trough_width: i32) -> f64
 {
     let max_width = max(viewport_width as I32Size, client_width);
-    (client_x as f64) * (trough_width as f64) / (max_width as f64)
+    if max_width > 0 {
+        (client_x as f64) * (trough_width as f64) / (max_width as f64)
+    } else {
+        0.0
+    }
 }
 
 pub fn h_scroll_bar_slider_width_for_i32size(client_width: I32Size, viewport_width: i32, trough_width: i32) -> f64
 {
     let max_width = max(viewport_width as I32Size, client_width);
-    (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
+    if max_width > 0 {
+        (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
+    } else {
+        0.0
+    }
 }
 
 pub fn set_client_x_for_i32size(client_x: &mut I32Size, client_width: I32Size, viewport_width: i32, slider_x: f64, trough_width: i32)
 {
     let max_width = max(viewport_width as I32Size, client_width);
-    *client_x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as I32Size;
+    if trough_width > 0 {
+        *client_x = ((slider_x * (max_width as f64)) / (trough_width as f64)) as I32Size;
+    } else {
+        *client_x = 0;
+    }
 }
 
 pub fn update_client_x_for_i32size(client_x: &mut I32Size, client_width: I32Size, viewport_width: i32) -> bool
