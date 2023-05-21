@@ -157,7 +157,7 @@ impl Widget for MockLayout
         if max_width > 0 {
             (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
         } else {
-            0.0
+            trough_width as f64
         }
     }
 
@@ -206,7 +206,7 @@ impl Widget for MockLayout
         if max_height > 0 {
             (viewport_height as f64) * (trough_height as f64) / (max_height as f64)
         } else {
-            0.0
+            trough_height as f64
         }
     }
 

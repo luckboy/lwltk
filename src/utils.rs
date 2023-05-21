@@ -61,7 +61,7 @@ pub fn h_scroll_bar_slider_width(client_width: i32, viewport_width: i32, trough_
     if max_width > 0 {
         (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
     } else {
-        0.0
+        trough_width as f64
     }
 }
 
@@ -122,7 +122,7 @@ pub fn h_scroll_bar_slider_width_for_client_int(client_width: ClientInt, viewpor
     if max_width > 0 {
         (viewport_width as f64) * (trough_width as f64) / (max_width as f64)
     } else {
-        0.0
+        trough_width as f64
     }
 }
 
