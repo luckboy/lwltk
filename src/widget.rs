@@ -44,6 +44,9 @@ pub trait Widget: Container + PreferredSize
     fn set_focus(&mut self, is_focused: bool) -> bool
     { false }
     
+    fn viewport_size(&self, size: Size<i32>) -> Size<i32>
+    { size }
+    
     #[allow(unused_variables)]
     fn set_viewport(&mut self, size: Size<i32>)
     {}
