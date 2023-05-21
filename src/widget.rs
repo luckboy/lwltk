@@ -37,12 +37,12 @@ pub trait Widget: Container + PreferredSize
     fn is_focused(&self) -> bool
     { false }
     
-    fn is_clickable(&self) -> bool
-    { self.is_focusable() }
-    
     #[allow(unused_variables)]
     fn set_focus(&mut self, is_focused: bool) -> bool
     { false }
+    
+    fn is_clickable(&self) -> bool
+    { self.is_focusable() }
     
     fn viewport_size(&self, size: Size<i32>) -> Size<i32>
     { size }
