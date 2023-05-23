@@ -244,7 +244,7 @@ pub trait Window: Container + MinSize + PreferredSize
                     if stack.len() > 1 {
                         stack.pop();
                     } else {
-                        return Some(Some(RelWidgetPath::new(stack[0].widget_index_pair?)));
+                        return Some(Some(RelWidgetPath::new(rel_widget_path.widget_index_pairs().next()?)));
                     }
                 }
                 (rel_widget_path.widget_index_pairs().next()?, is_down)
@@ -282,7 +282,11 @@ pub trait Window: Container + MinSize + PreferredSize
                         None => {
                             if elem.widget.is_focusable() || stack_len == 1 {
                                 if is_stop_for_none {
-                                    is_path = false;
+                                    if elem.widget.is_focusable() {
+                                        stack.pop();
+                                    } else {
+                                        is_path = false;
+                                    }
                                     break;
                                 } else {
                                     elem.widget_index_pair = None;
@@ -767,4 +771,1980 @@ mod tests
             None => assert!(false),
         }
     }
+    
+    #[test]
+    fn test_window_sets_next_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_focusable(false);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }        
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_nested_widgets()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget11 = MockWidget::new("test4");
+        widget11.set_focusable(false);
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget12 = MockWidget::new("test5");
+        widget12.set_focusable(false);
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test6");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test7");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test8");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget23 = MockWidget::new("test9");
+        let path23 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget23)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(2, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path23) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_focusable(false);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(1, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(2, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_last_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_focusable(false);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(2, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_next_focused_widget_for_focusable_layout()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget11 = MockWidget::new("test4");
+        widget11.set_focusable(false);
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget12 = MockWidget::new("test5");
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test6");
+        layout2.set_focusable(true);
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test7");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget22 = MockWidget::new("test8");
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget23 = MockWidget::new("test9");
+        let path23 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget23)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(1, 0));
+        rel_widget_path.push(WidgetIndexPair(2, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path23) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_next_focused_widget_for_one_focusable_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let widget = MockWidget::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }        
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_one_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let widget = MockWidget::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_one_unfocusable_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let mut widget = MockWidget::new("test2");
+        widget.set_focusable(false);
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_no_widgets()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        match window.next_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_prevsious_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test5");
+        widget3.set_focusable(false);
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_nested_widgets()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget11 = MockWidget::new("test4");
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget12 = MockWidget::new("test5");
+        widget12.set_focusable(false);
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget13 = MockWidget::new("test6");
+        widget13.set_focusable(false);
+        let path13 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget13)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test7");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test8");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test9");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path13) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test5");
+        widget3.set_focusable(false);
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(1, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }    
+
+    #[test]
+    fn test_window_sets_next_focused_widget_for_first_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget1 = MockWidget::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget3 = MockWidget::new("test5");
+        widget3.set_focusable(false);
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_focusable_layout()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout1 = MockLayout::new("test3");
+        layout1.set_focusable(true);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget11 = MockWidget::new("test4");
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget12 = MockWidget::new("test5");
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget13 = MockWidget::new("test6");
+        widget13.set_focusable(false);
+        let path13 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget13)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test7");
+        layout2.set_focusable(true);
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget21 = MockWidget::new("test8");
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test9");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path13) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }    
+
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_one_focusable_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let widget = MockWidget::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }        
+
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_one_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let widget = MockWidget::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_one_unfocusable_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let mut widget = MockWidget::new("test2");
+        widget.set_focusable(false);
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_previous_focused_widget_for_no_widgets()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        match window.prev_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_up_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let mut layout = MockLayout::new("test2");
+        layout.set_focusable(true);
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.up_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_up_focused_widget_for_nested_focused_layout()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout1 = MockLayout::new("test3");
+        layout1.set_focusable(true);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.up_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_up_focused_widget_for_upper_focused_layout()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout1 = MockLayout::new("test3");
+        layout1.set_focusable(true);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.up_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_up_focused_widget_for_no_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout1 = MockLayout::new("test3");
+        layout1.set_focusable(true);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.up_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_down_focused_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget1 = MockWidget::new("test3");
+        widget1.set_focusable(false);
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget2 = MockWidget::new("test4");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget3 = MockWidget::new("test5");
+        let path3 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(widget3)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path3) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_down_focused_widget_for_nested_widgets()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget11 = MockWidget::new("test4");
+        widget11.set_focusable(false);
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget12 = MockWidget::new("test5");
+        widget12.set_focusable(false);
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test6");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test7");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test8");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget23 = MockWidget::new("test9");
+        let path23 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget23)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(2, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path23) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }    
+
+    #[test]
+    fn test_window_sets_down_focused_widget_for_focused_layout()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget11 = MockWidget::new("test4");
+        widget11.set_focusable(false);
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget12 = MockWidget::new("test5");
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test6");
+        layout2.set_focusable(true); 
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test7");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test8");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget23 = MockWidget::new("test9");
+        let path23 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget23)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(1, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(2, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path23) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_down_focused_widget_for_root_focused_layout()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let mut layout = MockLayout::new("test2");
+        layout.set_focusable(true);
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget11 = MockWidget::new("test4");
+        widget11.set_focusable(false);
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget12 = MockWidget::new("test5");
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout2 = MockLayout::new("test6");
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test7");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test8");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget23 = MockWidget::new("test9");
+        let path23 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget23)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path23) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_down_focused_widget_for_unfocusable_children()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let layout = MockLayout::new("test2");
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(layout)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let layout1 = MockLayout::new("test3");
+        let path1 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout1)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget11 = MockWidget::new("test4");
+        widget11.set_focusable(false);
+        let path11 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget11)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let widget12 = MockWidget::new("test5");
+        let path12 = match container_rel_widget_path(&mut window, &path1, |l: &mut MockLayout| l.add(widget12)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut layout2 = MockLayout::new("test6");
+        layout2.set_focusable(true); 
+        let path2 = match container_rel_widget_path(&mut window, &path, |l: &mut MockLayout| l.add(layout2)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget21 = MockWidget::new("test7");
+        widget21.set_focusable(false);
+        let path21 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget21)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget22 = MockWidget::new("test8");
+        widget22.set_focusable(false);
+        let path22 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget22)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut widget23 = MockWidget::new("test9");
+        widget23.set_focusable(false);
+        let path23 = match container_rel_widget_path(&mut window, &path2, |l: &mut MockLayout| l.add(widget23)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        let mut rel_widget_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+        rel_widget_path.push(WidgetIndexPair(1, 0));
+        assert_eq!(true, window.set_focused_rel_widget_path(Some(rel_widget_path)));
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(rel_widget_path) => {
+                let mut widget_index_pairs = rel_widget_path.widget_index_pairs();
+                assert_eq!(Some(WidgetIndexPair(0, 0)), widget_index_pairs.next());
+                assert_eq!(Some(WidgetIndexPair(1, 0)), widget_index_pairs.next());
+                assert_eq!(None, widget_index_pairs.next());
+            },
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path1) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path11) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path12) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path2) {
+            Some(widget) => assert_eq!(true, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path21) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path22) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+        match window.dyn_widget(&path23) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_window_sets_down_focused_widget_for_one_unfocusable_widget()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        let mut widget = MockWidget::new("test2");
+        widget.set_focusable(false);
+        let path = match container_rel_widget_path1(&mut window, |w: &mut MockWindowWithFocusedWidget| w.set(widget)) {
+            Some(tmp_path) => tmp_path,
+            None => {
+                assert!(false);
+                unreachable!()
+            },
+        };
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+        match window.dyn_widget(&path) {
+            Some(widget) => assert_eq!(false, widget.is_focused()),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_sets_down_focused_widget_for_no_widgets()
+    {
+        let mut window = MockWindowWithFocusedWidget::new("test1");
+        match window.down_focused_widget() {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+        match window.focused_rel_widget_path() {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }    
 }
