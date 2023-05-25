@@ -451,7 +451,7 @@ impl ClientContext
         Ok(())
     }
     
-    fn add_client_windows_to_destroy(&mut self, window_context: &mut WindowContext) -> Result<(), ClientError>
+    fn add_client_windows_to_destroy(&mut self, window_context: &mut WindowContext, queue_context2: Arc<Mutex<QueueContext>>) -> Result<(), ClientError>
     {
         let mut client_windows_to_destroy: BTreeMap<WindowIndex, Box<ClientWindow>> = BTreeMap::new();
         for idx in window_context.window_container.window_map().keys() {
@@ -513,6 +513,11 @@ impl ClientContext
                 None => (),
             }
         }
+        match queue_context2.lock() {
+            Ok(mut queue_context_g) => queue_context_g.clear_for_client_windows_to_destroy(&client_windows_to_destroy),
+            Err(_) => return Err(ClientError::Mutex),
+        }
+        self.clear_for_client_windows_to_destroy(&client_windows_to_destroy);
         self.client_windows_to_destroy.push_back(client_windows_to_destroy);
         Ok(())
     }
@@ -612,7 +617,7 @@ impl ClientContext
     
     pub(crate) fn add_to_destroy_and_create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
-        match self.add_client_windows_to_destroy(window_context) {
+        match self.add_client_windows_to_destroy(window_context, queue_context2.clone()) {
             Ok(()) => (),
             Err(err) => eprintln!("lwltk: {}", err),
         }
@@ -767,11 +772,11 @@ impl ClientContext
         }
     }
     
-    pub(crate) fn clear_for_windows_to_destroy(&mut self, window_context: &WindowContext)
+    pub(crate) fn clear_for_client_windows_to_destroy(&mut self, client_windows_to_destroy: &BTreeMap<WindowIndex, Box<ClientWindow>>)
     {
-        if !window_context.window_container.indices_to_destroy().is_empty() {
+        if !client_windows_to_destroy.is_empty() {
             let call_on_ids: Vec<CallOnId> = self.fields.event_preparations.iter().filter(|p| {
-                    window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.call_on_path.window_index())
+                    client_windows_to_destroy.keys().any(|i| *i == p.1.call_on_path.window_index())
             }).map(|p| *(p.0)).collect();
             for call_on_id in &call_on_ids {
                 self.fields.event_preparations.remove(call_on_id);
@@ -970,11 +975,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -996,11 +999,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1021,11 +1022,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1047,11 +1046,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1072,11 +1069,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1107,11 +1102,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1133,11 +1126,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1159,11 +1150,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1185,11 +1174,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1216,11 +1203,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1242,11 +1227,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1267,11 +1250,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
-                                                queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                             },
                                             Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                         }
-                                        client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                         client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context3, window_context3, queue_context3, &timer_tx2);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1537,11 +1518,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                                 Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                 None => (),
                                             }
-                                            queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                         },
                                         Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                     }
-                                    client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                     client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
                                 },
                                 Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1566,11 +1545,9 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                             Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                             None => (),
                                         }
-                                        queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
                                     },
                                     Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
                                 }
-                                client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
                             },
                             Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
@@ -1586,16 +1563,12 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         match window_context.write() {
                             Ok(mut window_context_g) => {
                                 match queue_context.lock() {
-                                    Ok(mut queue_context_g) => {
-                                        handle_events_and_callbacks_from_queues(&mut *client_context_r, &mut *window_context_g, &mut *queue_context_g);
-                                        queue_context_g.clear_for_windows_to_destroy(&mut *window_context_g);
-                                    },
+                                    Ok(mut queue_context_g) => handle_events_and_callbacks_from_queues(&mut *client_context_r, &mut *window_context_g, &mut *queue_context_g),
                                     Err(_) => {
                                         client_context_r.destroy();
                                         return Err(ClientError::Mutex);
                                     },
                                 }
-                                client_context_r.clear_for_windows_to_destroy(&mut *window_context_g);
                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
                             },
                             Err(_) => {

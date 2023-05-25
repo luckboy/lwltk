@@ -11,6 +11,7 @@ use std::slice::Iter;
 use std::time::Instant;
 use crate::callback_queue::*;
 use crate::client_context::*;
+use crate::client_window::*;
 use crate::events::*;
 use crate::event_queue::*;
 use crate::types::*;
@@ -200,11 +201,11 @@ impl QueueContext
         }
     }
     
-    pub(crate) fn clear_for_windows_to_destroy(&mut self, window_context: &WindowContext)
+    pub(crate) fn clear_for_client_windows_to_destroy(&mut self, client_windows_to_destroy: &BTreeMap<WindowIndex, Box<ClientWindow>>)
     {
-        if !window_context.window_container.indices_to_destroy().is_empty() {
+        if !client_windows_to_destroy.is_empty() {
             let motion_call_on_ids: Vec<CallOnId> = self.motion_call_on_paths.iter().filter(|p| {
-                    window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.window_index())
+                    client_windows_to_destroy.keys().any(|i| *i == p.1.window_index())
             }).map(|p| *(p.0)).collect();
             for call_on_id in &motion_call_on_ids {
                 self.motion_call_on_paths.remove(call_on_id);
@@ -213,7 +214,7 @@ impl QueueContext
                 self.motion_resize_edge_map.remove(call_on_id);
             }
             let pressed_call_on_ids: Vec<CallOnId> = self.pressed_call_on_paths.iter().filter(|p| {
-                    window_context.window_container.indices_to_destroy().iter().any(|i| *i == p.1.window_index())
+                    client_windows_to_destroy.keys().any(|i| *i == p.1.window_index())
             }).map(|p| *(p.0)).collect();
             for call_on_id in &pressed_call_on_ids {
                 self.pressed_call_on_paths.remove(call_on_id);
@@ -222,7 +223,7 @@ impl QueueContext
                 self.pressed_instants.remove(call_on_id);
             }
             let active_call_on_paths: Vec<CallOnPath> = self.active_counts.keys().filter(|k| {
-                    window_context.window_container.indices_to_destroy().iter().any(|i| *i == k.window_index()) 
+                    client_windows_to_destroy.keys().any(|i| *i == k.window_index()) 
             }).map(|k| k.clone()).collect();
             for call_on_path in &active_call_on_paths {
                 self.active_counts.remove(call_on_path);
