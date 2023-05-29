@@ -153,6 +153,7 @@ pub trait Container: Draw + CallOn
     }
 }
 
+#[derive(Clone)]
 pub struct RevWidgetIndexPairs<'a>
 {
     container: &'a dyn Container,
@@ -189,6 +190,7 @@ impl<'a> Iterator for RevWidgetIndexPairs<'a>
     }
 }
 
+#[derive(Clone)]
 pub struct WidgetIndexPairs<'a>
 {
     container: &'a dyn Container,
@@ -225,6 +227,7 @@ impl<'a> Iterator for WidgetIndexPairs<'a>
     }
 }
 
+#[derive(Clone)]
 pub struct RevWidgets<'a>
 {
     iter: RevWidgetIndexPairs<'a>,
@@ -252,6 +255,7 @@ impl<'a> Iterator for RevWidgets<'a>
     }
 }
 
+#[derive(Clone)]
 pub struct Widgets<'a>
 {
     iter: WidgetIndexPairs<'a>,
