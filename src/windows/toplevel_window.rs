@@ -163,8 +163,8 @@ impl Draw for ToplevelWindow
     fn update_pos(&mut self, _cairo_context: &CairoContext, _theme: &dyn Theme, _area_bounds: Rect<i32>) -> Result<(), CairoError>
     { Ok(()) }
 
-    fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, _is_focused_window: bool) -> Result<(), CairoError>
-    { theme.draw_window_bg(cairo_context, Rect::new(0, 0, self.size.width, self.size.height)) }
+    fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
+    { theme.draw_toplevel_window_content_bg(cairo_context, Rect::new(0, 0, self.size.width, self.size.height), is_focused_window) }
 }
 
 impl CallOn for ToplevelWindow
