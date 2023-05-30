@@ -242,10 +242,13 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 queue_context.set_double_click(false);
             }
             queue_context.push_callback(move |_, window_context, _| {
-                    window_context.set_focused_window_index(Some(window_context.current_window_index()?));
-                    let focused_window_idx = window_context.focused_window_index()?;
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
                     let current_pos = window_context.current_pos()?;
-                    let window = window_context.dyn_window_mut(focused_window_idx)?;
+                    let window = window_context.dyn_window_mut(current_window_idx)?;
                     match window.point_focusable(current_pos) {
                         Some(focusable_widget) => {
                             window.set_focused_rel_widget_path(Some(focusable_widget));
@@ -291,10 +294,14 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             let current_call_on_path = queue_context.current_call_on_path()?.clone();
             let is_enabled = widget.is_enabled();
             queue_context.push_callback(move |_, window_context, queue_context| {
-                    window_context.set_focused_window_index(Some(window_context.current_window_index()?));
-                    let focused_window_idx = window_context.focused_window_index()?;
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
+                    let current_window_idx = window_context.current_window_index()?;
                     let current_pos = window_context.current_pos()?;
-                    let window = window_context.dyn_window_mut(focused_window_idx)?;
+                    let window = window_context.dyn_window_mut(current_window_idx)?;
                     window.set_focused_rel_widget_path(window.point_focusable(current_pos));
                     match window.point_focusable(current_pos) {
                         Some(focusable_widget) => {
@@ -401,10 +408,13 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
                 widget.set_state(WidgetState::Active);
             }
             queue_context.push_callback(move |_, window_context, _| {
-                    window_context.set_focused_window_index(Some(window_context.current_window_index()?));
-                    let focused_window_idx = window_context.focused_window_index()?;
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
                     let current_pos = window_context.current_pos()?;
-                    let window = window_context.dyn_window_mut(focused_window_idx)?;
+                    let window = window_context.dyn_window_mut(current_window_idx)?;
                     match window.point_focusable(current_pos) {
                         Some(focusable_widget) => {
                             window.set_focused_rel_widget_path(Some(focusable_widget));
@@ -706,7 +716,11 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
                 },
             }
             queue_context.push_callback(move |_, window_context, _| {
-                    window_context.set_focused_window_index(Some(window_context.current_window_index()?));
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
                     Some(())
             });
             Some(Some(None))
@@ -747,7 +761,11 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
             let current_call_on_path = queue_context.current_call_on_path()?.clone();
             let are_motion_resize_edges = queue_context.motion_resize_edges(CallOnId::Pointer).is_some();
             queue_context.push_callback(move |_, window_context, queue_context| {
-                    window_context.set_focused_window_index(Some(window_context.current_window_index()?));
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
                     if !are_motion_resize_edges {
                         queue_context.event_queue_mut().push(EventPair::new(current_call_on_path.clone(), Event::PopupClick));
                     }
@@ -820,8 +838,12 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
                     queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
                     queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
                     queue_context.push_callback(move |_, window_context, _| {
-                            window_context.set_focused_window_index(Some(window_context.current_window_index()?));
-                            Some(())
+                            let current_window_idx = window_context.current_window_index()?;
+                            let window = window_context.dyn_window(current_window_idx)?;
+                            if window.is_focusable() {
+                                window_context.set_focused_window_index(Some(current_window_idx));
+                            }
+                           Some(())
                     });
                 },
             }

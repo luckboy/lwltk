@@ -392,24 +392,32 @@ impl ClientContext
             (Some(idx), Some(old_idx)) => {
                 if idx != old_idx {
                     match window_context.window_container.dyn_window_mut(old_idx) {
-                        Some(window) => window.set_focus(false),
+                        Some(window) => {
+                            window.set_focus(false);
+                        },
                         None => return Err(ClientError::NoWindow),
                     }
                 }
                 match window_context.window_container.dyn_window_mut(idx) {
-                    Some(window) => window.set_focus(true),
+                    Some(window) => {
+                        window.set_focus(true);
+                    },
                     None => return Err(ClientError::NoWindow),
                 }
             },
             (Some(idx), None) => {
                 match window_context.window_container.dyn_window_mut(idx) {
-                    Some(window) => window.set_focus(true),
+                    Some(window) => {
+                        window.set_focus(true);
+                    },
                     None => return Err(ClientError::NoWindow),
                 }
             },
             (None, Some(old_idx)) => {
                 match window_context.window_container.dyn_window_mut(old_idx) {
-                    Some(window) => window.set_focus(false),
+                    Some(window) => {
+                        window.set_focus(false);
+                    },
                     None => return Err(ClientError::NoWindow),
                 }
             },
@@ -579,24 +587,32 @@ impl ClientContext
             (Some(idx), Some(old_idx)) => {
                 if idx != old_idx {
                     match window_context.window_container.dyn_window_mut(old_idx) {
-                        Some(window) => window.set_focus(false),
+                        Some(window) => {
+                            window.set_focus(false);
+                        },
                         None => return Err(ClientError::NoWindow),
                     }
                     match window_context.window_container.dyn_window_mut(idx) {
-                        Some(window) => window.set_focus(true),
+                        Some(window) => {
+                            window.set_focus(true);
+                        },
                         None => return Err(ClientError::NoWindow),
                     }
                 }
             },
             (Some(idx), None) => {
                 match window_context.window_container.dyn_window_mut(idx) {
-                    Some(window) => window.set_focus(true),
+                    Some(window) => {
+                        window.set_focus(true);
+                    },
                     None => return Err(ClientError::NoWindow),
                 }
             },
             (None, Some(old_idx)) => {
                 match window_context.window_container.dyn_window_mut(old_idx) {
-                    Some(window) => window.set_focus(false),
+                    Some(window) => {
+                        window.set_focus(false);
+                    },
                     None => return Err(ClientError::NoWindow),
                 }
             },

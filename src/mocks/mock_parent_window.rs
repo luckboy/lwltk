@@ -48,6 +48,7 @@ pub(crate) struct MockParentWindow
     padding_bounds: Rect<i32>,
     corners: Corners<i32>,
     is_visible: bool,
+    is_focusable: bool,
     is_focused: bool,
     change_flag_arc: Arc<AtomicBool>,
     min_size: Size<Option<i32>>,
@@ -65,6 +66,7 @@ impl MockParentWindow
             padding_bounds: Rect::new(0, 0, 0, 0),
             corners: Corners::new(0, 0, 0, 0, 0, 0, 0, 0),
             is_visible: true,
+            is_focusable: true,
             is_focused: false,
             change_flag_arc: Arc::new(AtomicBool::new(false)),
             min_size: Size::new(None, None),
@@ -84,6 +86,9 @@ impl MockParentWindow
         self.is_visible = is_visible;
         self.reset_descendant_states();
     }
+
+    pub(crate) fn set_focusable(&mut self, is_focusable: bool)
+    { self.is_focusable = is_focusable; }
     
     pub(crate) fn set_change_flag(&mut self, is_changed: bool)
     { self.change_flag_arc.store(is_changed, Ordering::SeqCst); }
@@ -103,11 +108,21 @@ impl Window for MockParentWindow
     fn is_visible(&self) -> bool
     { self.is_visible }
     
+    fn is_focusable(&self) -> bool
+    { self.is_focusable }
+
     fn is_focused(&self) -> bool
-    { self.is_focused }
+    { self.is_focusable && self.is_focused }
     
-    fn set_focus(&mut self, is_focused: bool)
-    { self.is_focused = is_focused; }
+    fn set_focus(&mut self, is_focused: bool) -> bool
+    {
+        if self.is_focusable {
+            self.is_focused = is_focused;
+            true
+        } else {
+            false
+        }
+    }
 
     fn title(&self) -> Option<&str>
     { Some(self.title.as_str()) }

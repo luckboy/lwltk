@@ -91,13 +91,14 @@ impl Window for ToplevelWindow
     fn is_focused(&self) -> bool
     { self.is_focused }
     
-    fn set_focus(&mut self, is_focused: bool)
+    fn set_focus(&mut self, is_focused: bool) -> bool
     {
         let old_focus_flag = self.is_focused;
         self.is_focused = is_focused;
         if old_focus_flag != self.is_focused {
             self.change_flag_arc.store(true, Ordering::SeqCst);
         }
+        true
     }
 
     fn title(&self) -> Option<&str>

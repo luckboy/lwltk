@@ -58,10 +58,13 @@ pub trait Window: Container + MinSize + PreferredSize
     fn corners(&self) -> Corners<i32>;
     
     fn is_visible(&self) -> bool;
+
+    fn is_focusable(&self) -> bool
+    { true }
     
     fn is_focused(&self) -> bool;
     
-    fn set_focus(&mut self, is_focused: bool);
+    fn set_focus(&mut self, is_focused: bool) -> bool;
 
     fn title(&self) -> Option<&str>
     { None }
