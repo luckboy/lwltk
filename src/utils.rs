@@ -288,6 +288,7 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
         },
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Pressed)) => {
             let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            let is_enabled = widget.is_enabled();
             queue_context.push_callback(move |_, window_context, queue_context| {
                     window_context.set_focused_window_index(Some(window_context.current_window_index()?));
                     let focused_window_idx = window_context.focused_window_index()?;
@@ -300,7 +301,9 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                         },
                         None => (),
                     }
-                    queue_context.event_queue_mut().push(EventPair::new(current_call_on_path.clone(), Event::PopupClick));
+                    if is_enabled {
+                        queue_context.event_queue_mut().push(EventPair::new(current_call_on_path.clone(), Event::PopupClick));
+                    }
                     Some(())
             });
             Some(Some(None))
@@ -311,12 +314,14 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             if queue_context.decrease_active_count(&current_call_on_path) {
                 widget.set_state(WidgetState::Hover);
             }
-            if queue_context.has_double_click() {
-                queue_context.push_event(Event::DoubleClick);
-            } else if queue_context.has_long_click() {
-                queue_context.push_event(Event::LongClick);
-            } else {
-                queue_context.push_event(Event::Click);
+            if widget.is_enabled() {
+                if queue_context.has_double_click() {
+                    queue_context.push_event(Event::DoubleClick);
+                } else if queue_context.has_long_click() {
+                    queue_context.push_event(Event::LongClick);
+                } else {
+                    queue_context.push_event(Event::Click);
+                }
             }
             Some(Some(None))
         },
@@ -361,7 +366,9 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
                             widget.set_state(WidgetState::None);
                         }
                     }
-                    queue_context.push_event(Event::Click);
+                    if widget.is_enabled() {
+                        queue_context.push_event(Event::Click);
+                    }
                 }
             }
             Some(Some(None))
@@ -419,10 +426,12 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
                     }
                 }
                 let duration = Duration::from_millis(client_context.long_click_delay());
-                if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
-                    queue_context.push_event(Event::LongClick);
-                } else {
-                    queue_context.push_event(Event::Click);
+                if widget.is_enabled() {
+                    if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
+                        queue_context.push_event(Event::LongClick);
+                    } else {
+                        queue_context.push_event(Event::Click);
+                    }
                 }
             } else {
                 match pressed_call_on_path {
