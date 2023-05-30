@@ -122,6 +122,7 @@ pub(crate) struct ClientContextFields
     pub(crate) has_old_cursor: bool,
     pub(crate) old_cursor: Cursor,
     pub(crate) post_button_release_call_on_path: Option<CallOnPath>,
+    pub(crate) has_sent_post_button_release_call_on_path: bool,
 }
 
 pub struct ClientContext
@@ -314,6 +315,7 @@ impl ClientContext
                 has_old_cursor: false,
                 old_cursor: Cursor::Default,
                 post_button_release_call_on_path: None,
+                has_sent_post_button_release_call_on_path: false,
             },
             client_windows: BTreeMap::new(),
             client_windows_to_destroy: VecDeque::new(),
@@ -850,23 +852,35 @@ impl ClientContext
     }
 
     pub fn set_post_button_release_call_on_path(&mut self, call_on_path: Option<CallOnPath>)
-    { self.fields.post_button_release_call_on_path = call_on_path; }
+    {
+        self.fields.post_button_release_call_on_path = call_on_path;
+        self.fields.has_sent_post_button_release_call_on_path = false;
+    }
     
     pub fn send_after_button_release(&mut self, call_on_path: CallOnPath)
-    { self.fields.post_button_release_call_on_path = Some(call_on_path); }
+    {
+        self.fields.post_button_release_call_on_path = Some(call_on_path);
+        self.fields.has_sent_post_button_release_call_on_path = false;
+    }
 
     pub fn unsend_after_button_release(&mut self)
-    { self.fields.post_button_release_call_on_path = None; }
-    
-    pub(crate) fn send_post_button_release(&self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
-        if self.fields.post_button_release_call_on_path.is_some() {
-            let duration = Duration::from_millis(self.fields.double_click_delay);
-            match timer_tx.send(ThreadTimerCommand::SetDelay(ThreadTimer::PostButtonRelease, duration)) {
-                Ok(()) => (),
-                Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+        self.fields.post_button_release_call_on_path = None;
+        self.fields.has_sent_post_button_release_call_on_path = false;
+    }
+    
+    pub(crate) fn send_post_button_release(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    {
+        if !self.fields.has_sent_post_button_release_call_on_path {
+            if self.fields.post_button_release_call_on_path.is_some() {
+                let duration = Duration::from_millis(self.fields.double_click_delay);
+                match timer_tx.send(ThreadTimerCommand::SetDelay(ThreadTimer::PostButtonRelease, duration)) {
+                    Ok(()) => (),
+                    Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+                }
             }
         }
+        self.fields.has_sent_post_button_release_call_on_path = true;
     }
 }
 
