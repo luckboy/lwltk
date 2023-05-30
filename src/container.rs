@@ -151,6 +151,26 @@ pub trait Container: Draw + CallOn
             Direction::Next => self.next(idx_pair),
         }
     }
+    
+    fn reset_descendant_states(&mut self)
+    {
+        let mut prev_idx_pair = None;
+        loop {
+            match self.next(prev_idx_pair) {
+                Some(idx_pair) => {
+                    match self.dyn_widget_mut_for_index_pair(idx_pair) {
+                        Some(widget) => {
+                            widget.set_state(WidgetState::None);
+                            widget.reset_descendant_states();
+                        },
+                        None => (),
+                    }
+                    prev_idx_pair = Some(idx_pair);
+                },
+                None => break,
+            }
+        }
+    }
 }
 
 #[derive(Clone)]

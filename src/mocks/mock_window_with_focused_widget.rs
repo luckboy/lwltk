@@ -64,7 +64,10 @@ impl MockWindowWithFocusedWidget
     { self.padding_bounds = bounds; }
     
     pub(crate) fn set_visible(&mut self, is_visible: bool)
-    { self.is_visible = is_visible; }
+    {
+        self.is_visible = is_visible;
+        self.reset_descendant_states();
+    }
     
     pub(crate) fn set_change_flag(&mut self, is_changed: bool)
     { self.change_flag_arc.store(is_changed, Ordering::SeqCst); }
