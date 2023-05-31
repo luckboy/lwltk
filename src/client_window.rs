@@ -100,10 +100,10 @@ fn create_buffer(client_context_fields: &ClientContextFields, window: &dyn Windo
     }
 }
 
-fn update_window_size_and_window_pos(client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), CairoError>
+fn update_window_size_and_window_pos(window: &mut dyn Window, theme: &dyn Theme) -> Result<(), CairoError>
 {
     with_dummy_cairo_context(|cairo_context| {
-            theme.set_cairo_context(cairo_context, client_context_fields.scale)?; 
+            theme.set_cairo_context(cairo_context, 1)?; 
             let area_width = match (window.preferred_width(), window.min_width()) {
                 (Some(preferred_width), Some(min_width)) => Some(max(preferred_width, min_width)),
                 (Some(preferred_width), None) => Some(preferred_width),
@@ -149,7 +149,7 @@ impl ClientWindow
 {
     pub(crate) fn new(client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<ClientWindow, ClientError>
     {
-        match update_window_size_and_window_pos(client_context_fields, window, theme) {
+        match update_window_size_and_window_pos(window, theme) {
             Ok(()) => {
                 let surface = client_context_fields.compositor.create_surface();
                 let shell_surface = client_context_fields.shell.get_shell_surface(&surface);
@@ -359,7 +359,7 @@ impl ClientWindow
         self.set_move(client_context_fields, window)?;
         self.set_resize(client_context_fields, window)?;
         if window.is_changed() {
-            match update_window_size_and_window_pos(client_context_fields, window, theme) {
+            match update_window_size_and_window_pos(window, theme) {
                 Ok(()) => {
                     if self.size != window.size() {
                         let (buffer, file, mmap, cairo_surface) = create_buffer(client_context_fields, window)?;
