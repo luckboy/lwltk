@@ -43,22 +43,22 @@ impl DefaultTheme
             window_content_bg_color: Color::new_from_rgb_u32(0xeeeeee),
             // Window border colors.
             window_content_border_color: Color::new_from_rgb_u32(0x222222),
-            unfocused_window_content_border_color: Color::new_from_rgb_u32(0x444444),
+            unfocused_window_content_border_color: Color::new_from_rgb_u32(0x666666),
             // Button background colors.
-            button_bg_color: Color::new_from_rgb_u32(0xaaaaaa),
-            hover_button_bg_color: Color::new_from_rgb_u32(0xbbbbbb),
-            active_button_bg_color: Color::new_from_rgb_u32(0xcccccc),
+            button_bg_color: Color::new_from_rgb_u32(0xbbbbbbb),
+            hover_button_bg_color: Color::new_from_rgb_u32(0xcccccc),
+            active_button_bg_color: Color::new_from_rgb_u32(0xdddddd),
             // Button border colors.
             button_border_color: Color::new_from_rgb_u32(0x222222),
             focused_button_border_color: Color::new_from_rgb_u32(0x2222ee),
             disabled_button_border_color: Color::new_from_rgb_u32(0x666666),
-            button_border_color_for_unfocused_window: Color::new_from_rgb_u32(0x444444),
-            disabled_button_border_color_for_unfocused_window: Color::new_from_rgb_u32(0x888888),
+            button_border_color_for_unfocused_window: Color::new_from_rgb_u32(0x666666),
+            disabled_button_border_color_for_unfocused_window: Color::new_from_rgb_u32(0xaaaaaa),
             // Button foreground colors.
             button_fg_color: Color::new_from_rgb_u32(0x222222),
             disabled_button_fg_color: Color::new_from_rgb_u32(0x666666),
-            button_fg_color_for_unfocused_window: Color::new_from_rgb_u32(0x444444),
-            disabled_button_fg_color_for_unfocused_window: Color::new_from_rgb_u32(0x888888),
+            button_fg_color_for_unfocused_window: Color::new_from_rgb_u32(0x666666),
+            disabled_button_fg_color_for_unfocused_window: Color::new_from_rgb_u32(0xaaaaaa),
         }
     }
     
