@@ -23,9 +23,9 @@ impl TextLine
     { TextLine { start, end, width, } }
 }
 
+#[derive(Clone)]
 pub struct Text
 {
-    pub y: i32,
     pub text: String,
     pub align: TextAlign,
     pub ellipsize_count: Option<usize>,
@@ -37,7 +37,6 @@ impl Text
     pub fn new(text: &str, align: TextAlign) -> Self
     {
         Text {
-            y: 0,
             text: String::from(text),
             align,
             ellipsize_count: None,
@@ -153,6 +152,7 @@ impl Text
                             }
                             let new_width = width + text_extents.x_advance;
                             if area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
+                                end = j;
                                 width = new_width;
                             } else {
                                 end = dot_dot_dot_end;
