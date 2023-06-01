@@ -30,6 +30,7 @@ pub struct Text
     pub align: TextAlign,
     pub ellipsize_count: Option<usize>,
     pub lines: Vec<TextLine>,
+    pub has_dot_dot_dot: bool,
 }
 
 impl Text
@@ -41,6 +42,7 @@ impl Text
             align,
             ellipsize_count: None,
             lines: Vec::new(),
+            has_dot_dot_dot: false,
         }
     }
     
@@ -57,6 +59,7 @@ impl Text
         let mut is_first_char = true;
         let mut start: usize = 0;
         let mut end: usize = 0;
+        let mut tmp_width = 0.0;
         let mut width = 0.0;
         let mut last_word_iter = iter.clone();
         let mut last_word_start: usize = 0;
@@ -69,10 +72,12 @@ impl Text
         let mut dot_dot_dot_end = 0;
         let mut dot_dot_dot_width = 0.0;
         self.lines.clear();
+        self.has_dot_dot_dot = false;
         loop {
             let tmp_iter = iter.clone();
             match iter.next() {
-                Some(((i, c), tmp_j)) => {
+                Some(((i, tmp_c), tmp_j)) => {
+                    let mut c = tmp_c;
                     let mut j = tmp_j;
                     let mut is_combining = false;
                     loop {
@@ -105,63 +110,99 @@ impl Text
                     let text_extents = cairo_context.text_extents(&self.text[i..j])?;
                     if self.ellipsize_count.map(|n| line_count + 1 < n).unwrap_or(true) {
                         if is_combining || c != '\n' {
-                            let new_width = width + text_extents.x_advance;
-                            if is_first_char || area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
-                                end = j;
-                                if (is_prev_combining || !prev_c.is_whitespace()) && !is_combining && c.is_whitespace() {
-                                    is_first_word = false;
-                                    last_word_iter = iter.clone();
-                                    last_word_start = j;
-                                    last_word_end = i;
-                                    last_word_width = width;
+                            if !is_first_char || is_combining || !c.is_whitespace() {
+                                if !is_combining && c.is_whitespace() {
+                                    if is_prev_combining || !prev_c.is_whitespace() {
+                                        is_first_word = false;
+                                        last_word_iter = iter.clone();
+                                        last_word_start = j;
+                                        last_word_end = i;
+                                        last_word_width = width;
+                                    } else {
+                                        last_word_start = j;
+                                    }
                                 }
-                                width = new_width;
-                                is_first_char = false;
-                            } else {
-                                if is_first_word {
-                                    self.lines.push(TextLine::new(start, end, width.ceil() as i32));
-                                    iter = tmp_iter.clone();
-                                    start = i;
-                                    end = i;
-                                    dot_dot_dot_end = i;
+                                let new_width = tmp_width + text_extents.x_advance;
+                                if is_first_char || area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
+                                    tmp_width = new_width;
+                                    if is_combining || !c.is_whitespace() {
+                                        end = j;
+                                        width = tmp_width;
+                                    }
+                                    is_first_char = false;
                                 } else {
-                                    self.lines.push(TextLine::new(start, last_word_end, last_word_width.ceil() as i32));
-                                    iter = last_word_iter.clone();
-                                    start = last_word_start;
-                                    end = last_word_start;
-                                    dot_dot_dot_end = last_word_start;
+                                    if is_first_word {
+                                        self.lines.push(TextLine::new(start, end, width.ceil() as i32));
+                                        iter = tmp_iter.clone();
+                                        start = i;
+                                        end = i;
+                                        dot_dot_dot_end = i;
+                                    } else {
+                                        self.lines.push(TextLine::new(start, last_word_end, last_word_width.ceil() as i32));
+                                        iter = last_word_iter.clone();
+                                        start = last_word_start;
+                                        end = last_word_start;
+                                        dot_dot_dot_end = last_word_start;
+                                    }
+                                    tmp_width = 0.0;
+                                    width = 0.0;
+                                    is_first_word = true;
+                                    is_first_char = true;
+                                    line_count += 1;
+                                    is_combining = false;
+                                    c = ' ';
                                 }
-                                width = 0.0;
-                                is_first_word = true;
-                                is_first_char = true;
-                                line_count += 1;
+                            } else {
+                                start = j;
+                                end = j;
+                                last_word_iter = iter.clone();
+                                last_word_start = j;
+                                last_word_end = j;
+                                dot_dot_dot_end = j;
                             }
                         } else {
                             self.lines.push(TextLine::new(start, end, width.ceil() as i32));
                             start = j;
                             end = j;
                             dot_dot_dot_end = j;
+                            tmp_width = 0.0;
                             width = 0.0;
+                            is_first_word = true;
+                            is_first_char = true;
                             line_count += 1;
+                            is_combining = false;
+                            c = ' ';
                         }
                     } else {
                         if is_combining || c != '\n' {
-                            if area_size.width.map(|w| width + dot_dot_dot_text_extents.x_advance <= w as f64).unwrap_or(true) {
-                                dot_dot_dot_end = i;
-                                dot_dot_dot_width = width;
-                            }
-                            let new_width = width + text_extents.x_advance;
-                            if area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
-                                end = j;
-                                width = new_width;
+                            if !is_first_char || is_combining || !c.is_whitespace() {
+                                if area_size.width.map(|w| width + dot_dot_dot_text_extents.x_advance <= w as f64).unwrap_or(true) {
+                                    dot_dot_dot_end = i;
+                                    dot_dot_dot_width = width;
+                                }
+                                let new_width = tmp_width + text_extents.x_advance;
+                                if area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
+                                    tmp_width = new_width;
+                                    if is_combining || !c.is_whitespace() {
+                                        end = j;
+                                        width = tmp_width;
+                                    }
+                                    is_first_char = false;
+                                } else {
+                                    end = dot_dot_dot_end;
+                                    width = dot_dot_dot_width;
+                                    self.has_dot_dot_dot = true;
+                                    break;
+                                }
                             } else {
-                                end = dot_dot_dot_end;
-                                width = dot_dot_dot_width;
-                                break;
+                                start = j;
+                                end = j;
+                                dot_dot_dot_end = j;
                             }
                         } else {
                             end = dot_dot_dot_end;
                             width = dot_dot_dot_width;
+                            self.has_dot_dot_dot = true;
                             break;
                         }
                     }
@@ -188,7 +229,7 @@ impl Text
         let mut y = area_bounds.y + (area_bounds.height - (font_height * self.lines.len() as i32)) / 2;
         for (i, line) in self.lines.iter().enumerate() {
             let mut width = line.width;
-            if i + 1 >= self.lines.len() && line.end < self.text.len() {
+            if i + 1 >= self.lines.len() && self.has_dot_dot_dot {
                 width += dot_dot_dot_text_extents.x_advance.ceil() as i32;
             }
             let x = match self.align {
@@ -197,7 +238,7 @@ impl Text
                 TextAlign::Right => area_bounds.x + area_bounds.width - width,
             };
             drawing_f(cairo_context, Pos::new(x, y), &self.text[line.start..line.end])?;
-            if i + 1 >= self.lines.len() && line.end < self.text.len() {
+            if i + 1 >= self.lines.len() && self.has_dot_dot_dot {
                 drawing_f(cairo_context, Pos::new(x + line.width, y), "\u{2026}")?;
             }
             y += font_height;
