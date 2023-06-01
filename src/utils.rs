@@ -985,3 +985,13 @@ pub fn default_window_on(window: &mut dyn Window, client_context: &mut ClientCon
         Some(None)
     }
 }
+
+pub fn is_mark_char(c: char) -> bool
+{
+    (c >= '\u{0300}' && c <= '\u{036f}') || (c >= '\u{1ab0}' && c <= '\u{1ace}') ||
+    (c >= '\u{1dc0}' && c <= '\u{1dff}') || (c >= '\u{20d0}' && c <= '\u{20f0}') ||
+    (c >= '\u{fe20}' && c <= '\u{fe2f}') 
+}
+
+pub fn is_mark_char2(c: char) -> bool
+{ c >= '\u{035c}' && c <= '\u{0362}' }

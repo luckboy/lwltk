@@ -36,6 +36,7 @@ mod window_context;
 pub mod cursors;
 pub mod events;
 pub mod keys;
+pub mod text;
 pub mod themes;
 pub mod utils;
 pub mod windows;

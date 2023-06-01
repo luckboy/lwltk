@@ -48,6 +48,14 @@ pub enum VAlign
     Fill,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum TextAlign
+{
+    Left,
+    Center,
+    Right,
+}
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Color
 {
