@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Łukasz Szpakowski
+// Copyright (c) 2022-2023 Łukasz Szpakowski
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,43 +31,58 @@ pub struct App<T>
 impl<T> App<T>
 {
     pub fn new<F, G>(creating_f: F, setting_f: G) -> Result<Self, ClientError>
-        where F: FnOnce(&mut WindowContext) -> Option<T>,
-              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>) -> Option<()>
+        where F: FnOnce(&mut WindowContext, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>) -> Option<T>,
+              G: FnOnce(&mut WindowContext, &mut T, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>, Arc<RwLock<T>>) -> Option<()>
     { Self::new_with_dyn_theme(theme_from_env()?, creating_f, setting_f) }
 
     pub fn new_with_theme<U: Theme + 'static, F, G>(theme: U, creating_f: F, setting_f: G) -> Result<Self, ClientError>
-        where F: FnOnce(&mut WindowContext) -> Option<T>,
-              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>) -> Option<()>
+        where F: FnOnce(&mut WindowContext, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>) -> Option<T>,
+              G: FnOnce(&mut WindowContext, &mut T, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>, Arc<RwLock<T>>) -> Option<()>
     { Self::new_with_dyn_theme(Box::new(theme), creating_f, setting_f) }
     
     pub fn new_with_dyn_theme<F, G>(theme: Box<dyn Theme>, creating_f: F, setting_f: G) -> Result<Self, ClientError>
-        where F: FnOnce(&mut WindowContext) -> Option<T>,
-              G: FnOnce(&mut WindowContext, Arc<RwLock<T>>) -> Option<()>
+        where F: FnOnce(&mut WindowContext, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>) -> Option<T>,
+              G: FnOnce(&mut WindowContext, &mut T, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>, Arc<RwLock<T>>) -> Option<()>
     {
-        let mut window_context = WindowContext::new(theme);
-        match creating_f(&mut window_context) {
-            Some(tmp_data) => {
-                let data = Arc::new(RwLock::new(tmp_data));
-                match setting_f(&mut window_context, data.clone()) {
-                    Some(()) => {
-                        let (client_display, client_context) = ClientContext::new()?;
-                        let (thread_signal_sender, thread_signal_receiver) = thread_signal_channel()?;
-                        let app = App {
-                            client_display,
-                            client_context: Rc::new(RefCell::new(client_context)),
-                            window_context: Arc::new(RwLock::new(window_context)),
-                            queue_context: Arc::new(Mutex::new(QueueContext::new())),
-                            thread_signal_sender,
-                            thread_signal_receiver,
-                            data,
+        let window_context = Arc::new(RwLock::new(WindowContext::new(theme)));
+        let window_context2 = window_context.clone();
+        let queue_context2 = Arc::new(Mutex::new(QueueContext::new()));
+        let res2 = match window_context.write() {
+            Ok(mut window_context_g) => {
+                match creating_f(&mut *window_context_g, window_context2.clone(), queue_context2.clone()) {
+                    Some(tmp_data) => {
+                        let data = Arc::new(RwLock::new(tmp_data));
+                        let data2 = data.clone();
+                        let res = match data.write() {
+                            Ok(mut data_g) => {
+                                match setting_f(&mut *window_context_g, &mut *data_g, window_context2.clone(), queue_context2.clone(), data2.clone()) {
+                                    Some(()) => {
+                                        let (client_display, client_context) = ClientContext::new()?;
+                                        let (thread_signal_sender, thread_signal_receiver) = thread_signal_channel()?;
+                                        let app = App {
+                                            client_display,
+                                            client_context: Rc::new(RefCell::new(client_context)),
+                                            window_context: window_context2,
+                                            queue_context: queue_context2,
+                                            thread_signal_sender,
+                                            thread_signal_receiver,
+                                            data: data2,
+                                        };
+                                        Ok(app)
+                                    },
+                                    None => Err(ClientError::Data),
+                                }
+                            },
+                            Err(_) => Err(ClientError::RwLock),
                         };
-                        Ok(app)
+                        res
                     },
                     None => Err(ClientError::Data),
                 }
             },
-            None => Err(ClientError::Data),
-        }
+            Err(_) => Err(ClientError::RwLock),
+        };
+        res2
     }
 
     pub fn client_context(&self) -> Rc<RefCell<ClientContext>>

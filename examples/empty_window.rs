@@ -7,10 +7,12 @@
 //
 use std::process::exit;
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::sync::RwLock;
 use lwltk::windows::ToplevelWindow;
 use lwltk::App;
 use lwltk::PreferredSize;
+use lwltk::QueueContext;
 use lwltk::Size;
 use lwltk::WindowIndex;
 use lwltk::WindowContext;
@@ -21,7 +23,7 @@ struct AppData
     window_index: WindowIndex,
 }
 
-fn create_app_data(window_context: &mut WindowContext) -> Option<AppData>
+fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>) -> Option<AppData>
 {
     let mut window = ToplevelWindow::new();
     window.set_title("empty window");
@@ -32,7 +34,7 @@ fn create_app_data(window_context: &mut WindowContext) -> Option<AppData>
     })
 }
 
-fn set_app_data(_window_context: &mut WindowContext, _app_data: Arc<RwLock<AppData>>) -> Option<()>
+fn set_app_data(_window_context: &mut WindowContext, _app_data: &mut AppData, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _app_data2: Arc<RwLock<AppData>>) -> Option<()>
 { Some(()) }
 
 fn main()
