@@ -67,7 +67,7 @@ pub trait Widget: Container + PreferredSize
 
     fn update_client_y(&mut self, viewport_height: i32) -> bool;
     
-    fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
+    fn set_only_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
     
     #[allow(unused_variables)]
     fn cursor(&self, pos: Pos<f64>, is_wait_cursor: bool) -> Cursor
@@ -114,6 +114,12 @@ pub trait Widget: Container + PreferredSize
 
     fn height(&self) -> i32
     { self.bounds().height }
+
+    fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)
+    {
+        self.set_only_change_flag_arc(flag_arc.clone());
+        self.set_descendant_change_flag_arcs(flag_arc);
+    }
 }
 
 pub fn dyn_widget_as_widget<T: Any>(widget: &dyn Widget) -> Option<&T>

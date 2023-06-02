@@ -239,7 +239,7 @@ impl Widget for MockLayout
         }
     }
     
-    fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)
+    fn set_only_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)
     { self.change_flag_arc = flag_arc; }
 }
 

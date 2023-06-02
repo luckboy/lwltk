@@ -7,6 +7,8 @@
 //
 use std::any::Any;
 use std::iter::FusedIterator;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use crate::call_on::*;
 use crate::draw::*;
 use crate::types::*;
@@ -162,6 +164,26 @@ pub trait Container: Draw + CallOn
                         Some(widget) => {
                             widget.set_state(WidgetState::None);
                             widget.reset_descendant_states();
+                        },
+                        None => (),
+                    }
+                    prev_idx_pair = Some(idx_pair);
+                },
+                None => break,
+            }
+        }
+    }
+
+    fn set_descendant_change_flag_arcs(&mut self, flag_arc: Arc<AtomicBool>)
+    {
+        let mut prev_idx_pair = None;
+        loop {
+            match self.next(prev_idx_pair) {
+                Some(idx_pair) => {
+                    match self.dyn_widget_mut_for_index_pair(idx_pair) {
+                        Some(widget) => {
+                            widget.set_only_change_flag_arc(flag_arc.clone());
+                            widget.set_descendant_change_flag_arcs(flag_arc.clone());
                         },
                         None => (),
                     }
