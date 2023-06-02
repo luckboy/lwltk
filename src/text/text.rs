@@ -101,7 +101,12 @@ impl Text
                             }
                         }
                         if is_double_combining {
+                            let tmp_iter3 = iter.clone();
                             match iter.next() {
+                                Some(((_, '\n'), _)) => {
+                                    iter = tmp_iter3;
+                                    break;
+                                },
                                 Some(((_, _), j3)) => j = j3,
                                 None => break,
                             }
