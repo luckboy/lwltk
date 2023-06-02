@@ -9,6 +9,8 @@ use std::iter::once;
 use crate::types::*;
 use crate::utils::*;
 
+const DOT_DOT_DOT: &'static str = "\u{2026}";
+
 #[derive(Copy, Clone, Debug)]
 pub struct TextLine
 {
@@ -70,7 +72,7 @@ impl Text
         let mut is_prev_combining = false;
         let mut prev_c = ' ';
         let mut line_count = 0;
-        let dot_dot_dot_text_extents = cairo_context.text_extents("\u{2026}")?;
+        let dot_dot_dot_text_extents = cairo_context.text_extents(DOT_DOT_DOT)?;
         let mut dot_dot_dot_end = 0;
         let mut dot_dot_dot_width = 0.0;
         self.lines.clear();
@@ -127,6 +129,7 @@ impl Text
                                         last_word_width = width;
                                     } else {
                                         if self.is_trimmed {
+                                            last_word_iter = iter.clone();
                                             last_word_start = j;
                                         }
                                     }
@@ -142,7 +145,7 @@ impl Text
                                 } else {
                                     if is_first_word {
                                         self.lines.push(TextLine::new(start, end, width.ceil() as i32));
-                                        iter = tmp_iter.clone();
+                                        iter = tmp_iter;
                                         start = i;
                                         end = i;
                                         dot_dot_dot_end = i;
@@ -233,7 +236,7 @@ impl Text
         cairo_context.save()?;
         font_setting_f(cairo_context)?;
         let font_extents = cairo_context.font_extents()?;
-        let dot_dot_dot_text_extents = cairo_context.text_extents("\u{2026}")?;
+        let dot_dot_dot_text_extents = cairo_context.text_extents(DOT_DOT_DOT)?;
         let font_height = font_extents.height.ceil() as i32;
         let mut y = area_bounds.y + (area_bounds.height - (font_height * self.lines.len() as i32)) / 2;
         for (i, line) in self.lines.iter().enumerate() {
@@ -248,7 +251,7 @@ impl Text
             };
             drawing_f(cairo_context, Pos::new(x, y), &self.text[line.start..line.end])?;
             if i + 1 >= self.lines.len() && self.has_dot_dot_dot {
-                drawing_f(cairo_context, Pos::new(x + line.width, y), "\u{2026}")?;
+                drawing_f(cairo_context, Pos::new(x + line.width, y), DOT_DOT_DOT)?;
             }
             y += font_height;
         }
