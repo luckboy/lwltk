@@ -29,6 +29,7 @@ pub struct Text
     pub text: String,
     pub align: TextAlign,
     pub ellipsize_count: Option<usize>,
+    pub is_trimmed: bool,
     pub lines: Vec<TextLine>,
     pub has_dot_dot_dot: bool,
 }
@@ -41,6 +42,7 @@ impl Text
             text: String::from(text),
             align,
             ellipsize_count: None,
+            is_trimmed: true,
             lines: Vec::new(),
             has_dot_dot_dot: false,
         }
@@ -110,7 +112,7 @@ impl Text
                     let text_extents = cairo_context.text_extents(&self.text[i..j])?;
                     if self.ellipsize_count.map(|n| line_count + 1 < n).unwrap_or(true) {
                         if is_combining || c != '\n' {
-                            if !is_first_char || is_combining || !c.is_whitespace() {
+                            if !self.is_trimmed || !is_first_char || is_combining || !c.is_whitespace() {
                                 if !is_combining && c.is_whitespace() {
                                     if is_prev_combining || !prev_c.is_whitespace() {
                                         is_first_word = false;
@@ -119,13 +121,15 @@ impl Text
                                         last_word_end = i;
                                         last_word_width = width;
                                     } else {
-                                        last_word_start = j;
+                                        if self.is_trimmed {
+                                            last_word_start = j;
+                                        }
                                     }
                                 }
                                 let new_width = tmp_width + text_extents.x_advance;
                                 if is_first_char || area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
                                     tmp_width = new_width;
-                                    if is_combining || !c.is_whitespace() {
+                                    if !self.is_trimmed || is_combining || !c.is_whitespace() {
                                         end = j;
                                         width = tmp_width;
                                     }
@@ -175,7 +179,7 @@ impl Text
                         }
                     } else {
                         if is_combining || c != '\n' {
-                            if !is_first_char || is_combining || !c.is_whitespace() {
+                            if !self.is_trimmed || !is_first_char || is_combining || !c.is_whitespace() {
                                 if area_size.width.map(|w| width + dot_dot_dot_text_extents.x_advance <= w as f64).unwrap_or(true) {
                                     dot_dot_dot_end = i;
                                     dot_dot_dot_width = width;
@@ -183,7 +187,7 @@ impl Text
                                 let new_width = tmp_width + text_extents.x_advance;
                                 if area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
                                     tmp_width = new_width;
-                                    if is_combining || !c.is_whitespace() {
+                                    if !self.is_trimmed || is_combining || !c.is_whitespace() {
                                         end = j;
                                         width = tmp_width;
                                     }
