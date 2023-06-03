@@ -128,7 +128,7 @@ impl Window for MockChildWindow
         }
     }
 
-    fn unset_parent(&mut self) -> Option<()>
+    fn unset_parent(&mut self, _tag: ParentWindowTag) -> Option<()>
     {
         match (self.parent_index, self.pos_in_parent) {
             (None, None) => None,

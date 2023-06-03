@@ -222,7 +222,7 @@ impl WindowContainer
                 }
                 match window.parent_index() {
                     Some(parent_idx) => {
-                        window.unset_parent();
+                        window.unset_parent(ParentWindowTag::new());
                         match self.dyn_window_mut(parent_idx) {
                             Some(parent) => {
                                 parent.remove_child(ChildWindowIndex::new(idx));
@@ -236,7 +236,7 @@ impl WindowContainer
                 for child_idx in &child_indices {
                     match self.dyn_window_mut(*child_idx) {
                         Some(child) => {
-                            child.unset_parent();
+                            child.unset_parent(ParentWindowTag::new());
                         },
                         None => (),
                     }
@@ -339,7 +339,7 @@ impl WindowContainer
         };
         if !is_success {
             let child_window = self.dyn_window_mut(child_idx)?;
-            child_window.unset_parent();
+            child_window.unset_parent(ParentWindowTag::new());
             return None;
         }
         Some(())
@@ -351,7 +351,7 @@ impl WindowContainer
             let child_window = self.dyn_window_mut(child_idx)?;
             match child_window.parent_index() {
                 Some(parent_idx) => {
-                    child_window.unset_parent()?;
+                    child_window.unset_parent(ParentWindowTag::new())?;
                     Some(parent_idx)
                 },
                 None => None,

@@ -26,6 +26,15 @@ impl ParentWindowIndex
 }
 
 #[derive(Copy, Clone, Debug)]
+pub struct ParentWindowTag(());
+
+impl ParentWindowTag
+{
+    pub(crate) fn new() -> ParentWindowTag
+    { ParentWindowTag(()) }    
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct ChildWindowIndex(WindowIndex);
 
 impl ChildWindowIndex
@@ -91,7 +100,7 @@ pub trait Window: Container + MinSize + PreferredSize
     fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> Option<()>
     { None }
 
-    fn unset_parent(&mut self) -> Option<()>
+    fn unset_parent(&mut self, _tag: ParentWindowTag) -> Option<()>
     { None }
 
     fn child_index_iter(&self) -> Option<Box<dyn WindowIterator + '_>>
