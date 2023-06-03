@@ -34,6 +34,7 @@ pub(crate) struct MockEmptyWindow
     change_flag_arc: Arc<AtomicBool>,
     min_size: Size<Option<i32>>,
     preferred_size: Size<Option<i32>>,
+    index: Option<WindowIndex>,
 }
 
 impl MockEmptyWindow
@@ -51,6 +52,7 @@ impl MockEmptyWindow
             change_flag_arc: Arc::new(AtomicBool::new(false)),
             min_size: Size::new(None, None),
             preferred_size: Size::new(None, None),
+            index: None,
         }
     }
     
@@ -68,6 +70,9 @@ impl MockEmptyWindow
 
     pub(crate) fn set_focusable(&mut self, is_focusable: bool)
     { self.is_focusable = is_focusable; }
+    
+    pub(crate) fn index(&self) -> Option<WindowIndex>
+    { self.index }
     
     pub(crate) fn set_change_flag(&mut self, is_changed: bool)
     { self.change_flag_arc.store(is_changed, Ordering::SeqCst); }
@@ -105,6 +110,13 @@ impl Window for MockEmptyWindow
 
     fn title(&self) -> Option<&str>
     { Some(self.title.as_str()) }
+    
+    #[allow(unused_variables)]
+    fn set_index(&mut self, idx: SelfWindowIndex)
+    { self.index = Some(idx.window_index()); }
+    
+    fn unset_index(&mut self, _tag: SelfWindowTag)
+    { self.index = None; }
     
     fn is_changed(&self) -> bool
     { self.change_flag_arc.load(Ordering::SeqCst) }

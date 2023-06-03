@@ -136,7 +136,7 @@ impl WindowContainer
         }
     }
     
-    pub fn add_dyn(&mut self, window: Box<dyn Window>) -> Option<WindowIndex>
+    pub fn add_dyn(&mut self, mut window: Box<dyn Window>) -> Option<WindowIndex>
     {
         match self.free_indices.iter().next().map(|ir| *ir) {
             Some(idx_range) => {
@@ -146,6 +146,7 @@ impl WindowContainer
                     self.free_indices.insert(new_idx_range);
                 }
                 let new_idx = WindowIndex(idx_range.min);
+                window.set_index(SelfWindowIndex::new(new_idx));
                 self.windows.insert(new_idx, window);
                 Some(new_idx)
             },
@@ -155,6 +156,7 @@ impl WindowContainer
                         match idx_counter.checked_add(1) {
                             Some(i) => { 
                                 let new_idx = WindowIndex(i);
+                                window.set_index(SelfWindowIndex::new(new_idx));
                                 self.windows.insert(new_idx, window);
                                 self.index_counter = Some(new_idx.0);
                                 Some(new_idx)
@@ -164,6 +166,7 @@ impl WindowContainer
                     },
                     None => {
                         let new_idx = WindowIndex(0);
+                        window.set_index(SelfWindowIndex::new(new_idx));
                         self.windows.insert(new_idx, window);
                         self.index_counter = Some(new_idx.0);
                         Some(new_idx)
@@ -220,6 +223,7 @@ impl WindowContainer
                         None => self.index_counter = self.index_counter.map(|ic| ic.checked_sub(1)).flatten(),
                     }
                 }
+                window.unset_index(SelfWindowTag::new());
                 match window.parent_index() {
                     Some(parent_idx) => {
                         window.unset_parent(ParentWindowTag::new());
@@ -894,6 +898,91 @@ mod tests
         assert_eq!(true, window_container.indices_to_destroy.is_empty());
     }
 
+    #[test]
+    fn test_window_container_sets_indices_for_windows_while_window_adding()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockEmptyWindow::new("test1"));
+        window_container.add(MockEmptyWindow::new("test2"));
+        window_container.add(MockEmptyWindow::new("test3"));
+        window_container.remove(WindowIndex(1));
+        window_container.add(MockEmptyWindow::new("test4"));
+        let window1: Option<&MockEmptyWindow> = window_container.window(WindowIndex(0));
+        let window2: Option<&MockEmptyWindow> = window_container.window(WindowIndex(1));
+        let window3: Option<&MockEmptyWindow> = window_container.window(WindowIndex(2));
+        match window1 {
+            Some(window) => {
+                assert_eq!(Some("test1"), window.title());
+                assert_eq!(Some(WindowIndex(0)), window.index());
+            },
+            None => assert!(false),
+        }
+        match window2 {
+            Some(window) => {
+                assert_eq!(Some("test4"), window.title());
+                assert_eq!(Some(WindowIndex(1)), window.index());
+            },
+            None => assert!(false),
+        }
+        match window3 {
+            Some(window) => {
+                assert_eq!(Some("test3"), window.title());
+                assert_eq!(Some(WindowIndex(2)), window.index());
+            },
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_window_container_unsets_indices_for_windows_while_window_removing()
+    {
+        let mut window_container = WindowContainer::new();
+        window_container.add(MockEmptyWindow::new("test1"));
+        window_container.add(MockEmptyWindow::new("test2"));
+        window_container.add(MockEmptyWindow::new("test3"));
+        window_container.remove(WindowIndex(1));
+        window_container.add(MockEmptyWindow::new("test4"));
+        let window1 = window_container.remove(WindowIndex(0));
+        let window2 = window_container.remove(WindowIndex(1));
+        let window3 = window_container.remove(WindowIndex(2));
+        match window1 {
+            Some(window) => {
+                match dyn_window_as_window::<MockEmptyWindow>(&*window) {
+                    Some(window) => {
+                        assert_eq!(Some("test1"), window.title());
+                        assert_eq!(None, window.index());
+                    },
+                    None => assert!(false),
+                }
+            },
+            None => assert!(false),
+        }
+        match window2 {
+            Some(window) => {
+                match dyn_window_as_window::<MockEmptyWindow>(&*window) {
+                    Some(window) => {
+                        assert_eq!(Some("test4"), window.title());
+                        assert_eq!(None, window.index());
+                    },
+                    None => assert!(false),
+                }
+            },
+            None => assert!(false),
+        }
+        match window3 {
+            Some(window) => {
+                match dyn_window_as_window::<MockEmptyWindow>(&*window) {
+                    Some(window) => {
+                        assert_eq!(Some("test3"), window.title());
+                        assert_eq!(None, window.index());
+                    },
+                    None => assert!(false),
+                }
+            },
+            None => assert!(false),
+        }
+    }    
+    
     #[test]
     fn test_window_container_sets_parent()
     {

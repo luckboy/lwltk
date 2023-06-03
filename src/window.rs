@@ -14,6 +14,27 @@ use crate::types::*;
 use crate::widget::*;
 
 #[derive(Copy, Clone, Debug)]
+pub struct SelfWindowIndex(WindowIndex);
+
+impl SelfWindowIndex
+{
+    pub(crate) fn new(idx: WindowIndex) -> SelfWindowIndex
+    { SelfWindowIndex(idx) }
+    
+    pub fn window_index(&self) -> WindowIndex
+    { self.0 }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct SelfWindowTag(());
+
+impl SelfWindowTag
+{
+    pub(crate) fn new() -> SelfWindowTag
+    { SelfWindowTag(()) }    
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct ParentWindowIndex(WindowIndex);
 
 impl ParentWindowIndex
@@ -89,6 +110,13 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn is_resizable(&self) -> bool
     { false }    
+    
+    #[allow(unused_variables)]
+    fn set_index(&mut self, idx: SelfWindowIndex)
+    {}
+    
+    fn unset_index(&mut self, _tag: SelfWindowTag)
+    {}
     
     fn parent_index(&self) -> Option<WindowIndex>
     { None }
