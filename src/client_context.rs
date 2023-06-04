@@ -67,6 +67,39 @@ const DEFAULT_TEXT_CURSOR_BLINK_TIME: u64 = 1200;
 const DEFAULT_DOUBLE_CLICK_DELAY: u64 = 400;
 const DEFAULT_LONG_CLICK_DELAY: u64 = 1000;
 
+struct DeepestFocusableWindowIndexPair
+{
+    depth: usize,
+    window_index: WindowIndex,
+}
+
+impl DeepestFocusableWindowIndexPair
+{
+    fn new(idx: WindowIndex) -> Self
+    { DeepestFocusableWindowIndexPair { depth: 0, window_index: idx, } }
+}
+
+fn find_deepest_focusable_window_index(window_context: &WindowContext, depth: usize, idx: WindowIndex, pair: &mut DeepestFocusableWindowIndexPair, excluded_idx: Option<WindowIndex>) -> Result<(), ClientError>
+{
+    match window_context.window_container.dyn_window(idx) {
+        Some(window) => {
+            if window.is_focusable() {
+                if depth > pair.depth {
+                    pair.depth = depth;
+                    pair.window_index = idx;
+                }
+            }
+            for child_idx in window.child_indices() {
+                if excluded_idx.map(|i| i != child_idx).unwrap_or(true) {
+                    find_deepest_focusable_window_index(window_context, depth + 1, child_idx, pair, None)?;
+                }
+            }
+            Ok(())
+        },
+        None => Err(ClientError::NoWindow),
+    }
+}
+
 pub(crate) struct ClientDisplay
 {
     display: Display,
@@ -388,6 +421,14 @@ impl ClientContext
     
     fn create_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Result<(), ClientError>
     {
+        match window_context.focused_window_index {
+            Some(idx) => {
+                let mut pair = DeepestFocusableWindowIndexPair::new(idx);
+                find_deepest_focusable_window_index(window_context, 0, idx, &mut pair, None)?;
+                window_context.focused_window_index = Some(pair.window_index);
+            },
+            None => (),
+        }
         match (window_context.focused_window_index, window_context.old_focused_window_index) {
             (Some(idx), Some(old_idx)) => {
                 if idx != old_idx {
@@ -523,6 +564,34 @@ impl ClientContext
                 None => (),
             }
         }
+        let mut idx = window_context.focused_window_index;
+        let mut parent_idx = None;
+        let mut excluded_idx = None;
+        loop {
+            match idx {
+                Some(tmp_idx) => {
+                    match client_windows_to_destroy.get(&tmp_idx) {
+                        Some(client_window) => {
+                            if client_window.parent_index.is_some() {
+                                parent_idx = client_window.parent_index;
+                                excluded_idx = idx;
+                            }
+                            idx = client_window.parent_index;
+                        },
+                        None => break,
+                    }
+                },
+                None => break,
+            }
+        }
+        match parent_idx {
+            Some(parent_idx) => {
+                let mut pair = DeepestFocusableWindowIndexPair::new(parent_idx);
+                find_deepest_focusable_window_index(window_context, 0, parent_idx, &mut pair, excluded_idx)?;
+                window_context.focused_window_index = Some(pair.window_index);
+            },
+            None => (),
+        }
         match queue_context2.lock() {
             Ok(mut queue_context_g) => queue_context_g.clear_for_client_windows_to_destroy(&client_windows_to_destroy),
             Err(_) => return Err(ClientError::Mutex),
@@ -583,6 +652,14 @@ impl ClientContext
     
     fn create_or_update_client_windows(&mut self, window_context: &mut WindowContext, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Result<(), ClientError>
     {
+        match window_context.focused_window_index {
+            Some(idx) => {
+                let mut pair = DeepestFocusableWindowIndexPair::new(idx);
+                find_deepest_focusable_window_index(window_context, 0, idx, &mut pair, None)?;
+                window_context.focused_window_index = Some(pair.window_index);
+            },
+            None => (),
+        }
         match (window_context.focused_window_index, window_context.old_focused_window_index) {
             (Some(idx), Some(old_idx)) => {
                 if idx != old_idx {
