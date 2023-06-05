@@ -437,7 +437,7 @@ impl ClientContext
                         Some(window) => {
                             window.set_focus(false);
                         },
-                        None => return Err(ClientError::NoWindow),
+                        None => (),
                     }
                 }
                 match window_context.window_container.dyn_window_mut(idx) {
@@ -460,7 +460,7 @@ impl ClientContext
                     Some(window) => {
                         window.set_focus(false);
                     },
-                    None => return Err(ClientError::NoWindow),
+                    None => (),
                 }
             },
             (None, None) => (),
@@ -668,7 +668,7 @@ impl ClientContext
                         Some(window) => {
                             window.set_focus(false);
                         },
-                        None => return Err(ClientError::NoWindow),
+                        None => (),
                     }
                     match window_context.window_container.dyn_window_mut(idx) {
                         Some(window) => {
@@ -691,7 +691,7 @@ impl ClientContext
                     Some(window) => {
                         window.set_focus(false);
                     },
-                    None => return Err(ClientError::NoWindow),
+                    None => (),
                 }
             },
             (None, None) => (),
