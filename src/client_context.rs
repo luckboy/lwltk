@@ -76,7 +76,7 @@ struct DeepestFocusableWindowIndexPair
 impl DeepestFocusableWindowIndexPair
 {
     fn new(idx: WindowIndex) -> Self
-    { DeepestFocusableWindowIndexPair { depth: 0, window_index: idx, } }
+    { DeepestFocusableWindowIndexPair { depth: 1, window_index: idx, } }
 }
 
 fn find_deepest_focusable_window_index(window_context: &WindowContext, depth: usize, idx: WindowIndex, pair: &mut DeepestFocusableWindowIndexPair, excluded_idx: Option<WindowIndex>) -> Result<(), ClientError>
@@ -424,7 +424,7 @@ impl ClientContext
         match window_context.focused_window_index {
             Some(idx) => {
                 let mut pair = DeepestFocusableWindowIndexPair::new(idx);
-                find_deepest_focusable_window_index(window_context, 0, idx, &mut pair, None)?;
+                find_deepest_focusable_window_index(window_context, 1, idx, &mut pair, None)?;
                 window_context.focused_window_index = Some(pair.window_index);
             },
             None => (),
@@ -587,7 +587,7 @@ impl ClientContext
         match parent_idx {
             Some(parent_idx) => {
                 let mut pair = DeepestFocusableWindowIndexPair::new(parent_idx);
-                find_deepest_focusable_window_index(window_context, 0, parent_idx, &mut pair, excluded_idx)?;
+                find_deepest_focusable_window_index(window_context, 1, parent_idx, &mut pair, excluded_idx)?;
                 window_context.focused_window_index = Some(pair.window_index);
             },
             None => (),
@@ -655,7 +655,7 @@ impl ClientContext
         match window_context.focused_window_index {
             Some(idx) => {
                 let mut pair = DeepestFocusableWindowIndexPair::new(idx);
-                find_deepest_focusable_window_index(window_context, 0, idx, &mut pair, None)?;
+                find_deepest_focusable_window_index(window_context, 1, idx, &mut pair, None)?;
                 window_context.focused_window_index = Some(pair.window_index);
             },
             None => (),
