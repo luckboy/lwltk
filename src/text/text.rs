@@ -33,6 +33,7 @@ pub struct Text
     pub ellipsize_count: Option<usize>,
     pub is_trimmed: bool,
     pub lines: Vec<TextLine>,
+    pub line_height: i32,
     pub has_dot_dot_dot: bool,
 }
 
@@ -46,6 +47,7 @@ impl Text
             ellipsize_count: None,
             is_trimmed: true,
             lines: Vec::new(),
+            line_height: 0,
             has_dot_dot_dot: false,
         }
     }
@@ -225,6 +227,8 @@ impl Text
             }
         }
         self.lines.push(TextLine::new(start, end, width.ceil() as i32));
+        let font_extents = cairo_context.font_extents()?;
+        self.line_height = font_extents.height.ceil() as i32;
         cairo_context.restore()?;
         Ok(())
     }
@@ -235,10 +239,8 @@ impl Text
     {
         cairo_context.save()?;
         font_setting_f(cairo_context)?;
-        let font_extents = cairo_context.font_extents()?;
         let dot_dot_dot_text_extents = cairo_context.text_extents(DOT_DOT_DOT)?;
-        let font_height = font_extents.height.ceil() as i32;
-        let mut y = area_bounds.y + (area_bounds.height - (font_height * self.lines.len() as i32)) / 2;
+        let mut y = area_bounds.y + (area_bounds.height - (self.line_height * self.lines.len() as i32)) / 2;
         for (i, line) in self.lines.iter().enumerate() {
             let mut width = line.width;
             if i + 1 >= self.lines.len() && self.has_dot_dot_dot {
@@ -253,7 +255,7 @@ impl Text
             if i + 1 >= self.lines.len() && self.has_dot_dot_dot {
                 drawing_f(cairo_context, Pos::new(x + line.width, y), DOT_DOT_DOT)?;
             }
-            y += font_height;
+            y += self.line_height;
         }
         cairo_context.restore()?;
         Ok(())
