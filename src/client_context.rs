@@ -1397,7 +1397,10 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                 }
         });
         match window_context.write() {
-            Ok(mut window_context_g) => client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4, &timer_tx)?,
+            Ok(mut window_context_g) => {
+                window_context_g.window_container.clear_indices_to_destroy();
+                client_context_r.create_client_windows(&mut *window_context_g, client_context4, window_context4, queue_context4, &timer_tx)?
+            },
             Err(_) => return Err(ClientError::RwLock),
         }
         (client_context_r.fields.key_repeat_delay, client_context_r.fields.key_repeat_time, client_context_r.fields.text_cursor_blink_time)
