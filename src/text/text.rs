@@ -261,3 +261,901 @@ impl Text
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use cairo::FontSlant;
+    use cairo::FontWeight;
+    
+    #[test]
+    fn test_text_updates_size()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc", TextAlign::Left);
+        match text.update_size(&cairo_context, Size::new(None, None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_font_setting()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(32.0);
+        let mut text = Text::new("abc", TextAlign::Left);
+        match text.update_size(&cairo_context, Size::new(None, None), |cairo_context| {
+                cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+                cairo_context.set_font_size(16.0);
+                Ok(())
+        }) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_empty_text()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("", TextAlign::Left);
+        match text.update_size(&cairo_context, Size::new(None, None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(0, text.lines[0].end);
+                assert_eq!(0, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_trimmed_text()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk abc", TextAlign::Left);
+        match text.update_size(&cairo_context, Size::new(None, None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_ijk_abc_width = (a + b + c + space + i + j + k + space + a + b + c).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(11, text.lines[0].end);
+                assert_eq!(expected_abc_ijk_abc_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_with_spaces()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("   abc  ijk abc  ", TextAlign::Left);
+        match text.update_size(&cairo_context, Size::new(None, None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_ijk_abc_width = (a + b + c + space * 2.0 + i + j + k + space + a + b + c).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(3, text.lines[0].start);
+                assert_eq!(15, text.lines[0].end);
+                assert_eq!(expected_abc_ijk_abc_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }    
+    
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_and_line_break()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk", TextAlign::Left);
+        let width = (a + b + c + space + i).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(7, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_and_line_break_by_space()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk", TextAlign::Left);
+        let width = (a + b + c + space).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(7, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_and_line_break_by_many_spaces()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc   ijk", TextAlign::Left);
+        let width = (a + b + c + space + space).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(6, text.lines[1].start);
+                assert_eq!(9, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_and_word_break()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("aaabbbccc", TextAlign::Left);
+        let width = (a * 3.0 + b * 3.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_aaabbb_width = (a * 3.0 + b * 3.0).ceil() as i32;
+                let expected_ccc_width = (c * 3.0).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(6, text.lines[0].end);
+                assert_eq!(expected_aaabbb_width, text.lines[0].width);
+                assert_eq!(6, text.lines[1].start);
+                assert_eq!(9, text.lines[1].end);
+                assert_eq!(expected_ccc_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_and_line_break_and_many_lines()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk abc ijk abc abc jik", TextAlign::Left);
+        let width = (a + b + c + space + i + j + k + space + a + b + c).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_ijk_abc_width = (a + b + c + space + i + j + k + space + a + b + c).ceil() as i32;
+                let expected_ijk_abc_abc_width = (i + j + k + space + a + b + c + space + a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(3, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(11, text.lines[0].end);
+                assert_eq!(expected_abc_ijk_abc_width, text.lines[0].width);
+                assert_eq!(12, text.lines[1].start);
+                assert_eq!(23, text.lines[1].end);
+                assert_eq!(expected_ijk_abc_abc_width, text.lines[1].width);
+                assert_eq!(24, text.lines[2].start);
+                assert_eq!(27, text.lines[2].end);
+                assert_eq!(expected_ijk_width, text.lines[2].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_with_newlines()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc\nijk\n  \n", TextAlign::Left);
+        let width = (a + b + c + i + j + k).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(4, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(7, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(10, text.lines[2].start);
+                assert_eq!(10, text.lines[2].end);
+                assert_eq!(0, text.lines[2].width);
+                assert_eq!(11, text.lines[3].start);
+                assert_eq!(11, text.lines[3].end);
+                assert_eq!(0, text.lines[3].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_trimmed_text_and_ellipsize()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk abc", TextAlign::Left);
+        text.ellipsize_count = Some(2);
+        let width = (a + b + c).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ij_width = (i + j).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(6, text.lines[1].end);
+                assert_eq!(expected_ij_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(true, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }    
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk abc", TextAlign::Left);
+        text.is_trimmed = false;
+        match text.update_size(&cairo_context, Size::new(None, None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_ijk_abc_width = (a + b + c + space + i + j + k + space + a + b + c).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(11, text.lines[0].end);
+                assert_eq!(expected_abc_ijk_abc_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_with_spaces()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("   abc  ijk abc  ", TextAlign::Left);
+        text.is_trimmed = false;
+        match text.update_size(&cairo_context, Size::new(None, None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_ijk_abc_width = (space * 3.0 + a + b + c + space * 2.0 + i + j + k + space + a + b + c + space * 2.0).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(17, text.lines[0].end);
+                assert_eq!(expected_abc_ijk_abc_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_and_line_break()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk", TextAlign::Left);
+        text.is_trimmed = false;
+        let width = (a + b + c + space + i).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(7, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_and_line_break_by_many_spaces()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc   ijk", TextAlign::Left);
+        text.is_trimmed = false;
+        let width = (a + b + c + space + space).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (space * 2.0 + i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(9, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_and_word_break()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("aaabbbccc", TextAlign::Left);
+        text.is_trimmed = false;
+        let width = (a * 3.0 + b * 3.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_aaabbb_width = (a * 3.0 + b * 3.0).ceil() as i32;
+                let expected_ccc_width = (c * 3.0).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(6, text.lines[0].end);
+                assert_eq!(expected_aaabbb_width, text.lines[0].width);
+                assert_eq!(6, text.lines[1].start);
+                assert_eq!(9, text.lines[1].end);
+                assert_eq!(expected_ccc_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_and_line_break_and_many_lines()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk abc ijk abc abc jik", TextAlign::Left);
+        text.is_trimmed = false;
+        let width = (a + b + c + space + i + j + k + space + a + b + c).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_ijk_abc_width = (a + b + c + space + i + j + k + space + a + b + c).ceil() as i32;
+                let expected_ijk_abc_abc_width = (i + j + k + space + a + b + c + space + a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(3, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(11, text.lines[0].end);
+                assert_eq!(expected_abc_ijk_abc_width, text.lines[0].width);
+                assert_eq!(12, text.lines[1].start);
+                assert_eq!(23, text.lines[1].end);
+                assert_eq!(expected_ijk_abc_abc_width, text.lines[1].width);
+                assert_eq!(24, text.lines[2].start);
+                assert_eq!(27, text.lines[2].end);
+                assert_eq!(expected_ijk_width, text.lines[2].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_with_newlines()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let space = cairo_context.text_extents(" ").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let k = cairo_context.text_extents("k").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc\nijk\n  \n", TextAlign::Left);
+        text.is_trimmed = false;
+        let width = (a + b + c + i + j + k).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ijk_width = (i + j + k).ceil() as i32;
+                let expected_space2_width = (space * 2.0).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(4, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(7, text.lines[1].end);
+                assert_eq!(expected_ijk_width, text.lines[1].width);
+                assert_eq!(8, text.lines[2].start);
+                assert_eq!(10, text.lines[2].end);
+                assert_eq!(expected_space2_width, text.lines[2].width);
+                assert_eq!(11, text.lines[3].start);
+                assert_eq!(11, text.lines[3].end);
+                assert_eq!(0, text.lines[3].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_untrimmed_text_and_ellipsize()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let c = cairo_context.text_extents("c").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let j = cairo_context.text_extents("j").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("abc ijk abc", TextAlign::Left);
+        text.is_trimmed = false;
+        text.ellipsize_count = Some(2);
+        let width = (a + b + c).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_abc_width = (a + b + c).ceil() as i32;
+                let expected_ij_width = (i + j).ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(3, text.lines[0].end);
+                assert_eq!(expected_abc_width, text.lines[0].width);
+                assert_eq!(4, text.lines[1].start);
+                assert_eq!(6, text.lines[1].end);
+                assert_eq!(expected_ij_width, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(true, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_half_size_of_letter()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("aaa", TextAlign::Left);
+        let width = (a / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_a_width = a.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(3, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(1, text.lines[0].end);
+                assert_eq!(expected_a_width, text.lines[0].width);
+                assert_eq!(1, text.lines[1].start);
+                assert_eq!(2, text.lines[1].end);
+                assert_eq!(expected_a_width, text.lines[1].width);
+                assert_eq!(2, text.lines[2].start);
+                assert_eq!(3, text.lines[2].end);
+                assert_eq!(expected_a_width, text.lines[2].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_half_size_of_unicode_letter()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let l = cairo_context.text_extents("\u{0142}").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("\u{0142}\u{0142}\u{0142}", TextAlign::Left);
+        let width = (l / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_l_width = l.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(3, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(2, text.lines[0].end);
+                assert_eq!(expected_l_width, text.lines[0].width);
+                assert_eq!(2, text.lines[1].start);
+                assert_eq!(4, text.lines[1].end);
+                assert_eq!(expected_l_width, text.lines[1].width);
+                assert_eq!(4, text.lines[2].start);
+                assert_eq!(6, text.lines[2].end);
+                assert_eq!(expected_l_width, text.lines[2].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_combination_of_characters()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let l = cairo_context.text_extents("a\u{0306}\u{0320}").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("a\u{0306}\u{0320}", TextAlign::Left);
+        let width = (l / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_l_width = l.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(5, text.lines[0].end);
+                assert_eq!(expected_l_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_double_combination_of_characters()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let l = cairo_context.text_extents("a\u{0306}\u{035c}\u{0320}b\u{035c}c").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("a\u{0306}\u{035c}\u{0320}b\u{035c}c", TextAlign::Left);
+        let width = (l / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_l_width = l.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(11, text.lines[0].end);
+                assert_eq!(expected_l_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_double_combination_of_characters_without_last_character()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let l = cairo_context.text_extents("a\u{0306}\u{035c}\u{0320}b\u{035c}").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("a\u{0306}\u{035c}\u{0320}b\u{035c}", TextAlign::Left);
+        let width = (l / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_l_width = l.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(10, text.lines[0].end);
+                assert_eq!(expected_l_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_text_updates_size_for_double_combination_of_characters_without_last_character_and_newline()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let l = cairo_context.text_extents("a\u{0306}\u{035c}\u{0320}b\u{035c}").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new("a\u{0306}\u{035c}\u{0320}b\u{035c}\n", TextAlign::Left);
+        let width = (l / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_l_width = l.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(2, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(10, text.lines[0].end);
+                assert_eq!(expected_l_width, text.lines[0].width);
+                assert_eq!(11, text.lines[1].start);
+                assert_eq!(11, text.lines[1].end);
+                assert_eq!(0, text.lines[1].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }
+    
+    #[test]
+    fn test_text_updates_size_for_combination_of_characters_with_space()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
+        cairo_context.set_font_size(16.0);
+        let l = cairo_context.text_extents(" \u{0306}\u{0320}").unwrap().x_advance;
+        let height = cairo_context.font_extents().unwrap().height;
+        let mut text = Text::new(" \u{0306}\u{0320}", TextAlign::Left);
+        let width = (l / 2.0).ceil() as i32;
+        match text.update_size(&cairo_context, Size::new(Some(width), None), |_| Ok(())) {
+            Ok(()) => {
+                let expected_l_width = l.ceil() as i32;
+                let expected_line_height = height.ceil() as i32;
+                assert_eq!(1, text.lines.len());
+                assert_eq!(0, text.lines[0].start);
+                assert_eq!(5, text.lines[0].end);
+                assert_eq!(expected_l_width, text.lines[0].width);
+                assert_eq!(expected_line_height, text.line_height);
+                assert_eq!(false, text.has_dot_dot_dot);
+            },
+            Err(_) => assert!(false),
+        }
+    }    
+}
