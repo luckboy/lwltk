@@ -636,7 +636,7 @@ pub fn default_window_on_for_client_shell_surface(window: &mut dyn Window, clien
             Some(Some(None))
         },
         Event::Client(ClientEvent::ShellSurfacePopupDone) => {
-            queue_context.push_callback(|_, window_context, _| {
+            queue_context.push_callback(move |_, window_context, _| {
                     let current_window_idx = window_context.current_window_index()?;
                     let window = window_context.dyn_window(current_window_idx)?;
                     let child_idxs: Vec<WindowIndex> = window.child_indices().collect();
