@@ -635,7 +635,21 @@ pub fn default_window_on_for_client_shell_surface(window: &mut dyn Window, clien
             window.set_preferred_size(Size::new(Some(size.width), Some(size.height)));
             Some(Some(None))
         },
-        Event::Client(ClientEvent::ShellSurfacePopupDone) => Some(Some(None)),
+        Event::Client(ClientEvent::ShellSurfacePopupDone) => {
+            queue_context.push_callback(|_, window_context, _| {
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    let child_idxs: Vec<WindowIndex> = window.child_indices().collect();
+                    for child_idx in &child_idxs {
+                        let child_window = window_context.dyn_window(*child_idx)?;
+                        if child_window.is_popup() {
+                            window_context.unset_parent_window(*child_idx)?;
+                        }
+                    }
+                    Some(())
+            });
+            Some(Some(None))
+        },
         _ => Some(None),
     }
 }
