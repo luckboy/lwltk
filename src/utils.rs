@@ -45,6 +45,9 @@ pub fn with_dummy_cairo_context<T, F>(f: F) -> Result<T, CairoError>
     }
 }
 
+pub fn set_cairo_color(cairo_context: &CairoContext, color: Color)
+{ cairo_context.set_source_rgba(color.red, color.green, color.blue, color.alpha); }
+
 pub fn h_scroll_bar_slider_x(client_x: i32, client_width: i32, viewport_width: i32, trough_width: i32) -> f64
 {
     let max_width = max(viewport_width, client_width);
