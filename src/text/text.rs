@@ -239,6 +239,8 @@ impl Text
     {
         cairo_context.save()?;
         font_setting_f(cairo_context)?;
+        cairo_context.rectangle(area_bounds.x as f64, area_bounds.y as f64, area_bounds.width as f64, area_bounds.height as f64);
+        cairo_context.clip();
         let dot_dot_dot_text_extents = cairo_context.text_extents(DOT_DOT_DOT)?;
         let mut y = area_bounds.y + (area_bounds.height - (self.line_height * self.lines.len() as i32)) / 2;
         for (i, line) in self.lines.iter().enumerate() {
