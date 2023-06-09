@@ -27,9 +27,11 @@ pub struct DefaultTheme
     border_color: Color,
     disabled_border_color: Color,
     focused_border_color: Color,
+    current_border_color: Color,
     border_color_for_unfocused_window: Color,
     disabled_border_color_for_unfocused_window: Color,
     focused_border_color_for_unfocused_window: Color,
+    current_border_color_for_unfocused_window: Color,
     // Foreground colors.
     fg_color: Color,
     disabled_fg_color: Color,
@@ -44,7 +46,6 @@ pub struct DefaultTheme
     fg3_color_for_unfocused_window: Color,
     fg4_color_for_unfocused_window: Color,
     fg5_color_for_unfocused_window: Color,
-    title_fg_color_for_unfocused_window: Color,
 }
 
 impl DefaultTheme
@@ -66,9 +67,11 @@ impl DefaultTheme
             border_color: Color::new_from_argb_u32(0xff222222),
             disabled_border_color: Color::new_from_argb_u32(0xff666666),
             focused_border_color: Color::new_from_argb_u32(0xff2222ee),
+            current_border_color: Color::new_from_argb_u32(0xff222222),
             border_color_for_unfocused_window: Color::new_from_argb_u32(0xff444444),
             disabled_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff888888),
             focused_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
+            current_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff444444),
             // Foreground colors.
             fg_color: Color::new_from_argb_u32(0xff222222),
             disabled_fg_color: Color::new_from_argb_u32(0xff666666),
@@ -83,7 +86,6 @@ impl DefaultTheme
             fg3_color_for_unfocused_window: Color::new_from_argb_u32(0xffee4444),
             fg4_color_for_unfocused_window: Color::new_from_argb_u32(0xff44ee44),
             fg5_color_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
-            title_fg_color_for_unfocused_window: Color::new_from_argb_u32(0xffffffff),
         }
     }
     
@@ -153,6 +155,12 @@ impl DefaultTheme
     pub fn set_focused_border_color(&mut self, color: Color)
     { self.focused_border_color = color; }
     
+    pub fn current_border_color(&self) -> Color
+    { self.current_border_color }
+
+    pub fn set_current_border_color(&mut self, color: Color)
+    { self.current_border_color = color; }
+
     pub fn border_color_for_unfocused_window(&self) -> Color
     { self.border_color_for_unfocused_window }
 
@@ -170,6 +178,12 @@ impl DefaultTheme
     
     pub fn set_focused_border_color_for_unfocused_window(&mut self, color: Color)
     { self.focused_border_color_for_unfocused_window = color; }
+
+    pub fn current_border_color_for_unfocused_window(&self) -> Color
+    { self.current_border_color_for_unfocused_window }
+    
+    pub fn set_current_border_color_for_unfocused_window(&mut self, color: Color)
+    { self.current_border_color_for_unfocused_window = color; }    
     
     pub fn fg_color(&self) -> Color
     { self.fg_color }
@@ -248,12 +262,6 @@ impl DefaultTheme
 
     pub fn set_fg5_color_for_unfocused_window(&mut self, color: Color)
     { self.fg5_color_for_unfocused_window = color; }
-
-    pub fn title_fg_color_for_unfocused_window(&self) -> Color
-    { self.title_fg_color_for_unfocused_window }
-
-    pub fn set_title_fg_color_for_unfocused_window(&mut self, color: Color)
-    { self.title_fg_color_for_unfocused_window = color; }
 }
 
 impl Theme for DefaultTheme
