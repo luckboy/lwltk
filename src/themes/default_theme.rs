@@ -67,11 +67,11 @@ impl DefaultTheme
             border_color: Color::new_from_argb_u32(0xff222222),
             disabled_border_color: Color::new_from_argb_u32(0xff666666),
             focused_border_color: Color::new_from_argb_u32(0xff2222ee),
-            current_border_color: Color::new_from_argb_u32(0xff222222),
+            current_border_color: Color::new_from_argb_u32(0xff22ee22),
             border_color_for_unfocused_window: Color::new_from_argb_u32(0xff444444),
             disabled_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff888888),
             focused_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
-            current_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff444444),
+            current_border_color_for_unfocused_window: Color::new_from_argb_u32(0xff44ee44),
             // Foreground colors.
             fg_color: Color::new_from_argb_u32(0xff222222),
             disabled_fg_color: Color::new_from_argb_u32(0xff666666),
