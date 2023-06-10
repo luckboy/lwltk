@@ -1066,23 +1066,26 @@ pub fn outer_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
 }
 
 pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
-    where T: Copy + PartialOrd
+    where T: PartialOrd
 {
-    width2.map(|w| {
-            if w < width1 {
-                w
+    match width2 {
+        Some(width) => {
+            if width < width1 {
+                width
             } else {
                 width1
             }
-    }).unwrap_or(width1)
+        },
+        None => width1,
+    }
 }
 
 pub fn min_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
-    where T: Copy + PartialOrd
+    where T: PartialOrd
 { min_width_for_opt_width(height1, height2) }
 
 pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
-    where T: Copy + PartialOrd
+    where T: PartialOrd
 {
     let width = min_width_for_opt_width(size1.width, size2.width);
     let height = min_height_for_opt_height(size1.height, size2.height);
@@ -1090,23 +1093,26 @@ pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<
 }
 
 pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
-    where T: Copy + PartialOrd
+    where T: PartialOrd
 {
-    width2.map(|w| {
-            if w > width1 {
-                w
+    match width2 {
+        Some(width) => {
+            if width > width1 {
+                width
             } else {
                 width1
             }
-    }).unwrap_or(width1)
+        },
+        None => width1,
+    }
 }
 
 pub fn max_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
-    where T: Copy + PartialOrd
+    where T: PartialOrd
 { max_width_for_opt_width(height1, height2) }
 
 pub fn max_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
-    where T: Copy + PartialOrd
+    where T: PartialOrd
 {
     let width = max_width_for_opt_width(size1.width, size2.width);
     let height = max_height_for_opt_height(size1.height, size2.height);
