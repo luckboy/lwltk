@@ -6,6 +6,9 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::cmp::max;
+use std::ops::Add;
+use std::ops::Sub;
+use std::ops::Div;
 use std::time::Duration;
 use std::time::Instant;
 use cairo::Format;
@@ -1005,3 +1008,107 @@ pub fn is_mark_char(c: char) -> bool
 
 pub fn is_mark_char2(c: char) -> bool
 { c >= '\u{035c}' && c <= '\u{0362}' }
+
+pub fn inner_pos<T>(rect: Rect<T>, edges: Edges<T>) -> Pos<T>
+    where T: Copy + PartialOrd + Add<Output = T> + Div<Output = T> + From<i32>
+{
+    let x = if rect.width >= edges.left + edges.right {
+        rect.x + edges.left
+    } else {
+        rect.x + rect.width / T::from(2)
+    };
+    let y = if rect.height >= edges.top + edges.bottom {
+        rect.y + edges.top
+    } else {
+        rect.y + rect.height / T::from(2)
+    };
+    Pos::new(x, y)
+}
+
+pub fn inner_size<T>(size: Size<T>, edges: Edges<T>) -> Size<T>
+    where T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + From<i32>
+{
+    let width = if size.width >= edges.left + edges.right {
+        size.width - edges.left - edges.right
+    } else {
+        T::from(0)
+    };
+    let height = if size.height >= edges.top + edges.bottom {
+        size.height - edges.top - edges.bottom
+    } else {
+        T::from(0)
+    };
+    Size::new(width, height)
+}
+
+pub fn inner_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
+    where T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
+{
+    let pos = inner_pos(rect, edges);
+    let size = inner_size(rect.size(), edges);
+    Rect::new(pos.x, pos.y, size.width, size.height)
+}
+
+pub fn outer_pos<T>(pos: Pos<T>, edges: Edges<T>) -> Pos<T>
+    where T: Sub<Output = T>
+{ Pos::new(pos.x - edges.left, pos.y - edges.top) }
+
+pub fn outer_size<T>(size: Size<T>, edges: Edges<T>) -> Size<T>
+    where T: Add<Output = T>
+{ Size::new(size.width + edges.left + edges.right, size.height + edges.top + edges.bottom) }
+
+pub fn outer_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
+    where T: Copy + Add<Output = T> + Sub<Output = T>
+{
+    let pos = outer_pos(rect.pos(), edges);
+    let size = outer_size(rect.size(), edges);
+    Rect::new(pos.x, pos.y, size.width, size.height)
+}
+
+pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
+    where T: Copy + PartialOrd
+{
+    width2.map(|w| {
+            if w < width1 {
+                w
+            } else {
+                width1
+            }
+    }).unwrap_or(width1)
+}
+
+pub fn min_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
+    where T: Copy + PartialOrd
+{ min_width_for_opt_width(height1, height2) }
+
+pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
+    where T: Copy + PartialOrd
+{
+    let width = min_width_for_opt_width(size1.width, size2.width);
+    let height = min_height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
+
+pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
+    where T: Copy + PartialOrd
+{
+    width2.map(|w| {
+            if w > width1 {
+                w
+            } else {
+                width1
+            }
+    }).unwrap_or(width1)
+}
+
+pub fn max_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
+    where T: Copy + PartialOrd
+{ max_width_for_opt_width(height1, height2) }
+
+pub fn max_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
+    where T: Copy + PartialOrd
+{
+    let width = max_width_for_opt_width(size1.width, size2.width);
+    let height = max_height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
