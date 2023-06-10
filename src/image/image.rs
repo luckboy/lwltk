@@ -24,13 +24,13 @@ impl Image
     pub fn new_dyn<F, G>(size_f: Box<dyn Fn(&dyn Theme) -> Size<i32> + Send + Sync + 'static>, drawing_f: Box<dyn Fn(&CairoContext, &dyn Theme, Pos<i32>) -> Result<(), CairoError> + Send + Sync + 'static>) -> Self
     { Image { size_fun: size_f, drawing_fun: drawing_f, } }
     
-    pub fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, pos: Pos<i32>) -> Result<(), CairoError>
+    pub fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>) -> Result<(), CairoError>
     {
         let size = (self.size_fun)(theme);
         cairo_context.save()?;
-        cairo_context.rectangle(pos.x as f64, pos.y as f64, size.width as f64, size.height as f64);
+        cairo_context.rectangle(area_bounds.x as f64, area_bounds.y as f64, area_bounds.width as f64, area_bounds.height as f64);
         cairo_context.clip();
-        (self.drawing_fun)(cairo_context, theme, pos)?;
+        (self.drawing_fun)(cairo_context, theme, Pos::new(area_bounds.x + (area_bounds.width - size.width) / 2, area_bounds.y + (area_bounds.height - size.height) / 2))?;
         cairo_context.restore()?;
         Ok(())
     }
