@@ -46,6 +46,7 @@ pub(crate) struct MockParentWindow
     title: String,
     size: Size<i32>,
     padding_bounds: Rect<i32>,
+    edges: Edges<i32>,
     corners: Corners<i32>,
     is_visible: bool,
     is_focusable: bool,
@@ -64,6 +65,7 @@ impl MockParentWindow
             title: String::from(title),
             size: Size::new(0, 0),
             padding_bounds: Rect::new(0, 0, 0, 0),
+            edges: Edges::new(0, 0, 0, 0),
             corners: Corners::new(0, 0, 0, 0, 0, 0, 0, 0),
             is_visible: true,
             is_focusable: true,
@@ -81,6 +83,12 @@ impl MockParentWindow
     pub(crate) fn set_padding_bounds(&mut self, bounds: Rect<i32>)
     { self.padding_bounds = bounds; }
     
+    pub(crate) fn set_edges(&mut self, edges: Edges<i32>)
+    { self.edges = edges; }
+    
+    pub(crate) fn set_corners(&mut self, corners: Corners<i32>)
+    { self.corners = corners; }
+
     pub(crate) fn set_visible(&mut self, is_visible: bool)
     {
         self.is_visible = is_visible;
@@ -101,6 +109,9 @@ impl Window for MockParentWindow
 
     fn padding_bounds(&self) -> Rect<i32>
     { self.padding_bounds }
+
+    fn edges(&self) -> Edges<i32>
+    { self.edges }
 
     fn corners(&self) -> Corners<i32>
     { self.corners }

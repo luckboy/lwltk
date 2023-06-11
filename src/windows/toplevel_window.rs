@@ -28,6 +28,7 @@ pub struct ToplevelWindow
     title: Option<String>,
     size: Size<i32>,
     padding_bounds: Rect<i32>,
+    edges: Edges<i32>,
     corners: Corners<i32>,
     is_visible: bool,
     is_focused: bool,
@@ -45,6 +46,7 @@ impl ToplevelWindow
             title: None,
             size: Size::new(0, 0),
             padding_bounds: Rect::new(0, 0, 0, 0),
+            edges: Edges::new(0, 0, 0, 0),
             corners: Corners::new(0, 0, 0, 0, 0, 0, 0, 0),
             is_visible: true,
             is_focused: false,
@@ -81,6 +83,9 @@ impl Window for ToplevelWindow
 
     fn padding_bounds(&self) -> Rect<i32>
     { self.padding_bounds }
+
+    fn edges(&self) -> Edges<i32>
+    { self.edges }
 
     fn corners(&self) -> Corners<i32>
     { self.corners }

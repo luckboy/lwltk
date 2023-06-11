@@ -85,6 +85,8 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn padding_bounds(&self) -> Rect<i32>;
 
+    fn edges(&self) -> Edges<i32>;
+
     fn corners(&self) -> Corners<i32>;
     
     fn is_visible(&self) -> bool;
@@ -198,9 +200,6 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn padding_height(&self) -> i32
     { self.padding_bounds().height }
-
-    fn edges(&self) -> Edges<i32>
-    { Edges::new(self.padding_y(), self.height() - (self.padding_height() + self.padding_y()), self.padding_x(), self.width() - (self.padding_width() - self.padding_x())) }
     
     fn set_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
     {
