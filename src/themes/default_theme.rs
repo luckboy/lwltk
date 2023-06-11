@@ -300,7 +300,7 @@ impl Theme for DefaultTheme
     }
 
     fn button_margin_egdes(&self) -> Edges<i32>
-    { Edges::new(4, 4, 4, 4) }
+    { Edges::new(2, 2, 2, 2) }
 
     fn button_padding_egdes(&self) -> Edges<i32>
     { Edges::new(4, 4, 4, 4) }
