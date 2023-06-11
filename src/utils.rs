@@ -1132,3 +1132,77 @@ pub fn max_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<
     let height = max_height_for_opt_height(size1.height, size2.height);
     Size::new(width, height)
 }
+
+pub fn width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
+{
+    match width2 {
+        Some(width) => width,
+        None => width1,
+    }
+}
+
+pub fn height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
+{ width_for_opt_width(height1, height2) }
+
+pub fn size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
+{
+    let width = width_for_opt_width(size1.width, size2.width);
+    let height = height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
+
+pub fn x_for_h_align<T>(width1: T, x2: T, width2: T, h_align: HAlign) -> T
+    where T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
+{
+    match h_align {
+        HAlign::Left => x2,
+        HAlign::Center => x2 + (width2 - width1) / T::from(2),
+        HAlign::Right => x2 + width2 - width1,
+        HAlign::Fill => x2 + (width2 - width1) / T::from(2),
+    }
+}
+
+pub fn y_for_v_align<T>(height1: T, y2: T, height2: T, v_align: VAlign) -> T
+    where T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
+{
+    match v_align {
+        VAlign::Top => y2,
+        VAlign::Center => y2 + (height2 - height1) / T::from(2),
+        VAlign::Bottom => y2 + height2 - height1,
+        VAlign::Fill => y2 + (height2 - height1) / T::from(2),
+    }
+}
+
+pub fn pos_for_h_align_and_v_align<T>(size1: Size<T>, rect2: Rect<T>, h_align: HAlign, v_align: VAlign) -> Pos<T>
+    where T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
+{
+    let x = x_for_h_align(size1.width, rect2.x, rect2.width, h_align);
+    let y = y_for_v_align(size1.height, rect2.y, rect2.height, v_align);
+    Pos::new(x, y)
+}
+
+pub fn width_for_h_align<T>(width1: T, width2: Option<T>, h_align: HAlign) -> T
+    where T: PartialOrd
+{
+    match h_align {
+        HAlign::Fill => width_for_opt_width(width1, width2),
+        _ => min_width_for_opt_width(width1, width2),
+    }
+}
+
+pub fn height_for_v_align<T>(height1: T, height2: Option<T>, v_align: VAlign) -> T
+    where T: PartialOrd
+{
+    match v_align {
+        VAlign::Fill => height_for_opt_height(height1, height2),
+        _ => min_height_for_opt_height(height1, height2),
+    }
+}
+
+pub fn size_for_h_align_and_v_align<T>(size1: Size<T>, size2: Size<Option<T>>, h_align: HAlign, v_align: VAlign) -> Size<T>
+    where T: PartialOrd
+{
+    let width = width_for_h_align(size1.width, size2.width, h_align);
+    let height = height_for_v_align(size1.height, size2.height, v_align);
+    Size::new(width, height)
+}
