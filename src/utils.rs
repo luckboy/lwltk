@@ -1010,17 +1010,31 @@ pub fn is_mark_char2(c: char) -> bool
 { c >= '\u{035c}' && c <= '\u{0362}' }
 
 pub fn inner_pos<T>(rect: Rect<T>, edges: Edges<T>) -> Pos<T>
-    where T: Copy + PartialOrd + Add<Output = T> + Div<Output = T> + From<i32>
+    where T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
 {
     let x = if rect.width >= edges.left + edges.right {
         rect.x + edges.left
     } else {
-        rect.x + rect.width / T::from(2)
+        let tmp_x = (rect.width - edges.right + edges.left) / T::from(2);
+        if tmp_x < T::from(0) {
+            rect.x
+        } else if tmp_x > rect.width {
+            rect.x + rect.width
+        } else {
+            rect.x + tmp_x
+        }
     };
     let y = if rect.height >= edges.top + edges.bottom {
         rect.y + edges.top
     } else {
-        rect.y + rect.height / T::from(2)
+        let tmp_y = (rect.height - edges.bottom + edges.top) / T::from(2);
+        if tmp_y < T::from(0) {
+            rect.y
+        } else if tmp_y > rect.height {
+            rect.y + rect.height
+        } else {
+            rect.y + tmp_y
+        }
     };
     Pos::new(x, y)
 }
