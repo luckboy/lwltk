@@ -64,6 +64,33 @@ pub enum EventOption
     Some(Event),
 }
 
+impl EventOption
+{
+    pub fn is_none(&self) -> bool
+    {
+        match self {
+            EventOption::None => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_default(&self) -> bool
+    {
+        match self {
+            EventOption::Default => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_some(&self) -> bool
+    {
+        match self {
+            EventOption::Some(_) => true,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum ClientResize
 {
