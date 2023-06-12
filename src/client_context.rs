@@ -124,6 +124,7 @@ pub(crate) struct ClientContextFields
     pub(crate) keyboard: Option<Main<wl_keyboard::WlKeyboard>>,
     pub(crate) touch: Option<Main<wl_touch::WlTouch>>,
     pub(crate) serial: Option<u32>,
+    #[allow(dead_code)]
     pub(crate) cursor_theme: CursorTheme,
     pub(crate) cursors: HashMap<Cursor, WaylandCursor>,
     pub(crate) cursor_surface: Main<wl_surface::WlSurface>,
