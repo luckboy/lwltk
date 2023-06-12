@@ -7,7 +7,9 @@
 //
 use cairo::FontSlant;
 use cairo::FontWeight;
+use crate::image::*;
 use crate::theme::*;
+use crate::themes::default_button_icons::*;
 use crate::types::*;
 use crate::utils::*;
 
@@ -372,6 +374,70 @@ impl Theme for DefaultTheme
         }
         cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
         cairo_context.show_text(s)?;
+        Ok(())
+    }
+
+    fn button_icon_size(&self) -> Size<i32>
+    { Size::new(DEFAULT_BUTTON_ICON_SIZE, DEFAULT_BUTTON_ICON_SIZE) } 
+    
+    fn draw_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: ButtonIcon, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    { draw_default_button_icon(cairo_context, self, pos, icon, is_enabled, is_focused, is_focused_window) }
+    
+    fn set_fg(&self, cairo_context: &CairoContext, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
+            }
+        }
+        Ok(())
+    }
+
+    fn set_fg2(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.fg2_color);
+        } else {
+            set_cairo_color(cairo_context, self.fg2_color_for_unfocused_window);
+        }
+        Ok(())
+    }
+    
+    fn set_fg3(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.fg3_color);
+        } else {
+            set_cairo_color(cairo_context, self.fg3_color_for_unfocused_window);
+        }
+        Ok(())
+    }
+    
+    fn set_fg4(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.fg4_color);
+        } else {
+            set_cairo_color(cairo_context, self.fg4_color_for_unfocused_window);
+        }
+        Ok(())
+    }
+
+    fn set_fg5(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.fg5_color);
+        } else {
+            set_cairo_color(cairo_context, self.fg5_color_for_unfocused_window);
+        }
         Ok(())
     }
 }
