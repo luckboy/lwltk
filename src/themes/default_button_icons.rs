@@ -35,6 +35,7 @@ pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme,
             cairo_context.move_to(x + 2.0, y + 16.0);
             cairo_context.line_to(x + 16.0, y + 30.0);
             cairo_context.line_to(x + 32.0, y + 2.0);
+            cairo_context.stroke()?;
             cairo_context.set_line_width(saved_line_width);
         },
     }
