@@ -9,7 +9,8 @@ use crate::image::*;
 use crate::theme::*;
 use crate::types::*;
 
-pub const DEFAULT_BUTTON_ICON_SIZE: i32 = 32;
+pub const DEFAULT_BUTTON_ICON_WIDTH: i32 = 32;
+pub const DEFAULT_BUTTON_ICON_HEIGHT: i32 = 32;
 
 pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme, pos: Pos<i32>, icon: ButtonIcon, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
 {
