@@ -24,6 +24,8 @@ pub trait Theme: Send + Sync
 
     fn button_padding_egdes(&self) -> Edges<i32>;
     
+    fn button_sep_width(&self) -> i32;
+    
     fn draw_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>; 
 
     fn set_button_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>;

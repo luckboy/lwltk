@@ -306,6 +306,9 @@ impl Theme for DefaultTheme
 
     fn button_padding_egdes(&self) -> Edges<i32>
     { Edges::new(4, 4, 4, 4) }
+
+    fn button_sep_width(&self) -> i32
+    { 4 }
     
     fn draw_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
