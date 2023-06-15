@@ -6,6 +6,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::iter::FusedIterator;
 use std::slice::Iter;
 use std::time::Instant;
@@ -23,6 +24,14 @@ pub enum CallOnId
     Pointer,
     Touch(i32),
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum ActiveId
+{
+    CallOnId(CallOnId),
+    Keyboard,
+}
+
 
 #[derive(Clone)]
 pub struct QueueContextIter<'a>
@@ -71,7 +80,7 @@ pub struct QueueContext
     pub(crate) pressed_instants: BTreeMap<CallOnId, Instant>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
-    pub(crate) active_counts: BTreeMap<CallOnPath, usize>,
+    pub(crate) active_id_sets: BTreeMap<CallOnPath, BTreeSet<ActiveId>>,
     pub(crate) has_wait_cursor: bool,
 }
 
@@ -90,7 +99,7 @@ impl QueueContext
             pressed_instants: BTreeMap::new(),
             has_double_click: false,
             has_long_click: false,
-            active_counts: BTreeMap::new(),
+            active_id_sets: BTreeMap::new(),
             has_wait_cursor: false,
         }
     }
@@ -171,27 +180,29 @@ impl QueueContext
     pub fn set_long_click(&mut self, flag: bool)
     { self.has_long_click = flag }
     
-    pub fn increase_active_count(&mut self, call_on_path: &CallOnPath) -> bool
+    pub fn add_active_id(&mut self, call_on_path: &CallOnPath, active_id: ActiveId) -> bool
     {
-        match self.active_counts.get_mut(call_on_path) {
-            Some(count) => {
-                *count += 1;
+        match self.active_id_sets.get_mut(call_on_path) {
+            Some(set) => {
+                set.insert(active_id);
                 false
             },
             None => {
-                self.active_counts.insert(call_on_path.clone(), 1);
+                let mut set: BTreeSet<ActiveId> = BTreeSet::new();
+                set.insert(active_id);
+                self.active_id_sets.insert(call_on_path.clone(), set);
                 true
             },
         }
     }
 
-    pub fn decrease_active_count(&mut self, call_on_path: &CallOnPath) -> bool
+    pub fn remove_active_id(&mut self, call_on_path: &CallOnPath, active_id: ActiveId) -> bool
     {
-        match self.active_counts.get_mut(call_on_path) {
-            Some(count) => {
-                *count -= 1;
-                if *count <= 0 {
-                    self.active_counts.remove(call_on_path);
+        match self.active_id_sets.get_mut(call_on_path) {
+            Some(set) => {
+                set.remove(&active_id);
+                if set.is_empty() {
+                    self.active_id_sets.remove(call_on_path);
                     true
                 } else {
                     false
@@ -222,11 +233,11 @@ impl QueueContext
             for call_on_id in &pressed_call_on_ids {
                 self.pressed_instants.remove(call_on_id);
             }
-            let active_call_on_paths: Vec<CallOnPath> = self.active_counts.keys().filter(|k| {
+            let active_call_on_paths: Vec<CallOnPath> = self.active_id_sets.keys().filter(|k| {
                     client_windows_to_destroy.keys().any(|i| *i == k.window_index()) 
             }).map(|k| k.clone()).collect();
             for call_on_path in &active_call_on_paths {
-                self.active_counts.remove(call_on_path);
+                self.active_id_sets.remove(call_on_path);
             }
         }
     }
