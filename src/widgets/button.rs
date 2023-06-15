@@ -327,6 +327,8 @@ impl Draw for Button
     fn update_pos(&mut self, _cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>) -> Result<(), CairoError>
     {
         self.margin_bounds.set_pos(pos_for_h_align_and_v_align(self.margin_bounds.size(), area_bounds, self.h_align, self.v_align));
+        self.margin_bounds.x -= self.client_pos.x;
+        self.margin_bounds.y -= self.client_pos.y;
         self.bounds.set_pos(inner_pos(self.margin_bounds, theme.button_margin_edges()));
         Ok(())
     }
