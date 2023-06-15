@@ -81,11 +81,11 @@ pub fn set_client_x(client_x: &mut i32, client_width: i32, viewport_width: i32, 
     }
 }
 
-pub fn update_client_x(client_x: &mut i32, width: i32, viewport_width: i32) -> bool
+pub fn update_client_x(client_x: &mut i32, client_width: i32, viewport_width: i32) -> bool
 {
-    if width - *client_x < viewport_width {
-        if width > viewport_width {
-            *client_x = width - viewport_width;
+    if client_width - *client_x < viewport_width {
+        if client_width > viewport_width {
+            *client_x = client_width - viewport_width;
             true
         } else {
             if *client_x != 0 {
@@ -1061,6 +1061,32 @@ pub fn inner_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
     let pos = inner_pos(rect, edges);
     let size = inner_size(rect.size(), edges);
     Rect::new(pos.x, pos.y, size.width, size.height)
+}
+
+pub fn inner_opt_size<T>(size: Size<Option<T>>, edges: Edges<T>) -> Size<Option<T>>
+    where T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + From<i32>
+{
+    let width = match size.width {
+        Some(tmp_width) => {
+            if tmp_width >= edges.left + edges.right {
+                Some(tmp_width - edges.left - edges.right)
+            } else {
+                Some(T::from(0))
+            }
+        },
+        None => None,
+    };
+    let height = match size.height {
+        Some(tmp_height) => {
+            if tmp_height >= edges.top + edges.bottom {
+                Some(tmp_height - edges.top - edges.bottom)
+            } else {
+                Some(T::from(0))
+            }
+        },
+        None => None,
+    };
+    Size::new(width, height)
 }
 
 pub fn outer_pos<T>(pos: Pos<T>, edges: Edges<T>) -> Pos<T>

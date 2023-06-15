@@ -40,6 +40,7 @@ pub mod keys;
 pub mod text;
 pub mod themes;
 pub mod utils;
+pub mod widgets;
 pub mod windows;
 
 #[cfg(test)]

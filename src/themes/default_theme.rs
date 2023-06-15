@@ -301,10 +301,10 @@ impl Theme for DefaultTheme
         Ok(())
     }
 
-    fn button_margin_egdes(&self) -> Edges<i32>
+    fn button_margin_edges(&self) -> Edges<i32>
     { Edges::new(2, 2, 2, 2) }
 
-    fn button_padding_egdes(&self) -> Edges<i32>
+    fn button_padding_edges(&self) -> Edges<i32>
     { Edges::new(4, 4, 4, 4) }
 
     fn button_sep_width(&self) -> i32

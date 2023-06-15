@@ -20,9 +20,9 @@ pub trait Theme: Send + Sync
     
     fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>;
     
-    fn button_margin_egdes(&self) -> Edges<i32>;
+    fn button_margin_edges(&self) -> Edges<i32>;
 
-    fn button_padding_egdes(&self) -> Edges<i32>;
+    fn button_padding_edges(&self) -> Edges<i32>;
     
     fn button_sep_width(&self) -> i32;
     
