@@ -115,7 +115,7 @@ impl ToplevelWindow
         widget.set_change_flag_arc(self.change_flag_arc.clone());
         self.content = Some(widget);
         self.change_flag_arc.store(true, Ordering::SeqCst);
-        Some(WidgetIndexPair(0, 0))
+        Some(WidgetIndexPair(1, 0))
     }
 
     pub fn set<T: Widget + 'static>(&mut self, widget: T) -> Option<WidgetIndexPair>
@@ -202,7 +202,7 @@ impl Window for ToplevelWindow
     fn content_index_pair(&self) -> Option<WidgetIndexPair>
     {
         if self.content.is_some() {
-            Some(WidgetIndexPair(0, 0))
+            Some(WidgetIndexPair(1, 0))
         } else {
             None
         }
@@ -370,7 +370,14 @@ impl Draw for ToplevelWindow
     }
 
     fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
-    { theme.draw_toplevel_window_content_bg(cairo_context, Rect::new(0, 0, self.size.width, self.size.height), is_focused_window) }
+    { 
+        theme.draw_toplevel_window_content_bg(cairo_context, Rect::new(0, 0, self.size.width, self.size.height), is_focused_window)?;
+        match &self.content {
+            Some(content) => content.draw(cairo_context, theme, self.is_focused)?,
+            None => (),
+        }
+        Ok(())
+    }
 }
 
 impl CallOn for ToplevelWindow

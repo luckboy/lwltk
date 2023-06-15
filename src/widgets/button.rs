@@ -114,6 +114,13 @@ impl Button
         }
     }
 
+    pub fn set_dyn_on(&mut self, f: Box<dyn FnMut(&mut ClientContext, &mut QueueContext, &Event) -> Option<EventOption> + Send + Sync + 'static>)
+    { self.call_on_fun.fun = f; }
+
+    pub fn set_on<F>(&mut self, f: F)
+        where F: FnMut(&mut ClientContext, &mut QueueContext, &Event) -> Option<EventOption> + Send + Sync + 'static
+    { self.set_dyn_on(Box::new(f)) }
+
     pub fn set_dyn_icon_image(&mut self, size_f: Box<dyn Fn(&dyn Theme) -> Size<i32> + Send + Sync + 'static>, drawing_f: Box<dyn Fn(&CairoContext, &dyn Theme, Pos<i32>, bool, bool, bool) -> Result<(), CairoError> + Send + Sync + 'static>)
     {
         match &mut self.image {
@@ -307,6 +314,7 @@ impl Draw for Button
         self.text.update_size(cairo_context, padding_area_size, |cairo_context| {
                 theme.set_button_font(cairo_context)
         })?;
+        padding_size.width += self.text.lines.iter().fold(0, |w, l| max(w, l.width));
         padding_size.height = max(padding_size.height, self.text.line_height * self.text.lines.len() as i32);
         self.bounds.set_size(outer_size(padding_size, theme.button_padding_edges()));
         self.bounds.set_size(max_size_for_opt_size(self.bounds.size(), self.preferred_size));

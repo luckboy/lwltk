@@ -1642,7 +1642,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         client_context_r.send_post_button_release(&timer_tx);
                     }
                     if is_text_cursor_timer {
-                        eprintln!("text cursor timer");
+                        //eprintln!("text cursor timer");
                     }
                     if is_post_button_release_timer {
                         let mut client_context_r = client_context.borrow_mut();
