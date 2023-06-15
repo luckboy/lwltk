@@ -151,6 +151,9 @@ pub trait Window: Container + MinSize + PreferredSize
     fn is_moved(&self) -> bool
     { false }
 
+    fn _move(&mut self) -> bool
+    { false }
+    
     fn clear_move_flag(&mut self) -> bool
     { false }
 

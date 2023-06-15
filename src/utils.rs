@@ -597,7 +597,7 @@ pub fn client_resize_for_pos(pos: Pos<f64>, size: Size<i32>, edges: Edges<i32>, 
         if top_left.contains(pos) {
             return Some(ClientResize::TopLeft);
         }
-        Some(ClientResize::Left);
+        return Some(ClientResize::Left);
     }
     let top = Rect::new(0, 0, size.width, edges.top).to_f64_rect();
     if top.contains(pos) {
