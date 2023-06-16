@@ -187,6 +187,12 @@ impl Button
             self.change_flag_arc.store(true, Ordering::SeqCst);
         }
     }
+
+    pub fn is_trimmed(&self) -> bool
+    { self.text.is_trimmed }
+
+    pub fn set_trim(&mut self, is_trimmed: bool)
+    { self.text.is_trimmed = is_trimmed; }
 }
 
 impl Widget for Button
