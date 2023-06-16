@@ -155,13 +155,13 @@ impl Button
         self.change_flag_arc.store(true, Ordering::SeqCst);
     }
     
-    pub fn set_label(&mut self, s: &str)
+    pub fn set_text(&mut self, s: &str)
     {
         self.text.text = String::from(s);
         self.change_flag_arc.store(true, Ordering::SeqCst);
     }
 
-    pub fn set_label_align(&mut self, align: TextAlign)
+    pub fn set_text_align(&mut self, align: TextAlign)
     {
         let old_align = self.text.align;
         self.text.align = align;
@@ -170,7 +170,7 @@ impl Button
         }
     }
 
-    pub fn set_label_ellipsize_count(&mut self, ellipsize_count: Option<usize>)
+    pub fn set_ellipsize_count(&mut self, ellipsize_count: Option<usize>)
     {
         let old_ellipsize_count = self.text.ellipsize_count;
         self.text.ellipsize_count = ellipsize_count;
