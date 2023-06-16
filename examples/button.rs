@@ -26,7 +26,6 @@ use lwltk::VAlign;
 
 struct AppData
 {
-    #[allow(dead_code)]
     window_index: WindowIndex,
     button_path: AbsWidgetPath,
 }
