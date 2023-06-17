@@ -616,23 +616,24 @@ pub fn client_resize_for_pos(pos: Pos<f64>, size: Size<i32>, edges: Edges<i32>, 
     None
 }
 
-pub fn cursor_for_client_resize_and_resizable(edges: Option<ClientResize>, is_resizable: bool) -> Cursor
+pub fn cursor_for_client_resize_and_resizable(_edges: Option<ClientResize>, _is_resizable: bool) -> Cursor
 {
-    if is_resizable {
-        match edges {
-            Some(ClientResize::Top) => Cursor::TopSide,
-            Some(ClientResize::Bottom) => Cursor::BottomSide,
-            Some(ClientResize::Left) => Cursor::LeftSide,
-            Some(ClientResize::Right) => Cursor::RightSide,
-            Some(ClientResize::TopLeft) => Cursor::TopLeftCorner,
-            Some(ClientResize::TopRight) => Cursor::TopRightCorner,
-            Some(ClientResize::BottomLeft) => Cursor::BottomLeftCorner,
-            Some(ClientResize::BottomRight) => Cursor::BottomRightCorner,
-            _ => Cursor::Default,
-        }
-    } else {
-        Cursor::Default
-    }
+    //if is_resizable {
+    //    match edges {
+    //        Some(ClientResize::Top) => Cursor::TopSide,
+    //        Some(ClientResize::Bottom) => Cursor::BottomSide,
+    //        Some(ClientResize::Left) => Cursor::LeftSide,
+    //        Some(ClientResize::Right) => Cursor::RightSide,
+    //        Some(ClientResize::TopLeft) => Cursor::TopLeftCorner,
+    //        Some(ClientResize::TopRight) => Cursor::TopRightCorner,
+    //        Some(ClientResize::BottomLeft) => Cursor::BottomLeftCorner,
+    //        Some(ClientResize::BottomRight) => Cursor::BottomRightCorner,
+    //        _ => Cursor::Default,
+    //    }
+    //} else {
+    //    Cursor::Default
+    //}
+    Cursor::Default
 }
 
 #[allow(unused_variables)]
