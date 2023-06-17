@@ -71,7 +71,7 @@ impl Text
         let mut last_word_start: usize = 0;
         let mut last_word_end: usize = 0;
         let mut last_word_width = 0.0;
-        let mut is_prev_combining = false;
+        let mut is_prev_combination = false;
         let mut prev_c = ' ';
         let mut line_count = 0;
         let dot_dot_dot_text_extents = cairo_context.text_extents(DOT_DOT_DOT)?;
@@ -85,16 +85,16 @@ impl Text
                 Some(((i, tmp_c), tmp_j)) => {
                     let mut c = tmp_c;
                     let mut j = tmp_j;
-                    let mut is_combining = false;
+                    let mut is_combination = false;
                     loop {
-                        let mut is_double_combining = false;
+                        let mut is_double_combination = false;
                         loop {
                             let tmp_iter2 = iter.clone();
                             match iter.next() {
                                 Some(((_, c2), j2)) => {
                                     if is_mark_char(c2) {
-                                        is_combining = true;
-                                        is_double_combining |= is_mark_char(c2);
+                                        is_combination = true;
+                                        is_double_combination |= is_mark_char(c2);
                                         j = j2;
                                     } else {
                                         iter = tmp_iter2;
@@ -104,7 +104,7 @@ impl Text
                                 None => break,
                             }
                         }
-                        if is_double_combining {
+                        if is_double_combination {
                             let tmp_iter3 = iter.clone();
                             match iter.next() {
                                 Some(((_, '\n'), _)) => {
@@ -120,10 +120,10 @@ impl Text
                     }
                     let text_extents = cairo_context.text_extents(&self.text[i..j])?;
                     if self.ellipsize_count.map(|n| line_count + 1 < n).unwrap_or(true) {
-                        if is_combining || c != '\n' {
-                            if !self.is_trimmed || !is_first_char || is_combining || !c.is_whitespace() {
-                                if !is_combining && c.is_whitespace() {
-                                    if is_prev_combining || !prev_c.is_whitespace() {
+                        if is_combination || c != '\n' {
+                            if !self.is_trimmed || !is_first_char || is_combination || !c.is_whitespace() {
+                                if !is_combination && c.is_whitespace() {
+                                    if is_prev_combination || !prev_c.is_whitespace() {
                                         is_first_word = false;
                                         last_word_iter = iter.clone();
                                         last_word_start = j;
@@ -139,7 +139,7 @@ impl Text
                                 let new_width = tmp_width + text_extents.x_advance;
                                 if is_first_char || area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
                                     tmp_width = new_width;
-                                    if !self.is_trimmed || is_combining || !c.is_whitespace() {
+                                    if !self.is_trimmed || is_combination || !c.is_whitespace() {
                                         end = j;
                                         width = tmp_width;
                                     }
@@ -163,7 +163,7 @@ impl Text
                                     is_first_word = true;
                                     is_first_char = true;
                                     line_count += 1;
-                                    is_combining = false;
+                                    is_combination = false;
                                     c = ' ';
                                 }
                             } else {
@@ -184,12 +184,12 @@ impl Text
                             is_first_word = true;
                             is_first_char = true;
                             line_count += 1;
-                            is_combining = false;
+                            is_combination = false;
                             c = ' ';
                         }
                     } else {
-                        if is_combining || c != '\n' {
-                            if !self.is_trimmed || !is_first_char || is_combining || !c.is_whitespace() {
+                        if is_combination || c != '\n' {
+                            if !self.is_trimmed || !is_first_char || is_combination || !c.is_whitespace() {
                                 if area_size.width.map(|w| width + dot_dot_dot_text_extents.x_advance <= w as f64).unwrap_or(true) {
                                     dot_dot_dot_end = i;
                                     dot_dot_dot_width = width;
@@ -197,7 +197,7 @@ impl Text
                                 let new_width = tmp_width + text_extents.x_advance;
                                 if area_size.width.map(|w| new_width <= w as f64).unwrap_or(true) {
                                     tmp_width = new_width;
-                                    if !self.is_trimmed || is_combining || !c.is_whitespace() {
+                                    if !self.is_trimmed || is_combination || !c.is_whitespace() {
                                         end = j;
                                         width = tmp_width;
                                     }
@@ -220,7 +220,7 @@ impl Text
                             break;
                         }
                     }
-                    is_prev_combining = is_combining;
+                    is_prev_combination = is_combination;
                     prev_c = c;
                 },
                 None => break,

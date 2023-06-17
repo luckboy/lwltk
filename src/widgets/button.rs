@@ -105,11 +105,11 @@ impl Button
         }
     }
 
-    pub fn set_enabled(&mut self, is_enabled: bool)
+    pub fn set_enabling(&mut self, is_enabled: bool)
     {
-        let old_enabled_flag = self.is_enabled;
+        let old_enabling_flag = self.is_enabled;
         self.is_enabled = is_enabled;
-        if old_enabled_flag != self.is_enabled {
+        if old_enabling_flag != self.is_enabled {
             self.change_flag_arc.store(true, Ordering::SeqCst);
         }
     }
