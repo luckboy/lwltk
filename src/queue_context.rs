@@ -32,7 +32,6 @@ pub enum ActiveId
     Keyboard,
 }
 
-
 #[derive(Clone)]
 pub struct QueueContextIter<'a>
 {
