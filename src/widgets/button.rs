@@ -329,7 +329,7 @@ impl Draw for Button
         self.text.update_size(cairo_context, padding_area_size, |cairo_context| {
                 theme.set_button_font(cairo_context)
         })?;
-        padding_size.width += self.text.lines.iter().fold(0, |w, l| max(w, l.width));
+        padding_size.width += self.text.max_line_width();
         padding_size.height = max(padding_size.height, self.text.line_height * self.text.lines.len() as i32);
         self.bounds.set_size(outer_size(padding_size, theme.button_padding_edges()));
         self.bounds.set_size(max_size_for_opt_size(self.bounds.size(), self.preferred_size));

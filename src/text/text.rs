@@ -5,6 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::cmp::max;
 use std::iter::once;
 use crate::types::*;
 use crate::utils::*;
@@ -262,6 +263,9 @@ impl Text
         cairo_context.restore()?;
         Ok(())
     }
+    
+    pub fn max_line_width(&self) -> i32
+    { self.lines.iter().fold(0, |w, l| max(w, l.width)) }
 }
 
 #[cfg(test)]
