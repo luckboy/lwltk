@@ -78,7 +78,7 @@ impl MockLayout
     pub(crate) fn set_v_align(&mut self, align: VAlign)
     { self.v_align = align; }
 
-    pub(crate) fn set_enabling(&mut self, is_enabled: bool)
+    pub(crate) fn set_enabled(&mut self, is_enabled: bool)
     { self.is_enabled = is_enabled; }    
     
     pub(crate) fn set_focusable(&mut self, is_focusable: bool)
