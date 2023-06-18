@@ -47,7 +47,7 @@ impl MockLayout
             text: String::from(s),
             bounds: Rect::new(0, 0, 0, 0),
             client_pos: Pos::new(0, 0),
-            weight: 1,
+            weight: 0,
             h_align: HAlign::Left,
             v_align: VAlign::Top,
             state: WidgetState::None,
