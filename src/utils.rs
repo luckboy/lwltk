@@ -1110,33 +1110,6 @@ pub fn outer_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
     Rect::new(pos.x, pos.y, size.width, size.height)
 }
 
-pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
-    where T: PartialOrd
-{
-    match width2 {
-        Some(width) => {
-            if width < width1 {
-                width
-            } else {
-                width1
-            }
-        },
-        None => width1,
-    }
-}
-
-pub fn min_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
-    where T: PartialOrd
-{ min_width_for_opt_width(height1, height2) }
-
-pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
-    where T: PartialOrd
-{
-    let width = min_width_for_opt_width(size1.width, size2.width);
-    let height = min_height_for_opt_height(size1.height, size2.height);
-    Size::new(width, height)
-}
-
 pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     where T: PartialOrd
 {
@@ -1161,6 +1134,33 @@ pub fn max_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<
 {
     let width = max_width_for_opt_width(size1.width, size2.width);
     let height = max_height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
+
+pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
+    where T: PartialOrd
+{
+    match width2 {
+        Some(width) => {
+            if width < width1 {
+                width
+            } else {
+                width1
+            }
+        },
+        None => width1,
+    }
+}
+
+pub fn min_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
+    where T: PartialOrd
+{ min_width_for_opt_width(height1, height2) }
+
+pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
+    where T: PartialOrd
+{
+    let width = min_width_for_opt_width(size1.width, size2.width);
+    let height = min_height_for_opt_height(size1.height, size2.height);
     Size::new(width, height)
 }
 
