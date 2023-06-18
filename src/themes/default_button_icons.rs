@@ -12,7 +12,7 @@ use crate::types::*;
 pub const DEFAULT_BUTTON_ICON_WIDTH: i32 = 32;
 pub const DEFAULT_BUTTON_ICON_HEIGHT: i32 = 32;
 
-pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme, pos: Pos<i32>, icon: ButtonIcon, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme, pos: Pos<i32>, icon: ButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
 {
     let x = pos.x as f64;
     let y = pos.y as f64;
@@ -24,7 +24,7 @@ pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme,
     match icon {
         ButtonIcon::Cancel => {
             cairo_context.set_line_width(4.0);
-            theme.set_fg3(cairo_context, is_enabled, is_focused, is_focused_window)?;
+            theme.set_fg3(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
             cairo_context.move_to(x + 2.0, y + 2.0);
             cairo_context.line_to(x + 30.0, y + 30.0);
             cairo_context.stroke()?;
@@ -34,7 +34,7 @@ pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme,
         },
         ButtonIcon::Ok => {
             cairo_context.set_line_width(4.0);
-            theme.set_fg4(cairo_context, is_enabled, is_focused, is_focused_window)?;
+            theme.set_fg4(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
             cairo_context.move_to(x + 2.0, y + 16.0);
             cairo_context.line_to(x + 16.0, y + 30.0);
             cairo_context.line_to(x + 32.0, y + 2.0);

@@ -64,8 +64,8 @@ impl Button
             image: opt_icon.map(|i| {
                     Image::new(move |theme| {
                             theme.button_icon_size()
-                    }, move |cairo_context, theme, pos, is_enabled, is_focused, is_focused_window| {
-                            theme.draw_button_icon(cairo_context, pos, i, is_enabled, is_focused, is_focused_window)
+                    }, move |cairo_context, theme, pos, state, is_enabled, is_focused, is_focused_window| {
+                            theme.draw_button_icon(cairo_context, pos, i, state, is_enabled, is_focused, is_focused_window)
                     })
             }),
             text: Text::new(s, TextAlign::Center),
@@ -121,7 +121,7 @@ impl Button
         where F: FnMut(&mut ClientContext, &mut QueueContext, &Event) -> Option<EventOption> + Send + Sync + 'static
     { self.set_dyn_on(Box::new(f)) }
 
-    pub fn set_dyn_icon_image(&mut self, size_f: Box<dyn Fn(&dyn Theme) -> Size<i32> + Send + Sync + 'static>, drawing_f: Box<dyn Fn(&CairoContext, &dyn Theme, Pos<i32>, bool, bool, bool) -> Result<(), CairoError> + Send + Sync + 'static>)
+    pub fn set_dyn_icon_image(&mut self, size_f: Box<dyn Fn(&dyn Theme) -> Size<i32> + Send + Sync + 'static>, drawing_f: Box<dyn Fn(&CairoContext, &dyn Theme, Pos<i32>, WidgetState, bool, bool, bool) -> Result<(), CairoError> + Send + Sync + 'static>)
     {
         match &mut self.image {
             Some(image) => {
@@ -137,15 +137,15 @@ impl Button
     
     pub fn set_icon_image<F, G>(&mut self, size_f: F, drawing_f: G)
         where F: Fn(&dyn Theme) -> Size<i32> + Send + Sync + 'static,
-              G: Fn(&CairoContext, &dyn Theme, Pos<i32>, bool, bool, bool) -> Result<(), CairoError> + Send + Sync + 'static
+              G: Fn(&CairoContext, &dyn Theme, Pos<i32>, WidgetState, bool, bool, bool) -> Result<(), CairoError> + Send + Sync + 'static
     { self.set_dyn_icon_image(Box::new(size_f), Box::new(drawing_f)) }
 
     pub fn set_icon(&mut self, icon: ButtonIcon)
     {
         self.set_icon_image(move |theme| {
                 theme.button_icon_size()
-        }, move |cairo_context, theme, pos, is_enabled, is_focused, is_focused_window| {
-                theme.draw_button_icon(cairo_context, pos, icon, is_enabled, is_focused, is_focused_window)
+        }, move |cairo_context, theme, pos, state, is_enabled, is_focused, is_focused_window| {
+                theme.draw_button_icon(cairo_context, pos, icon, state, is_enabled, is_focused, is_focused_window)
         })
     }
     
@@ -361,7 +361,7 @@ impl Draw for Button
                 let tmp_size = (image.size_fun)(theme);
                 let area_width = min(tmp_size.width, padding_bounds.width);
                 let area_bounds = Rect::new(padding_bounds.x, padding_bounds.y, area_width, padding_bounds.height);
-                image.draw(cairo_context, theme, area_bounds, self.is_enabled, self.is_focused, is_focused_window)?;
+                image.draw(cairo_context, theme, area_bounds, self.state, self.is_enabled, self.is_focused, is_focused_window)?;
                 x += area_width + theme.button_sep_width();
                 if x > padding_bounds.x + padding_bounds.width {
                     x = padding_bounds.x + padding_bounds.width;

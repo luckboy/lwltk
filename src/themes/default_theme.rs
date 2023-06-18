@@ -383,10 +383,10 @@ impl Theme for DefaultTheme
     fn button_icon_size(&self) -> Size<i32>
     { Size::new(DEFAULT_BUTTON_ICON_WIDTH, DEFAULT_BUTTON_ICON_HEIGHT) } 
     
-    fn draw_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: ButtonIcon, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
-    { draw_default_button_icon(cairo_context, self, pos, icon, is_enabled, is_focused, is_focused_window) }
+    fn draw_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: ButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    { draw_default_button_icon(cairo_context, self, pos, icon, state, is_enabled, is_focused, is_focused_window) }
     
-    fn set_fg(&self, cairo_context: &CairoContext, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    fn set_fg(&self, cairo_context: &CairoContext, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         if is_focused_window {
             if is_enabled {
@@ -404,7 +404,7 @@ impl Theme for DefaultTheme
         Ok(())
     }
 
-    fn set_fg2(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    fn set_fg2(&self, cairo_context: &CairoContext, _state: WidgetState, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         if is_focused_window {
             set_cairo_color(cairo_context, self.fg2_color);
@@ -414,7 +414,7 @@ impl Theme for DefaultTheme
         Ok(())
     }
     
-    fn set_fg3(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    fn set_fg3(&self, cairo_context: &CairoContext, _state: WidgetState, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         if is_focused_window {
             set_cairo_color(cairo_context, self.fg3_color);
@@ -424,7 +424,7 @@ impl Theme for DefaultTheme
         Ok(())
     }
     
-    fn set_fg4(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    fn set_fg4(&self, cairo_context: &CairoContext, _state: WidgetState, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         if is_focused_window {
             set_cairo_color(cairo_context, self.fg4_color);
@@ -434,7 +434,7 @@ impl Theme for DefaultTheme
         Ok(())
     }
 
-    fn set_fg5(&self, cairo_context: &CairoContext, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    fn set_fg5(&self, cairo_context: &CairoContext, _state: WidgetState, _is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         if is_focused_window {
             set_cairo_color(cairo_context, self.fg5_color);
