@@ -142,7 +142,7 @@ impl LinearLayoutWidgets
                 self.weight_sum += widget.weight();
             } else {
                 widget.update_size(cairo_context, theme, widget_area_size)?;
-                let width = orient_size_width(widget.size(), orient);
+                let width = orient_size_width(widget.margin_size(), orient);
                 self.zero_weight_width_sum += width;
                 match orient_size_width(widget_area_size, orient) {
                     Some(widget_area_width) => set_orient_size_width(&mut widget_area_size, Some(widget_area_width - width), orient),
