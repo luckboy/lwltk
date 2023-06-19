@@ -1110,6 +1110,20 @@ pub fn outer_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
     Rect::new(pos.x, pos.y, size.width, size.height)
 }
 
+pub fn outer_opt_size<T>(size: Size<Option<T>>, edges: Edges<T>) -> Size<Option<T>>
+    where T: Add<Output = T>
+{
+    let width = match size.width {
+        Some(tmp_width) => Some(tmp_width + edges.left + edges.right),
+        None => None,
+    };
+    let height = match size.height {
+        Some(tmp_height) => Some(tmp_height + edges.top + edges.bottom),
+        None => None,
+    };
+    Size::new(width, height)
+}
+
 pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     where T: PartialOrd
 {
