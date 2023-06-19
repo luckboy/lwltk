@@ -1251,3 +1251,232 @@ pub fn size_for_h_align_and_v_align<T>(size1: Size<T>, size2: Size<Option<T>>, h
     let height = height_for_v_align(size1.height, size2.height, v_align);
     Size::new(width, height)
 }
+
+pub fn max_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Option<T>
+    where T: PartialOrd
+{
+    match (width1, width2) {
+        (Some(width1), Some(width2)) => {
+            if width2 > width1 {
+                Some(width2)
+            } else {
+                Some(width1)
+            }
+        },
+        (Some(width1), None) => Some(width1),
+        (None, Some(width2)) => Some(width2),
+        (None, None) => None,
+    }
+}
+
+pub fn max_opt_height_for_opt_height<T>(height1: Option<T>, height2: Option<T>) -> Option<T>
+    where T: PartialOrd
+{ max_opt_width_for_opt_width(height1, height2) }
+
+pub fn max_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T>>) -> Size<Option<T>>
+    where T: PartialOrd
+{
+    let width = max_opt_width_for_opt_width(size1.width, size2.width);
+    let height = max_opt_height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
+
+pub fn min_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Option<T>
+    where T: PartialOrd
+{
+    match (width1, width2) {
+        (Some(width1), Some(width2)) => {
+            if width2 < width1 {
+                Some(width2)
+            } else {
+                Some(width1)
+            }
+        },
+        (Some(width1), None) => Some(width1),
+        (None, Some(width2)) => Some(width2),
+        (None, None) => None,
+    }
+}
+
+pub fn min_opt_height_for_opt_height<T>(height1: Option<T>, height2: Option<T>) -> Option<T>
+    where T: PartialOrd
+{ min_opt_width_for_opt_width(height1, height2) }
+
+pub fn min_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T>>) -> Size<Option<T>>
+    where T: PartialOrd
+{
+    let width = min_opt_width_for_opt_width(size1.width, size2.width);
+    let height = min_opt_height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
+
+pub fn opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Option<T>
+{
+    match (width1, width2) {
+        (_, Some(width2)) => Some(width2),
+        (Some(width1), None) => Some(width1),
+        (None, None) => None,
+    }
+}
+
+pub fn opt_height_for_opt_height<T>(height1: Option<T>, height2: Option<T>) -> Option<T>
+{ opt_width_for_opt_width(height1, height2) }
+
+pub fn opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T>>) -> Size<Option<T>>
+{
+    let width = opt_width_for_opt_width(size1.width, size2.width);
+    let height = opt_height_for_opt_height(size1.height, size2.height);
+    Size::new(width, height)
+}
+
+pub fn orient_pos<T>(x: T, y: T, orient: Orient) -> Pos<T>
+{
+    match orient {
+        Orient::Horizontal => Pos::new(x, y),
+        Orient::Vertical => Pos::new(y, x),
+    }
+}
+
+pub fn orient_pos_x<T>(pos: Pos<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => pos.x,
+        Orient::Vertical => pos.y,
+    }
+}
+
+pub fn orient_pos_y<T>(pos: Pos<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => pos.y,
+        Orient::Vertical => pos.x,
+    }
+}
+
+pub fn set_orient_pos_x<T>(pos: &mut Pos<T>, x: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => pos.x = x,
+        Orient::Vertical => pos.y = x,
+    }
+}
+
+pub fn set_orient_pos_y<T>(pos: &mut Pos<T>, y: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => pos.y = y,
+        Orient::Vertical => pos.x = y,
+    }
+}
+
+pub fn orient_size<T>(width: T, height: T, orient: Orient) -> Size<T>
+{
+    match orient {
+        Orient::Horizontal => Size::new(width, height),
+        Orient::Vertical => Size::new(height, width),
+    }
+}
+
+pub fn orient_size_width<T>(size: Size<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => size.width,
+        Orient::Vertical => size.height,
+    }
+}
+
+pub fn orient_size_height<T>(size: Size<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => size.height,
+        Orient::Vertical => size.width,
+    }
+}
+
+pub fn set_orient_size_width<T>(size: &mut Size<T>, width: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => size.width = width,
+        Orient::Vertical => size.height = width,
+    }
+}
+
+pub fn set_orient_size_height<T>(size: &mut Size<T>, height: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => size.height = height,
+        Orient::Vertical => size.width = height,
+    }
+}
+
+pub fn orient_rect<T>(x: T, y: T, width: T, height: T, orient: Orient) -> Rect<T>
+{
+    match orient {
+        Orient::Horizontal => Rect::new(x, y, width, height),
+        Orient::Vertical => Rect::new(y, x, height, width),
+    }
+}
+
+pub fn orient_rect_x<T>(rect: Rect<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => rect.x,
+        Orient::Vertical => rect.y,
+    }
+}
+
+pub fn orient_rect_y<T>(rect: Rect<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => rect.y,
+        Orient::Vertical => rect.x,
+    }
+}
+
+pub fn orient_rect_width<T>(rect: Rect<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => rect.width,
+        Orient::Vertical => rect.height,
+    }
+}
+
+pub fn orient_rect_height<T>(rect: Rect<T>, orient: Orient) -> T
+{
+    match orient {
+        Orient::Horizontal => rect.height,
+        Orient::Vertical => rect.width,
+    }
+}
+
+pub fn set_orient_rect_x<T>(rect: &mut Rect<T>, x: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => rect.x = x,
+        Orient::Vertical => rect.y = x,
+    }
+}
+
+pub fn set_orient_rect_y<T>(rect: &mut Rect<T>, y: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => rect.y = y,
+        Orient::Vertical => rect.x = y,
+    }
+}
+
+pub fn set_orient_rect_width<T>(rect: &mut Rect<T>, width: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => rect.width = width,
+        Orient::Vertical => rect.height = width,
+    }
+}
+
+pub fn set_orient_rect_height<T>(rect: &mut Size<T>, height: T, orient: Orient)
+{
+    match orient {
+        Orient::Horizontal => rect.height = height,
+        Orient::Vertical => rect.width = height,
+    }
+}

@@ -56,6 +56,13 @@ pub enum TextAlign
     Right,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum Orient
+{
+    Horizontal,
+    Vertical,
+}
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Color
 {

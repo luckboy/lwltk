@@ -6,5 +6,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 mod button;
+mod linear_layout_widgets;
 
 pub use button::*;
+pub use linear_layout_widgets::*;
