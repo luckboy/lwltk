@@ -142,10 +142,10 @@ impl LinearLayoutWidgets
                 self.weight_sum += widget.weight();
             } else {
                 widget.update_size(cairo_context, theme, widget_area_size)?;
-                let width = orient_size_width(widget.margin_size(), orient);
-                self.zero_weight_width_sum += width;
+                let widget_width = orient_size_width(widget.margin_size(), orient);
+                self.zero_weight_width_sum += widget_width;
                 match orient_size_width(widget_area_size, orient) {
-                    Some(widget_area_width) => set_orient_size_width(&mut widget_area_size, Some(widget_area_width - width), orient),
+                    Some(widget_area_width) => set_orient_size_width(&mut widget_area_size, Some(widget_area_width - widget_width), orient),
                     None => (),
                 }
             }
@@ -166,7 +166,7 @@ impl LinearLayoutWidgets
         for widget in &mut self.widgets {
             if widget.weight() > 0 {
                 if is_weight_width {
-                    widget_area_size = orient_size(Some(self.weight_width * (widget.weight() as i32)), orient_size_height(area_size2, orient), orient);
+                    widget_area_size = orient_size(Some(self.weight_width * (widget.weight() as i32)), orient_size_height(widget_area_size, orient), orient);
                     match orient_size_width(widget_area_size, orient) {
                         Some(widget_area_width) => {
                             if rem_count + (widget.weight() as i32) <= self.weight_width_rem {
@@ -292,5 +292,5 @@ impl LinearLayoutWidgets
     { self.widgets.iter().fold(0, |w, w2| max(w, orient_size_width(w2.size(), orient))) }
     
     pub fn size(&self, orient: Orient) -> Size<i32>
-    { orient_size(self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, self.max_widget_height(orient), orient) }
+    { orient_size(self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, self.max_widget_height(orient), orient) }
 }
