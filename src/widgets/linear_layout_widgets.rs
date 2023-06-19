@@ -145,17 +145,17 @@ impl LinearLayoutWidgets
                 let width = orient_size_width(widget.size(), orient);
                 self.zero_weight_width_sum += width;
                 match orient_size_width(widget_area_size, orient) {
-                    Some(widget_area_width) => set_orient_size_width(&mut widget_area_size, Some(widget_area_width + width), orient),
+                    Some(widget_area_width) => set_orient_size_width(&mut widget_area_size, Some(widget_area_width - width), orient),
                     None => (),
                 }
             }
         }
         let mut is_weight_width = false;
-        match orient_size_width(area_size2, orient) {
-            Some(area_width2) => {
+        match orient_size_width(widget_area_size, orient) {
+            Some(widget_area_width) => {
                 if self.weight_sum > 0 {
-                    self.weight_width = area_width2 / (self.weight_sum as i32);
-                    self.weight_width_rem = area_width2 % (self.weight_sum as i32);
+                    self.weight_width = widget_area_width / (self.weight_sum as i32);
+                    self.weight_width_rem = widget_area_width % (self.weight_sum as i32);
                     is_weight_width = true;
                 }
             }
