@@ -33,7 +33,46 @@ impl LinearLayoutWidgets
             weight_width_rem: 0,
         }
     }
+    
+    pub fn add_dyn(&mut self, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    {
+        let i = self.widgets.len();
+        self.widgets.push(widget);
+        Some(WidgetIndexPair(i, 0))
+    }
+    
+    pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    {
+        if idx_pair.1 == 0 {
+            let i = idx_pair.0;
+            if i <= self.widgets.len() {
+                self.widgets.insert(i, widget);
+                Some(idx_pair)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
 
+    pub fn remove(&mut self, idx_pair: WidgetIndexPair) -> Option<Box<dyn Widget>>
+    {
+        if idx_pair.1 == 0 {
+            let i = idx_pair.0;
+            if i < self.widgets.len() {
+                Some(self.widgets.remove(i))
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn remove_last(&mut self) -> Option<Box<dyn Widget>>
+    { self.widgets.pop() }
+    
     pub fn prev(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
     {
         match idx_pair {

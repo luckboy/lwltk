@@ -27,6 +27,7 @@ impl GridLayoutWidgetPair
 
 pub struct GridLayoutWidgets
 {
+    pub max_column_count: usize,
     pub widgets: Vec<Vec<Box<dyn Widget>>>,
     pub zero_weight_pairs: BTreeMap<u32, GridLayoutWidgetPair>,
     pub zero_weight_width_sum: i32,
@@ -54,9 +55,10 @@ fn weight_and_weight_index(widget: &dyn Widget, zero_weight_pairs: &BTreeMap<u32
 
 impl GridLayoutWidgets
 {
-    pub fn new() -> Self
+    pub fn new(max_column_count: usize) -> Self
     {
         GridLayoutWidgets {
+            max_column_count,
             widgets: Vec::new(),
             zero_weight_pairs: BTreeMap::new(),
             zero_weight_width_sum: 0,
@@ -66,6 +68,95 @@ impl GridLayoutWidgets
             row_height: 0,
             row_height_rem: 0,
             start_y: 0,
+        }
+    }
+
+    pub fn add_dyn(&mut self, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    {
+        let i = self.widgets.len();
+        let last_row = match self.widgets.last_mut() {
+            Some(row) => {
+                if row.len() < self.max_column_count {
+                    Some(row)
+                } else {
+                    None
+                }
+            },
+            None => None,
+        };
+        match last_row {
+            Some(last_row) => {
+                let j = last_row.len();
+                last_row.push(widget);
+                Some(WidgetIndexPair(i - 1, j))
+            },
+            None => {
+                self.widgets.push(vec![widget]);
+                Some(WidgetIndexPair(i, 0))
+            },
+        }
+    }
+    
+    pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    {
+        let i = idx_pair.0;
+        let j = idx_pair.1;
+        if i == self.widgets.len() && j == 0 {
+            self.widgets.push(vec![widget]);
+            Some(WidgetIndexPair(i, 0))
+        } else if i < self.widgets.len() {
+            match self.widgets.get_mut(i) {
+                Some(row) => {
+                    if j <= row.len() {
+                        row.insert(j, widget);
+                        Some(WidgetIndexPair(i, j))
+                    } else {
+                        None
+                    }
+                },
+                None => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn remove(&mut self, idx_pair: WidgetIndexPair) -> Option<Box<dyn Widget>>
+    {
+        let i = idx_pair.0;
+        let j = idx_pair.1;
+        let len = self.widgets.len();
+        if i < len {
+            match self.widgets.get_mut(i) {
+                Some(row) => {
+                    if j < row.len() {
+                        let widget = row.remove(j);
+                        if i == len - 1 && row.is_empty() {
+                            self.widgets.pop();
+                        }
+                        Some(widget)
+                    } else {
+                        None
+                    }
+                },
+                None => None,
+            }
+        } else {
+            None
+        }
+    }
+    
+    pub fn remove_last(&mut self) -> Option<Box<dyn Widget>>
+    {
+        match self.widgets.last_mut() {
+            Some(row) => {
+                let widget = row.pop();
+                if row.is_empty() {
+                   self.widgets.pop(); 
+                }
+                widget
+            },
+            None => None,
         }
     }
 
