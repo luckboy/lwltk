@@ -87,12 +87,12 @@ impl LinearLayoutWidgets
         }
     }
 
-    pub fn dyn_widget_mut(&mut self, idx_pair: WidgetIndexPair) -> Option<&dyn Widget>
+    pub fn dyn_widget_mut(&mut self, idx_pair: WidgetIndexPair) -> Option<&mut dyn Widget>
     {
         match idx_pair {
             WidgetIndexPair(i, 0) => {
                 match self.widgets.get_mut(i) {
-                    Some(widget) => Some(&**widget),
+                    Some(widget) => Some(&mut **widget),
                     None => None,
                 }
             },
