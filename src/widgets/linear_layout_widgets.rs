@@ -159,7 +159,7 @@ impl LinearLayoutWidgets
                     self.weight_width_rem = widget_area_width % (self.weight_sum as i32);
                     is_weight_width = true;
                 }
-            }
+            },
             None => (),
         }
         let mut rem_count = 0;
