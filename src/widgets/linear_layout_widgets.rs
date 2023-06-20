@@ -138,8 +138,9 @@ impl LinearLayoutWidgets
         self.zero_weight_width_sum = 0;
         self.weight_sum = 0;
         for widget in &mut self.widgets {
-            if widget.weight() > 0 {
-                self.weight_sum += widget.weight();
+            let widget_weight = widget.weight();
+            if widget_weight > 0 {
+                self.weight_sum += widget_weight;
             } else {
                 widget.update_size(cairo_context, theme, widget_area_size)?;
                 let widget_width = orient_size_width(widget.margin_size(), orient);
@@ -164,13 +165,14 @@ impl LinearLayoutWidgets
         let mut rem_count = 0;
         let mut max_weight_width = 0;
         for widget in &mut self.widgets {
-            if widget.weight() > 0 {
+            let widget_weight = widget.weight();
+            if widget_weight > 0 {
                 if is_weight_width {
-                    widget_area_size = orient_size(Some(self.weight_width * (widget.weight() as i32)), orient_size_height(widget_area_size, orient), orient);
+                    widget_area_size = orient_size(Some(self.weight_width * (widget_weight as i32)), orient_size_height(widget_area_size, orient), orient);
                     match orient_size_width(widget_area_size, orient) {
                         Some(widget_area_width) => {
-                            if rem_count + (widget.weight() as i32) <= self.weight_width_rem {
-                                set_orient_size_width(&mut widget_area_size, Some(widget_area_width + (widget.weight() as i32)), orient);
+                            if rem_count + (widget_weight as i32) <= self.weight_width_rem {
+                                set_orient_size_width(&mut widget_area_size, Some(widget_area_width + (widget_weight as i32)), orient);
                             } else if rem_count < self.weight_width_rem {
                                 set_orient_size_width(&mut widget_area_size, Some(widget_area_width + self.weight_width_rem - rem_count), orient);
                             }
@@ -219,12 +221,13 @@ impl LinearLayoutWidgets
             rem_count = 0;
             let max_widget_height = self.max_widget_height(orient);
             for widget in &mut self.widgets {
-                if widget.weight() > 0 {
-                    widget_area_size = orient_size(Some(self.weight_width * (widget.weight() as i32)), Some(max_widget_height), orient);
+                let widget_weight = widget.weight();
+                if widget_weight > 0 {
+                    widget_area_size = orient_size(Some(self.weight_width * (widget_weight as i32)), Some(max_widget_height), orient);
                     match orient_size_width(widget_area_size, orient) {
                         Some(widget_area_width) => {
-                            if rem_count + (widget.weight() as i32) <= self.weight_width_rem {
-                                set_orient_size_width(&mut widget_area_size, Some(widget_area_width + (widget.weight() as i32)), orient);
+                            if rem_count + (widget_weight as i32) <= self.weight_width_rem {
+                                set_orient_size_width(&mut widget_area_size, Some(widget_area_width + (widget_weight as i32)), orient);
                             } else if rem_count < self.weight_width_rem {
                                 set_orient_size_width(&mut widget_area_size, Some(widget_area_width + self.weight_width_rem - rem_count), orient);
                             }
@@ -258,11 +261,12 @@ impl LinearLayoutWidgets
         let mut pos = pos_for_h_align_and_v_align(size, area_bounds, h_align, v_align);
         let mut rem_count = 0;
         for widget in &mut self.widgets {
-            if widget.weight() > 0 {
+            let widget_weight = widget.weight();
+            if widget_weight > 0 {
                 let mut widget_area_bounds = orient_rect(orient_pos_x(pos, orient), orient_pos_y(pos, orient), self.weight_width * (widget.weight() as i32), orient_size_height(size, orient), orient);
                 let widget_area_width = orient_rect_width(widget_area_bounds, orient);
-                if rem_count + (widget.weight() as i32) <= self.weight_width_rem {
-                    set_orient_rect_width(&mut widget_area_bounds, widget_area_width + (widget.weight() as i32), orient);
+                if rem_count + (widget_weight as i32) <= self.weight_width_rem {
+                    set_orient_rect_width(&mut widget_area_bounds, widget_area_width + (widget_weight as i32), orient);
                 } else if rem_count < self.weight_width_rem {
                     set_orient_rect_width(&mut widget_area_bounds, widget_area_width + self.weight_width_rem - rem_count, orient);
                 }
