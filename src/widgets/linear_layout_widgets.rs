@@ -183,8 +183,8 @@ impl LinearLayoutWidgets
                     widget_area_size = orient_size(None, orient_size_height(area_size2, orient), orient);
                 }
                 widget.update_size(cairo_context, theme, widget_area_size)?;
-                let width = orient_size_width(widget.margin_size(), orient);
-                max_weight_width = max(max_weight_width, width / (widget.weight() as i32));
+                let widget_width = orient_size_width(widget.margin_size(), orient);
+                max_weight_width = max(max_weight_width, widget_width / (widget.weight() as i32));
                 rem_count += widget.weight() as i32;
             }
         }
