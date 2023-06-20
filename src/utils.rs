@@ -1473,7 +1473,7 @@ pub fn set_orient_rect_width<T>(rect: &mut Rect<T>, width: T, orient: Orient)
     }
 }
 
-pub fn set_orient_rect_height<T>(rect: &mut Size<T>, height: T, orient: Orient)
+pub fn set_orient_rect_height<T>(rect: &mut Rect<T>, height: T, orient: Orient)
 {
     match orient {
         Orient::Horizontal => rect.height = height,
