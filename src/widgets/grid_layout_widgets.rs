@@ -38,7 +38,7 @@ pub struct GridLayoutWidgets
     pub start_y: i32,
 }
 
-fn weight_and_weight_idx(widget: &dyn Widget, zero_weight_pairs: &BTreeMap<u32, GridLayoutWidgetPair>, weight_idx: u32) -> (u32, u32)
+fn weight_and_weight_index(widget: &dyn Widget, zero_weight_pairs: &BTreeMap<u32, GridLayoutWidgetPair>, weight_idx: u32) -> (u32, u32)
 {
     let weight = widget.weight();
     if weight > 0 {
@@ -296,7 +296,7 @@ impl GridLayoutWidgets
             for row in &self.widgets[1..] {
                 weight_idx = 0;
                 for widget in row {
-                    let (widget_weight, tmp_weight_idx) = weight_and_weight_idx(&**widget, &self.zero_weight_pairs, weight_idx);
+                    let (widget_weight, tmp_weight_idx) = weight_and_weight_index(&**widget, &self.zero_weight_pairs, weight_idx);
                     if widget_weight <= 0 {
                         match self.zero_weight_pairs.get_mut(&weight_idx) {
                             Some(pair) => pair.count += 1,
@@ -349,7 +349,7 @@ impl GridLayoutWidgets
             }
             let mut weight_idx = 0;
             for widget in row {
-                let (widget_weight, tmp_weight_idx) = weight_and_weight_idx(&**widget, &self.zero_weight_pairs, weight_idx);
+                let (widget_weight, tmp_weight_idx) = weight_and_weight_index(&**widget, &self.zero_weight_pairs, weight_idx);
                 if widget_weight > 0 {
                     tmp_weight_sum += widget_weight;
                 } else {
@@ -405,7 +405,7 @@ impl GridLayoutWidgets
             let mut weight_idx = 0;
             let mut rem_count = 0;
             for widget in row {
-                let (widget_weight, tmp_weight_idx) = weight_and_weight_idx(&**widget, &self.zero_weight_pairs, weight_idx);
+                let (widget_weight, tmp_weight_idx) = weight_and_weight_index(&**widget, &self.zero_weight_pairs, weight_idx);
                 if widget_weight > 0 {
                     if is_weight_width {
                         set_orient_size_width(&mut widget_area_size, Some(self.weight_width * (widget_weight as i32)), orient);
@@ -505,7 +505,7 @@ impl GridLayoutWidgets
                 let mut weight_idx = 0;
                 let mut rem_count = 0;
                 for widget in row {
-                    let (widget_weight, tmp_weight_idx) = weight_and_weight_idx(&**widget, &self.zero_weight_pairs, weight_idx);
+                    let (widget_weight, tmp_weight_idx) = weight_and_weight_index(&**widget, &self.zero_weight_pairs, weight_idx);
                     if widget_weight > 0 {
                         set_orient_size_width(&mut widget_area_size, Some(self.weight_width * (widget_weight as i32)), orient);
                         match orient_size_width(widget_area_size, orient) {
@@ -557,7 +557,7 @@ impl GridLayoutWidgets
             let mut weight_idx = 0;
             let mut rem_count = 0;
             for widget in row {
-                let (widget_weight, tmp_weight_idx) = weight_and_weight_idx(&**widget, &self.zero_weight_pairs, weight_idx);
+                let (widget_weight, tmp_weight_idx) = weight_and_weight_index(&**widget, &self.zero_weight_pairs, weight_idx);
                 if widget_weight > 0 {
                     set_orient_rect_x(&mut widget_area_bounds, orient_pos_x(pos, orient), orient);
                     set_orient_rect_width(&mut widget_area_bounds, self.weight_width * (widget_weight as i32), orient);
