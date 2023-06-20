@@ -263,7 +263,7 @@ impl LinearLayoutWidgets
         for widget in &mut self.widgets {
             let widget_weight = widget.weight();
             if widget_weight > 0 {
-                let mut widget_area_bounds = orient_rect(orient_pos_x(pos, orient), orient_pos_y(pos, orient), self.weight_width * (widget.weight() as i32), orient_size_height(size, orient), orient);
+                let mut widget_area_bounds = orient_rect(orient_pos_x(pos, orient), orient_pos_y(pos, orient), self.weight_width * (widget_weight as i32), orient_size_height(size, orient), orient);
                 let widget_area_width = orient_rect_width(widget_area_bounds, orient);
                 if rem_count + (widget_weight as i32) <= self.weight_width_rem {
                     set_orient_rect_width(&mut widget_area_bounds, widget_area_width + (widget_weight as i32), orient);
