@@ -960,10 +960,10 @@ impl ClientContext
     pub fn set_post_button_release_pos(&mut self, pos: Option<Pos<f64>>)
     { self.fields.post_button_release_pos = pos; }
     
-    pub fn send_after_button_release(&mut self, call_on_path: CallOnPath, pos: Option<Pos<f64>>)
+    pub fn send_after_button_release(&mut self, call_on_path: CallOnPath, pos: Pos<f64>)
     {
         self.fields.post_button_release_call_on_path = Some(call_on_path);
-        self.fields.post_button_release_pos = pos;
+        self.fields.post_button_release_pos = Some(pos);
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
 
