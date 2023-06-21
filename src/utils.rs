@@ -275,7 +275,12 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 if client_context.post_button_release_call_on_path().is_some() {
                     queue_context.set_double_click(true);
                 } else {
-                    client_context.send_after_button_release(queue_context.current_call_on_path()?.clone());
+                    let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                    queue_context.push_callback(move |client_context, window_context, _| {
+                            let tmp_call_on_path = current_call_on_path.clone();
+                            client_context.send_after_button_release(tmp_call_on_path, window_context.current_pos());
+                            Some(())
+                    });
                 }
             } else {
                 match pressed_call_on_path {
@@ -751,8 +756,14 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
                     }
                     if client_context.post_button_release_call_on_path().is_some() {
                         queue_context.set_double_click(true);
+                    } else {
+                        let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                        queue_context.push_callback(move |client_context, window_context, _| {
+                                let tmp_call_on_path = current_call_on_path.clone();
+                                client_context.send_after_button_release(tmp_call_on_path, window_context.current_pos());
+                                Some(())
+                        });
                     }
-                    client_context.send_after_button_release(queue_context.current_call_on_path()?.clone());
                 } else {
                     match pressed_call_on_path {
                         Some(CallOnPath::Widget(abs_widget_path)) => {

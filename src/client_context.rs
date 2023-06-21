@@ -157,6 +157,7 @@ pub(crate) struct ClientContextFields
     pub(crate) has_old_cursor: bool,
     pub(crate) old_cursor: Cursor,
     pub(crate) post_button_release_call_on_path: Option<CallOnPath>,
+    pub(crate) post_button_release_pos: Option<Pos<f64>>,
     pub(crate) has_sent_post_button_release_call_on_path: bool,
 }
 
@@ -350,6 +351,7 @@ impl ClientContext
                 has_old_cursor: false,
                 old_cursor: Cursor::Default,
                 post_button_release_call_on_path: None,
+                post_button_release_pos: None,
                 has_sent_post_button_release_call_on_path: false,
             },
             client_windows: BTreeMap::new(),
@@ -951,16 +953,24 @@ impl ClientContext
         self.fields.post_button_release_call_on_path = call_on_path;
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
+
+    pub fn post_button_release_pos(&self) -> Option<Pos<f64>>
+    { self.fields.post_button_release_pos }
+
+    pub fn set_post_button_release_pos(&mut self, pos: Option<Pos<f64>>)
+    { self.fields.post_button_release_pos = pos; }
     
-    pub fn send_after_button_release(&mut self, call_on_path: CallOnPath)
+    pub fn send_after_button_release(&mut self, call_on_path: CallOnPath, pos: Option<Pos<f64>>)
     {
         self.fields.post_button_release_call_on_path = Some(call_on_path);
+        self.fields.post_button_release_pos = pos;
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
 
     pub fn unsend_after_button_release(&mut self)
     {
         self.fields.post_button_release_call_on_path = None;
+        self.fields.post_button_release_pos = None;
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
     
