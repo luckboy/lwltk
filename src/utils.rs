@@ -359,7 +359,7 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
             for c in s.chars() {
                 queue_context.push_event(Event::Char(c));
             }
-            if widget.is_clickable() {
+            if widget.is_clickable_by_key() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
                     let current_call_on_path = queue_context.current_call_on_path()?.clone();
                     if queue_context.add_active_id(&current_call_on_path, ActiveId::Keyboard) {
@@ -370,7 +370,7 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
             Some(Some(None))
         },
         Event::Client(ClientEvent::KeyboardKey(_, keys, _, ClientState::Released)) => {
-            if widget.is_clickable() {
+            if widget.is_clickable_by_key() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
                     let current_call_on_path = queue_context.current_call_on_path()?.clone();
                     if queue_context.remove_active_id(&current_call_on_path, ActiveId::Keyboard) {

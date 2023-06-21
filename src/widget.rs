@@ -43,6 +43,9 @@ pub trait Widget: Container + PreferredSize
     
     fn is_clickable(&self) -> bool
     { self.is_focusable() }
+
+    fn is_clickable_by_key(&self) -> bool
+    { self.is_focusable() }    
     
     fn viewport_size(&self, size: Size<i32>) -> Size<i32>
     { size }
