@@ -98,8 +98,6 @@ pub(crate) fn handle_events_and_callbacks_from_queues(client_context: &mut Clien
         loop {
             match queue_context.event_queue.pop() {
                 Some(event_pair) => {
-                    window_context.current_window_index = Some(event_pair.call_on_path.window_index());
-                    window_context.current_pos = None;
                     queue_context.current_call_on_path = Some(event_pair.call_on_path);
                     handle_only_event_with_propagation(client_context, window_context, queue_context, &event_pair.event);
                 },
