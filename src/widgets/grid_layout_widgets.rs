@@ -325,13 +325,13 @@ impl GridLayoutWidgets
     {
         let start_y = self.start_y as f64;
         let rem_y = start_y + (((self.row_height + 1) * self.row_height_rem) as f64);
-        let end_y = rem_y + (((self.row_height + 1) * ((self.widgets.len() as i32) - self.row_height_rem)) as f64);
+        let end_y = rem_y + ((self.row_height * ((self.widgets.len() as i32) - self.row_height_rem)) as f64);
         let y = orient_pos_y(pos, orient);
         let i = if start_y <= y && rem_y > y {
-            Some((y - start_y / ((self.row_height + 1) as f64)).floor() as usize)
+            Some(((y - start_y) / ((self.row_height + 1) as f64)).floor() as usize)
         } else if rem_y <= y && end_y > y {
             if self.row_height != 0 {
-                Some((((y - rem_y / (self.row_height as f64)).floor() as i32) + self.row_height_rem) as usize)
+                Some(((y - rem_y) / (self.row_height as f64)).floor() as usize)
             } else {
                 None
             }
@@ -423,9 +423,11 @@ impl GridLayoutWidgets
         let mut is_row_height = false;
         match orient_size_height(widget_area_size, orient) {
             Some(widget_area_height) => {
-                self.row_height = widget_area_height / (self.weight_sum as i32);
-                self.row_height_rem = widget_area_height % (self.weight_sum as i32);
-                is_row_height = true;
+                if self.widgets.len() > 0 {
+                    self.row_height = widget_area_height / (self.widgets.len() as i32);
+                    self.row_height_rem = widget_area_height % (self.widgets.len() as i32);
+                    is_row_height = true;
+                }
             }
             None => (),
         }
@@ -648,17 +650,18 @@ impl GridLayoutWidgets
         self.start_y = pos.y;
         let mut row_rem_count = 0;
         for row in &mut self.widgets {
-            let mut widget_area_bounds = orient_rect(0, orient_pos_y(pos, orient), 0, self.weight_width, orient);
+            let mut widget_area_bounds = orient_rect(0, orient_pos_y(pos, orient), 0, self.row_height, orient);
             let widget_area_height = orient_rect_height(widget_area_bounds, orient);
             if row_rem_count < self.row_height_rem {
                 set_orient_rect_height(&mut widget_area_bounds, widget_area_height + 1, orient);
             }
             let mut weight_idx = 0;
             let mut rem_count = 0;
+            let mut tmp_pos = pos;
             for widget in row {
                 let (widget_weight, tmp_weight_idx) = weight_and_weight_index(&**widget, &self.zero_weight_pairs, weight_idx);
                 if widget_weight > 0 {
-                    set_orient_rect_x(&mut widget_area_bounds, orient_pos_x(pos, orient), orient);
+                    set_orient_rect_x(&mut widget_area_bounds, orient_pos_x(tmp_pos, orient), orient);
                     set_orient_rect_width(&mut widget_area_bounds, self.weight_width * (widget_weight as i32), orient);
                     let widget_area_width = orient_rect_width(widget_area_bounds, orient);
                     if rem_count + (widget_weight as i32) <= self.weight_width_rem {
@@ -667,15 +670,15 @@ impl GridLayoutWidgets
                         set_orient_rect_width(&mut widget_area_bounds, widget_area_width + self.weight_width_rem - rem_count, orient);
                     }
                     widget.update_pos(cairo_context, theme, widget_area_bounds)?;
-                    let x = orient_pos_x(pos, orient);
-                    set_orient_pos_x(&mut pos, x + orient_rect_width(widget_area_bounds, orient), orient);
+                    let x = orient_pos_x(tmp_pos, orient);
+                    set_orient_pos_x(&mut tmp_pos, x + orient_rect_width(widget_area_bounds, orient), orient);
                     rem_count += widget.weight() as i32;
                 } else {
-                    set_orient_rect_x(&mut widget_area_bounds, orient_pos_x(pos, orient), orient);
+                    set_orient_rect_x(&mut widget_area_bounds, orient_pos_x(tmp_pos, orient), orient);
                     set_orient_rect_width(&mut widget_area_bounds, orient_size_width(widget.margin_size(), orient), orient);
                     widget.update_pos(cairo_context, theme, widget_area_bounds)?;
-                    let x = orient_pos_x(pos, orient);
-                    set_orient_pos_x(&mut pos, x + orient_rect_width(widget_area_bounds, orient), orient);
+                    let x = orient_pos_x(tmp_pos, orient);
+                    set_orient_pos_x(&mut tmp_pos, x + orient_rect_width(widget_area_bounds, orient), orient);
                 }
                 weight_idx = tmp_weight_idx;
             }
