@@ -263,7 +263,7 @@ pub trait Window: Container + MinSize + PreferredSize
         }
     }
     
-    fn prev_or_next_focused_widget(&self, dir: Direction, is_down: bool) -> Option<Option<RelWidgetPath>>
+    fn prev_or_next_focused_widget(&self, dir: Dir, is_down: bool) -> Option<Option<RelWidgetPath>>
     {
         let mut stack: Vec<StackElem<'_>> = Vec::new();
         let (first_idx_pair, is_stop_for_none) = match self.focused_rel_widget_path() {
@@ -355,7 +355,7 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn prev_focused_widget(&mut self) -> Option<()>
     {
-        if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Direction::Prev, false)?) {
+        if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Dir::Prev, false)?) {
             Some(())
         } else {
             None
@@ -364,7 +364,7 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn next_focused_widget(&mut self) -> Option<()>
     {
-        if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Direction::Next, false)?) {
+        if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Dir::Next, false)?) {
             Some(())
         } else {
             None
@@ -403,7 +403,7 @@ pub trait Window: Container + MinSize + PreferredSize
 
     fn down_focused_widget(&mut self) -> Option<()>
     {
-        match self.prev_or_next_focused_widget(Direction::Next, true)? {
+        match self.prev_or_next_focused_widget(Dir::Next, true)? {
             Some(rel_widget_path) => {
                 if self.set_focused_rel_widget_path(Some(rel_widget_path)) {
                     Some(())

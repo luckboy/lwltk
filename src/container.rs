@@ -15,7 +15,7 @@ use crate::types::*;
 use crate::widget::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub enum Direction
+pub enum Dir
 {
     Prev,
     Next,
@@ -146,11 +146,11 @@ pub trait Container: Draw + CallOn
         }
     }
     
-    fn prev_or_next(&self, idx_pair: Option<WidgetIndexPair>, dir: Direction) -> Option<WidgetIndexPair>
+    fn prev_or_next(&self, idx_pair: Option<WidgetIndexPair>, dir: Dir) -> Option<WidgetIndexPair>
     {
         match dir {
-            Direction::Prev => self.prev(idx_pair),
-            Direction::Next => self.next(idx_pair),
+            Dir::Prev => self.prev(idx_pair),
+            Dir::Next => self.next(idx_pair),
         }
     }
     
