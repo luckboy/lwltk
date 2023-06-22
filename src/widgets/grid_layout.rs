@@ -159,8 +159,9 @@ impl GridLayout
     pub fn remove(&mut self, idx_pair: WidgetIndexPair) -> Option<Box<dyn Widget>>
     {
         match self.widgets.remove(idx_pair) {
-            Some(widget) => {
+            Some(mut widget) => {
                 self.change_flag_arc.store(true, Ordering::SeqCst);
+                widget.set_change_flag_arc(Arc::new(AtomicBool::new(false)));
                 Some(widget)
             },
             None => None,
@@ -170,8 +171,9 @@ impl GridLayout
     pub fn remove_last(&mut self) -> Option<Box<dyn Widget>>
     {
         match self.widgets.remove_last() {
-            Some(widget) => {
+            Some(mut widget) => {
                 self.change_flag_arc.store(true, Ordering::SeqCst);
+                widget.set_change_flag_arc(Arc::new(AtomicBool::new(false)));
                 Some(widget)
             },
             None => None,
