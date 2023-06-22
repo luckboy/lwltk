@@ -150,11 +150,15 @@ impl GridLayoutWidgets
     {
         match self.widgets.last_mut() {
             Some(row) => {
-                let widget = row.pop();
-                if row.is_empty() {
-                   self.widgets.pop(); 
+                match row.pop() {
+                   Some(widget) => {
+                       if row.is_empty() {
+                           self.widgets.pop();
+                       }
+                       Some(widget)
+                   }
+                   None => None,
                 }
-                widget
             },
             None => None,
         }
