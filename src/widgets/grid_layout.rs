@@ -291,10 +291,11 @@ impl Draw for GridLayout
     
     fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>) -> Result<(), CairoError>
     {
-        self.widgets.update_pos(cairo_context, theme, area_bounds, self.orient, self.h_align, self.v_align)?;
-        self.bounds.set_pos(pos_for_h_align_and_v_align(self.bounds.size(), area_bounds, self.h_align, self.v_align));
-        self.bounds.x -= self.client_pos.x;
-        self.bounds.y -= self.client_pos.y;
+        let mut area_bounds2 = area_bounds;
+        area_bounds2.x -= self.client_pos.x;
+        area_bounds2.y -= self.client_pos.y;
+        self.widgets.update_pos(cairo_context, theme, area_bounds2, self.orient, self.h_align, self.v_align)?;
+        self.bounds.set_pos(pos_for_h_align_and_v_align(self.bounds.size(), area_bounds2, self.h_align, self.v_align));
         Ok(())
     }
 
