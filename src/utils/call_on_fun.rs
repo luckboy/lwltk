@@ -17,7 +17,7 @@ pub struct CallOnFun
 impl CallOnFun
 {
     pub fn new() -> Self
-    { CallOnFun { fun: Box::new(|_, _, _| Some(EventOption::None)), } }
+    { CallOnFun { fun: Box::new(|_, _, _| Some(EventOption::Default)), } }
     
     pub fn call_on(&mut self, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event, default_event: Option<Event>) -> Option<Option<Event>>
     {

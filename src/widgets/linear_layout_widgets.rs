@@ -145,9 +145,9 @@ impl LinearLayoutWidgets
                 let x = orient_pos_x(pos, orient);
                 let widget_x = orient_pos_x(w.pos(), orient) as f64;
                 let widget_width = orient_size_width(w.size(), orient) as f64;
-                if x < widget_x {
+                if widget_x + widget_width <= x  {
                     Ordering::Less
-                } else if x >= widget_x + widget_width {
+                } else if widget_x > x {
                     Ordering::Greater
                 } else {
                     Ordering::Equal
@@ -157,6 +157,7 @@ impl LinearLayoutWidgets
             Ok(i) => {
                 match self.widgets.get(i) {
                     Some(widget) => {
+                        
                         if widget.bounds().to_f64_rect().contains(pos) {
                             Some(WidgetIndexPair(i, 0))
                         } else {
@@ -332,7 +333,7 @@ impl LinearLayoutWidgets
     }
     
     pub fn max_widget_height(&self, orient: Orient) -> i32
-    { self.widgets.iter().fold(0, |w, w2| max(w, orient_size_width(w2.size(), orient))) }
+    { self.widgets.iter().fold(0, |w, w2| max(w, orient_size_height(w2.size(), orient))) }
     
     pub fn size(&self, orient: Orient) -> Size<i32>
     { orient_size(self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, self.max_widget_height(orient), orient) }

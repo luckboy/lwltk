@@ -126,8 +126,9 @@ impl GridLayout
         }
     }
     
-    pub fn add_dyn(&mut self, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    pub fn add_dyn(&mut self, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
+        widget.set_change_flag_arc(self.change_flag_arc.clone());
         match self.widgets.add_dyn(widget) {
             Some(idx_pair) => {
                 self.change_flag_arc.store(true, Ordering::SeqCst);
@@ -140,8 +141,9 @@ impl GridLayout
     pub fn add<T: Widget + 'static>(&mut self, widget: T) -> Option<WidgetIndexPair>
     { self.add_dyn(Box::new(widget)) }
 
-    pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
+    pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
+        widget.set_change_flag_arc(self.change_flag_arc.clone());
         match self.widgets.insert_dyn(idx_pair, widget) {
             Some(idx_pair) => {
                 self.change_flag_arc.store(true, Ordering::SeqCst);
@@ -249,7 +251,7 @@ impl Container for GridLayout
     { self.widgets.prev(idx_pair) }
 
     fn next(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
-    { self.widgets.prev(idx_pair) }
+    { self.widgets.next(idx_pair) }
 
     fn dyn_widget_for_index_pair(&self, idx_pair: WidgetIndexPair) -> Option<&dyn Widget>
     { self.widgets.dyn_widget(idx_pair) }
@@ -295,7 +297,7 @@ impl Draw for GridLayout
     fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
     {
         cairo_context.save()?;
-        cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64,  self.bounds.width as f64, self.bounds.height as f64);
+        cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64, self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
         theme.draw_linear_layout_bg(cairo_context, self.bounds, self.state, self.is_enabled, is_focused_window)?;
         self.widgets.draw(cairo_context, theme, is_focused_window)?;

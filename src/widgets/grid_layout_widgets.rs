@@ -346,9 +346,9 @@ impl GridLayoutWidgets
                                 let x = orient_pos_x(pos, orient);
                                 let widget_x = orient_pos_x(w.pos(), orient) as f64;
                                 let widget_width = orient_size_width(w.size(), orient) as f64;
-                                if x < widget_x {
+                                if widget_x + widget_width <= x  {
                                     Ordering::Less
-                                } else if x >= widget_x + widget_width {
+                                } else if widget_x > x {
                                     Ordering::Greater
                                 } else {
                                     Ordering::Equal
