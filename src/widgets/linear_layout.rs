@@ -279,6 +279,8 @@ impl Draw for LinearLayout
     {
         self.widgets.update_pos(cairo_context, theme, area_bounds, self.orient, self.h_align, self.v_align)?;
         self.bounds.set_pos(pos_for_h_align_and_v_align(self.bounds.size(), area_bounds, self.h_align, self.v_align));
+        self.bounds.x -= self.client_pos.x;
+        self.bounds.y -= self.client_pos.y;
         Ok(())
     }
 
