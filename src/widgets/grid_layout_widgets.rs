@@ -331,7 +331,7 @@ impl GridLayoutWidgets
             Some(((y - start_y) / ((self.row_height + 1) as f64)).floor() as usize)
         } else if rem_y <= y && end_y > y {
             if self.row_height != 0 {
-                Some(((y - rem_y) / (self.row_height as f64)).floor() as usize)
+                Some(((((y - rem_y) / (self.row_height as f64)).floor() as i32) + self.row_height_rem) as usize)
             } else {
                 None
             }
