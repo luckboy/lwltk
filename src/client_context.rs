@@ -594,7 +594,16 @@ impl ClientContext
                 find_deepest_focusable_window_index(window_context, 1, parent_idx, &mut pair, excluded_idx)?;
                 window_context.focused_window_index = pair.map(|p| p.window_index);
             },
-            None => (),
+            None => {
+                match window_context.focused_window_index {
+                    Some(focused_window_idx) => {
+                        if client_windows_to_destroy.contains_key(&focused_window_idx) {
+                            window_context.focused_window_index = None;
+                        }
+                    },
+                    None => (),
+                }
+            },
         }
         match queue_context2.lock() {
             Ok(mut queue_context_g) => queue_context_g.clear_for_client_windows_to_destroy(&client_windows_to_destroy),
