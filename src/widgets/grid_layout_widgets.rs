@@ -570,8 +570,8 @@ impl GridLayoutWidgets
                         VAlign::Fill => (),
                         _ => {
                             if preferred_size.height.is_none() {
-                                self.weight_width = max_weight_width;
-                                self.weight_width_rem = 0;
+                                self.row_height = max_row_height;
+                                self.row_height_rem = 0;
                             }
                         },
                     }
