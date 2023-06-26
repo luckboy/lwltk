@@ -175,7 +175,10 @@ impl Widget for Title
 
     fn is_enabled(&self) -> bool
     { self.is_enabled }
-        
+
+    fn is_clickable(&self) -> bool
+    { true }
+    
     fn h_scroll_bar_slider_x(&self, viewport_width: i32, trough_width: i32) -> f64
     { h_scroll_bar_slider_x(self.client_pos.x, self.margin_bounds.width, viewport_width, trough_width) }
 
