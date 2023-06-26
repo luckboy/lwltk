@@ -333,7 +333,7 @@ impl Draw for Button
         padding_size.height = max(padding_size.height, self.text.line_height * self.text.lines.len() as i32);
         self.bounds.set_size(outer_size(padding_size, theme.button_padding_edges()));
         self.bounds.set_size(max_size_for_opt_size(self.bounds.size(), self.preferred_size));
-        self.margin_bounds.set_size(outer_size(self.bounds.size(), theme.button_padding_edges()));
+        self.margin_bounds.set_size(outer_size(self.bounds.size(), theme.button_margin_edges()));
         self.margin_bounds.set_size(size_for_h_align_and_v_align(self.margin_bounds.size(), area_size, self.h_align, self.v_align));
         self.bounds.set_size(inner_size(self.margin_bounds.size(), theme.button_margin_edges()));
         Ok(())
