@@ -46,7 +46,7 @@ impl TitleBar
             bounds: Rect::new(0, 0, 0, 0),
             client_pos: Pos::new(0, 0),
             weight: 0,
-            h_align: HAlign::Left,
+            h_align: HAlign::Fill,
             v_align: VAlign::Top,
             state: WidgetState::None,
             is_enabled: true,
