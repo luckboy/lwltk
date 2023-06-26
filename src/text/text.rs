@@ -281,7 +281,7 @@ mod tests
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
         cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
-        cairo_context.set_font_size(16.0);
+        cairo_context.set_font_size(14.0);
         let a = cairo_context.text_extents("a").unwrap().x_advance;
         let b = cairo_context.text_extents("b").unwrap().x_advance;
         let c = cairo_context.text_extents("c").unwrap().x_advance;

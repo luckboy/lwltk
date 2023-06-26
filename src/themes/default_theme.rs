@@ -273,7 +273,7 @@ impl Theme for DefaultTheme
         cairo_context.scale(scale as f64, scale as f64);
         cairo_context.set_line_width(2.0);
         cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
-        cairo_context.set_font_size(16.0);
+        cairo_context.set_font_size(14.0);
         Ok(())
     }
 
