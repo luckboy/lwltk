@@ -381,7 +381,7 @@ impl Theme for DefaultTheme
     }
 
     fn button_icon_size(&self) -> Size<i32>
-    { Size::new(DEFAULT_BUTTON_ICON_WIDTH, DEFAULT_BUTTON_ICON_HEIGHT) } 
+    { Size::new(DEFAULT_BUTTON_ICON_SIZE, DEFAULT_BUTTON_ICON_SIZE) } 
     
     fn draw_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: ButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     { draw_default_button_icon(cairo_context, self, pos, icon, state, is_enabled, is_focused, is_focused_window) }
