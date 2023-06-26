@@ -5,10 +5,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-mod button_icon;
-mod image;
-mod title_button_icon;
-
-pub use button_icon::*;
-pub use image::*;
-pub use title_button_icon::*;
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum TitleButtonIcon
+{
+    Close,
+    Maximize,
+    Menu,
+}

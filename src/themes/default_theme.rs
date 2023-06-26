@@ -10,6 +10,7 @@ use cairo::FontWeight;
 use crate::image::*;
 use crate::theme::*;
 use crate::themes::default_button_icons::*;
+use crate::themes::default_title_button_icons::*;
 use crate::types::*;
 use crate::utils::*;
 
@@ -301,6 +302,88 @@ impl Theme for DefaultTheme
         Ok(())
     }
 
+    fn draw_title_bar_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn title_margin_edges(&self) -> Edges<i32>
+    { Edges::new(0, 0, 0, 0) }
+
+    fn title_padding_edges(&self) -> Edges<i32>
+    { Edges::new(4, 4, 4, 4) }
+
+    fn draw_title_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn set_title_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>
+    { 
+        cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Bold);
+        cairo_context.set_font_size(14.0);
+        Ok(())
+    }
+    
+    fn draw_title_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _state: WidgetState, _is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        let font_extents = cairo_context.font_extents()?;
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.fg2_color);
+        } else {
+            set_cairo_color(cairo_context, self.fg2_color_for_unfocused_window);
+        }
+        cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
+        cairo_context.show_text(s)?;
+        Ok(())
+    }
+
+    fn title_button_margin_edges(&self) -> Edges<i32>
+    { Edges::new(2, 2, 2, 2) }
+
+    fn title_button_padding_edges(&self) -> Edges<i32>
+    { Edges::new(4, 4, 4, 4) }
+
+    fn draw_title_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        set_cairo_color(cairo_context, self.dark_bg_color);
+        cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+        cairo_context.fill()?;
+        if is_focused_window && is_enabled {
+            match state {
+                WidgetState::None => (),
+                WidgetState::Hover => {
+                    set_cairo_color(cairo_context, self.hover_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+                WidgetState::Active => {
+                    set_cairo_color(cairo_context, self.active_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+            }
+        }
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.border_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_border_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_border_color_for_unfocused_window);
+            }
+        }
+        cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+        cairo_context.stroke()?;
+        Ok(())
+    }
+
+    fn title_button_icon_size(&self) -> Size<i32>
+    { Size::new(DEFAULT_TITLE_BUTTON_ICON_SIZE, DEFAULT_TITLE_BUTTON_ICON_SIZE) }
+
+    fn draw_title_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: TitleButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    { draw_default_title_button_icon(cairo_context, self, pos, icon, state, is_enabled, is_focused, is_focused_window) }
+    
     fn button_margin_edges(&self) -> Edges<i32>
     { Edges::new(2, 2, 2, 2) }
 

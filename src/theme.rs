@@ -19,6 +19,28 @@ pub trait Theme: Send + Sync
     fn toplevel_window_corners(&self) -> Corners<i32>;
     
     fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn draw_title_bar_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn title_margin_edges(&self) -> Edges<i32>;
+
+    fn title_padding_edges(&self) -> Edges<i32>;
+
+    fn draw_title_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn set_title_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>;
+    
+    fn draw_title_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn title_button_margin_edges(&self) -> Edges<i32>;
+
+    fn title_button_padding_edges(&self) -> Edges<i32>;
+
+    fn draw_title_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn title_button_icon_size(&self) -> Size<i32>;
+    
+    fn draw_title_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: TitleButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;    
     
     fn button_margin_edges(&self) -> Edges<i32>;
 

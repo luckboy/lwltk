@@ -7,6 +7,8 @@
 //
 mod default_button_icons;
 mod default_theme;
+mod default_title_button_icons;
 
 pub use default_button_icons::*;
 pub use default_theme::*;
+pub use default_title_button_icons::*;
