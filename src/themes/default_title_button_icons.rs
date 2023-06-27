@@ -9,7 +9,7 @@ use crate::image::*;
 use crate::theme::*;
 use crate::types::*;
 
-pub const DEFAULT_TITLE_BUTTON_ICON_SIZE: i32 = 8;
+pub const DEFAULT_TITLE_BUTTON_ICON_SIZE: i32 = 12;
 
 pub fn draw_default_title_button_icon(cairo_context: &CairoContext, theme: &dyn Theme, pos: Pos<i32>, icon: TitleButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
 {
@@ -23,27 +23,30 @@ pub fn draw_default_title_button_icon(cairo_context: &CairoContext, theme: &dyn 
         TitleButtonIcon::Close => {
             theme.set_fg(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
             cairo_context.move_to(x + 1.0, y + 1.0);
-            cairo_context.line_to(x + 7.0, y + 7.0);
+            cairo_context.line_to(x + 11.0, y + 11.0);
             cairo_context.stroke()?;
-            cairo_context.move_to(x + 7.0, y + 1.0);
-            cairo_context.line_to(x + 1.0, y + 7.0);
+            cairo_context.move_to(x + 11.0, y + 1.0);
+            cairo_context.line_to(x + 1.0, y + 11.0);
             cairo_context.stroke()?;
         },
         TitleButtonIcon::Maximize => {
             theme.set_fg(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
-            cairo_context.rectangle(x + 1.0, y + 1.0, 6.0, 6.0);
+            cairo_context.rectangle(x + 1.0, y + 1.0, 10.0, 10.0);
+            cairo_context.stroke()?;
+            cairo_context.move_to(x + 1.0, y + 3.0);
+            cairo_context.line_to(x + 11.0, y + 3.0);
             cairo_context.stroke()?;
         },
         TitleButtonIcon::Menu => {
             theme.set_fg(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
-            cairo_context.move_to(x, y + 1.0);
-            cairo_context.line_to(x + 8.0, y + 1.0);
+            cairo_context.move_to(x, y + 2.0);
+            cairo_context.line_to(x + 12.0, y + 2.0);
             cairo_context.stroke()?;
-            cairo_context.move_to(x, y + 4.0);
-            cairo_context.line_to(x + 8.0, y + 4.0);
+            cairo_context.move_to(x, y + 6.0);
+            cairo_context.line_to(x + 12.0, y + 6.0);
             cairo_context.stroke()?;
-            cairo_context.move_to(x, y + 7.0);
-            cairo_context.line_to(x + 8.0, y + 7.0);
+            cairo_context.move_to(x, y + 10.0);
+            cairo_context.line_to(x + 12.0, y + 10.0);
             cairo_context.stroke()?;
         },
     }

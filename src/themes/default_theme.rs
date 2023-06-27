@@ -65,7 +65,7 @@ impl DefaultTheme
             title_bg_color_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
             // Hover color and active color.
             hover_color: Color::new_from_argb_u32(0x88dddddd),
-            active_color: Color::new_from_argb_u32(0x88eeeeee),
+            active_color: Color::new_from_argb_u32(0xcceeeeee),
             // Border colors.
             border_color: Color::new_from_argb_u32(0xff222222),
             disabled_border_color: Color::new_from_argb_u32(0xff666666),
@@ -274,7 +274,7 @@ impl Theme for DefaultTheme
         cairo_context.scale(scale as f64, scale as f64);
         cairo_context.set_line_width(2.0);
         cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
-        cairo_context.set_font_size(14.0);
+        cairo_context.set_font_size(16.0);
         Ok(())
     }
 
@@ -336,7 +336,7 @@ impl Theme for DefaultTheme
     { Edges::new(0, 0, 0, 0) }
 
     fn title_padding_edges(&self) -> Edges<i32>
-    { Edges::new(4, 4, 4, 4) }
+    { Edges::new(4, 4, 2, 2) }
 
     fn draw_title_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
@@ -344,7 +344,7 @@ impl Theme for DefaultTheme
     fn set_title_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>
     { 
         cairo_context.select_font_face("Sans", FontSlant::Normal, FontWeight::Bold);
-        cairo_context.set_font_size(14.0);
+        cairo_context.set_font_size(16.0);
         Ok(())
     }
     
