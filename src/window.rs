@@ -109,6 +109,16 @@ pub trait Window: Container + MinSize + PreferredSize
     
     fn is_maximized(&self) -> bool
     { false }
+    
+    #[allow(unused_variables)]
+    fn set_maximized(&mut self, is_maximized: bool) -> bool
+    { false }
+
+    fn maximize(&mut self) -> bool
+    { self.set_maximized(true) }
+    
+    fn unmaximize(&mut self) -> bool
+    { self.set_maximized(false) }
 
     fn is_resizable(&self) -> bool
     { false }    

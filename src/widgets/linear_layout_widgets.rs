@@ -333,7 +333,7 @@ impl LinearLayoutWidgets
     }
     
     pub fn max_widget_height(&self, orient: Orient) -> i32
-    { self.widgets.iter().fold(0, |w, w2| max(w, orient_size_height(w2.size(), orient))) }
+    { self.widgets.iter().fold(0, |w, w2| max(w, orient_size_height(w2.margin_size(), orient))) }
     
     pub fn size(&self, orient: Orient) -> Size<i32>
     { orient_size(self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, self.max_widget_height(orient), orient) }

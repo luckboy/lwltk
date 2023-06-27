@@ -323,6 +323,7 @@ impl Draw for Button
                     },
                     None => (),
                 }
+                padding_size.width += theme.button_sep_width();
             },
             None => (),
         }

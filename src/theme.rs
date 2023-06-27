@@ -18,7 +18,9 @@ pub trait Theme: Send + Sync
 
     fn toplevel_window_corners(&self) -> Corners<i32>;
     
-    fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>;
+    fn draw_toplevel_window_title_bar_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool, is_tool_bar: bool) -> Result<(), CairoError>;
 
     fn draw_title_bar_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
 

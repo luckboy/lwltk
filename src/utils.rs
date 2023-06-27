@@ -996,6 +996,22 @@ pub fn default_window_on_for_key(window: &mut dyn Window, client_context: &mut C
     }
 }
 
+#[allow(unused_variables)]
+pub fn default_window_on_for_maximize(window: &mut dyn Window, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
+{
+    match event {
+        Event::Maximize => {
+            if !window.is_maximized() {
+                window.maximize();
+            } else {
+                window.unmaximize();
+            }
+            Some(Some(None))
+        },
+        _ => Some(None),
+    }
+}
+
 pub fn default_window_on(window: &mut dyn Window, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Option<Event>>>
 {
     if let Some(res) = default_window_on_for_client_shell_surface(window, client_context, queue_context, event)? {
@@ -1009,6 +1025,8 @@ pub fn default_window_on(window: &mut dyn Window, client_context: &mut ClientCon
     } else if let Some(res) = default_window_on_for_clicks(window, client_context, queue_context, event)? {
         Some(Some(res))
     } else if let Some(res) = default_window_on_for_key(window, client_context, queue_context, event)? {
+        Some(Some(res))
+    } else if let Some(res) = default_window_on_for_maximize(window, client_context, queue_context, event)? {
         Some(Some(res))
     } else {
         Some(None)

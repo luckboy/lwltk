@@ -7,6 +7,8 @@
 //
 mod child_index_set;
 mod toplevel_window;
+mod two_window_widgets;
 
 pub use child_index_set::*;
 pub use toplevel_window::*;
+pub use two_window_widgets::*;

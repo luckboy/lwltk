@@ -142,6 +142,13 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
+    window_context.window_mut::<ToplevelWindow>(app_data.window_index)?.set_on(|client_context, _, event| {
+            match event {
+                Event::Close => client_context.exit(),
+                _ => (),
+            }
+            Some(EventOption::Default)
+    });
     Some(())
 }
 

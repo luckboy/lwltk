@@ -283,8 +283,30 @@ impl Theme for DefaultTheme
 
     fn toplevel_window_corners(&self) -> Corners<i32>
     { Corners::new(8, 8, 8, 8, 8, 8, 8, 8) }
+
+    fn draw_toplevel_window_title_bar_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.title_bg_color);
+        } else {
+            set_cairo_color(cairo_context, self.title_bg_color_for_unfocused_window);
+        }
+        cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64);
+        cairo_context.fill()?;
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.border_color);
+        } else {
+            set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
+        }
+        cairo_context.move_to((bounds.x as f64) + 1.0, (bounds.y as f64) + (bounds.height as f64));
+        cairo_context.line_to((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0);
+        cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, (bounds.y as f64) + 1.0);
+        cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, (bounds.y as f64) + (bounds.height as f64));
+        cairo_context.stroke()?;
+        Ok(())
+    }
     
-    fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>
+    fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool, is_tool_bar: bool) -> Result<(), CairoError>
     {
         set_cairo_color(cairo_context, self.bg_color);
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64);
@@ -294,11 +316,16 @@ impl Theme for DefaultTheme
         } else {
             set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
         }
-        cairo_context.move_to((bounds.x as f64) + 1.0, bounds.y as f64);
-        cairo_context.line_to((bounds.x as f64) + 1.0, (bounds.y as f64) + (bounds.height as f64) - 1.0);
-        cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, (bounds.y as f64) + (bounds.height as f64) - 1.0);
-        cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, bounds.y as f64);
-        cairo_context.stroke()?;
+        if !is_tool_bar {
+            cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0);
+            cairo_context.stroke()?;
+        } else {
+            cairo_context.move_to((bounds.x as f64) + 1.0, bounds.y as f64);
+            cairo_context.line_to((bounds.x as f64) + 1.0, (bounds.y as f64) + (bounds.height as f64) - 1.0);
+            cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, (bounds.y as f64) + (bounds.height as f64) - 1.0);
+            cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, bounds.y as f64);
+            cairo_context.stroke()?;
+        }
         Ok(())
     }
 
