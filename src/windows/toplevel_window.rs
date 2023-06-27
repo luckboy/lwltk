@@ -208,6 +208,13 @@ impl ToplevelWindow
 
     pub fn set_title_bar<T: Widget + 'static>(&mut self, widget: T) -> Option<WidgetIndexPair>
     { self.set_dyn_title_bar(Box::new(widget)) }
+
+    pub fn unset_title_bar(&mut self) -> Option<Box<dyn Widget>>
+    {
+        let title_bar = self.widgets.title_bar.take();
+        self.change_flag_arc.store(true, Ordering::SeqCst);
+        title_bar
+    }    
     
     pub fn set_dyn(&mut self, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
@@ -219,6 +226,13 @@ impl ToplevelWindow
 
     pub fn set<T: Widget + 'static>(&mut self, widget: T) -> Option<WidgetIndexPair>
     { self.set_dyn(Box::new(widget)) }
+    
+    pub fn unset(&mut self) -> Option<Box<dyn Widget>>
+    {
+        let content = self.widgets.content.take();
+        self.change_flag_arc.store(true, Ordering::SeqCst);
+        content
+    }
     
     pub fn menu_button_path(&self) -> Option<&RelWidgetPath>
     {
