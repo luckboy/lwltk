@@ -1159,13 +1159,7 @@ pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     where T: PartialOrd
 {
     match width2 {
-        Some(width) => {
-            if width > width1 {
-                width
-            } else {
-                width1
-            }
-        },
+        Some(width) => if width > width1 { width } else { width1 },
         None => width1,
     }
 }
@@ -1186,13 +1180,7 @@ pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     where T: PartialOrd
 {
     match width2 {
-        Some(width) => {
-            if width < width1 {
-                width
-            } else {
-                width1
-            }
-        },
+        Some(width) => if width < width1 { width } else { width1 },
         None => width1,
     }
 }
@@ -1287,13 +1275,7 @@ pub fn max_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> O
     where T: PartialOrd
 {
     match (width1, width2) {
-        (Some(width1), Some(width2)) => {
-            if width2 > width1 {
-                Some(width2)
-            } else {
-                Some(width1)
-            }
-        },
+        (Some(width1), Some(width2)) => if width2 > width1 { Some(width2) } else { Some(width1) },
         (Some(width1), None) => Some(width1),
         (None, Some(width2)) => Some(width2),
         (None, None) => None,
@@ -1316,13 +1298,7 @@ pub fn min_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> O
     where T: PartialOrd
 {
     match (width1, width2) {
-        (Some(width1), Some(width2)) => {
-            if width2 < width1 {
-                Some(width2)
-            } else {
-                Some(width1)
-            }
-        },
+        (Some(width1), Some(width2)) => if width2 < width1 { Some(width2) } else { Some(width1) },
         (Some(width1), None) => Some(width1),
         (None, Some(width2)) => Some(width2),
         (None, None) => None,
