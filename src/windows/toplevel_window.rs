@@ -95,7 +95,7 @@ impl ToplevelWindow
         let close_button = TitleButton::new(TitleButtonIcon::Close);
         let close_button_path = container_rel_widget_path(&mut window, &title_bar_path, |title_bar: &mut TitleBar| title_bar.add(close_button))?;
         let title: &mut Title = container_widget_mut(&mut window, &title_path)?;
-        title.set_on(|_, queue_context, event| {
+        title.set_on(move |_, queue_context, event| {
                 match event {
                      Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) |
                      Event::Client(ClientEvent::TouchDown(_, _, _)) => {
@@ -110,7 +110,7 @@ impl ToplevelWindow
                 Some(EventOption::Default)
         });
         let maximize_button: &mut TitleButton = container_widget_mut(&mut window, &maximize_button_path)?;
-        maximize_button.set_on(|_, queue_context, event| {
+        maximize_button.set_on(move |_, queue_context, event| {
                 match event {
                     Event::Click | Event::DoubleClick | Event::LongClick => {
                         let current_window_idx = queue_context.current_call_on_path()?.window_index();
@@ -121,7 +121,7 @@ impl ToplevelWindow
                 Some(EventOption::Default)
         });
         let close_button: &mut TitleButton = container_widget_mut(&mut window, &close_button_path)?;
-        close_button.set_on(|_, queue_context, event| {
+        close_button.set_on(move |_, queue_context, event| {
                 match event {
                     Event::Click | Event::DoubleClick | Event::LongClick => {
                         let current_window_idx = queue_context.current_call_on_path()?.window_index();

@@ -87,7 +87,7 @@ fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwL
 
 fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _app_data2: Arc<RwLock<AppData>>) -> Option<()>
 {
-    window_context.widget_mut::<Button>(&app_data.button1_path)?.set_on(|_, _, event| {
+    window_context.widget_mut::<Button>(&app_data.button1_path)?.set_on(move |_, _, event| {
             match event {
                 Event::Click => println!("Clicked button1!"),
                 Event::DoubleClick => println!("Doubly clicked button1!"),
@@ -96,7 +96,7 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
-    window_context.widget_mut::<Button>(&app_data.button2_path)?.set_on(|_, _, event| {
+    window_context.widget_mut::<Button>(&app_data.button2_path)?.set_on(move |_, _, event| {
             match event {
                 Event::Click => println!("Clicked button2!"),
                 Event::DoubleClick => println!("Doubly clicked button2!"),
@@ -105,7 +105,7 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
-    window_context.widget_mut::<Button>(&app_data.button3_path)?.set_on(|_, _, event| {
+    window_context.widget_mut::<Button>(&app_data.button3_path)?.set_on(move |_, _, event| {
             match event {
                 Event::Click => println!("Clicked button3!"),
                 Event::DoubleClick => println!("Doubly clicked button3!"),
@@ -114,7 +114,7 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
-    window_context.widget_mut::<Button>(&app_data.button4_path)?.set_on(|_, _, event| {
+    window_context.widget_mut::<Button>(&app_data.button4_path)?.set_on(move |_, _, event| {
             match event {
                 Event::Click => println!("Clicked button4!"),
                 Event::DoubleClick => println!("Doubly clicked button4!"),
@@ -123,7 +123,7 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
-    window_context.widget_mut::<Button>(&app_data.button5_path)?.set_on(|_, _, event| {
+    window_context.widget_mut::<Button>(&app_data.button5_path)?.set_on(move |_, _, event| {
             match event {
                 Event::Click => println!("Clicked button5!"),
                 Event::DoubleClick => println!("Doubly clicked button5!"),
@@ -132,7 +132,7 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
-    window_context.widget_mut::<Button>(&app_data.button6_path)?.set_on(|_, _, event| {
+    window_context.widget_mut::<Button>(&app_data.button6_path)?.set_on(move |_, _, event| {
             match event {
                 Event::Click => println!("Clicked button6!"),
                 Event::DoubleClick => println!("Doubly clicked button6!"),
@@ -141,7 +141,7 @@ fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _win
             }
             Some(EventOption::Default)
     });
-    window_context.window_mut::<ToplevelWindow>(app_data.window_index)?.set_on(|client_context, _, event| {
+    window_context.window_mut::<ToplevelWindow>(app_data.window_index)?.set_on(move |client_context, _, event| {
             match event {
                 Event::Close => client_context.exit(),
                 _ => (),

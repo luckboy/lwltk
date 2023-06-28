@@ -37,7 +37,7 @@ fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwL
 
 fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _app_data2: Arc<RwLock<AppData>>) -> Option<()>
 {
-    window_context.window_mut::<ToplevelWindow>(app_data.window_index)?.set_on(|client_context, _, event| {
+    window_context.window_mut::<ToplevelWindow>(app_data.window_index)?.set_on(move |client_context, _, event| {
             match event {
                 Event::Close => client_context.exit(),
                 _ => (),
