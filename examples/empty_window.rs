@@ -21,7 +21,6 @@ use lwltk::WindowContext;
 
 struct AppData
 {
-    #[allow(dead_code)]
     window_index: WindowIndex,
 }
 
