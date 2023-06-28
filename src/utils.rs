@@ -1001,10 +1001,12 @@ pub fn default_window_on_for_maximize(window: &mut dyn Window, client_context: &
 {
     match event {
         Event::Maximize => {
-            if !window.is_maximized() {
-                window.maximize();
-            } else {
-                window.unmaximize();
+            if window.is_maximizable() {
+                if !window.is_maximized() {
+                    window.maximize();
+                } else {
+                    window.unmaximize();
+                }
             }
             Some(Some(None))
         },

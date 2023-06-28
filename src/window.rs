@@ -107,6 +107,9 @@ pub trait Window: Container + MinSize + PreferredSize
     fn is_transient(&self) -> bool
     { false }
     
+    fn is_maximizable(&self) -> bool
+    { false }
+    
     fn is_maximized(&self) -> bool
     { false }
     

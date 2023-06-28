@@ -317,6 +317,9 @@ impl Window for ToplevelWindow
         }
     }
 
+    fn is_maximizable(&self) -> bool
+    { true }
+
     fn is_maximized(&self) -> bool
     { self.is_maximized }
     
