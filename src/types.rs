@@ -178,9 +178,9 @@ impl<T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T>> Rect<T>
     {
         let x1 = if self.x > rect.x { self.x } else { rect.x };
         let y1 = if self.y > rect.y { self.y } else { rect.y };
-        let x2 = if self.x + self.width < rect.x + self.width { self.x + self.width } else { rect.x + rect.width };
-        let y2 = if self.y + self.height < rect.y + self.height { self.y + self.height } else { rect.y + rect.height };
-        if x1 <= x2 && y1 <= y2 {
+        let x2 = if self.x + self.width < rect.x + rect.width { self.x + self.width } else { rect.x + rect.width };
+        let y2 = if self.y + self.height < rect.y + rect.height { self.y + self.height } else { rect.y + rect.height };
+        if x1 < x2 && y1 < y2 {
             Some(Rect::new(x1, y1, x2 - x1, y2 - y1))
         } else {
             None
