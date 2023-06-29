@@ -270,7 +270,7 @@ impl Draw for Title
         cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64,  self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
         theme.draw_title_bg(cairo_context, self.bounds, self.state, self.is_enabled, is_focused_window)?;
-        let padding_bounds = inner_rect(self.bounds, theme.button_padding_edges());
+        let padding_bounds = inner_rect(self.bounds, theme.title_padding_edges());
         cairo_context.rectangle(padding_bounds.x as f64, padding_bounds.y as f64,  padding_bounds.width as f64, padding_bounds.height as f64);
         cairo_context.clip();
         self.text.draw(cairo_context, padding_bounds, |cairo_context| {
