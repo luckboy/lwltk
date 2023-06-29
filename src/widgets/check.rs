@@ -268,8 +268,8 @@ impl Draw for Check
 {
     fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>) -> Result<(), CairoError>
     {
-        let inner_area_size = inner_opt_size(area_size, theme.button_margin_edges());
-        let padding_area_size = inner_opt_size(inner_area_size, theme.button_padding_edges());
+        let inner_area_size = inner_opt_size(area_size, theme.check_margin_edges());
+        let padding_area_size = inner_opt_size(inner_area_size, theme.check_padding_edges());
         self.text.update_size(cairo_context, padding_area_size, |cairo_context| {
                 theme.set_check_font(cairo_context)
         })?;
