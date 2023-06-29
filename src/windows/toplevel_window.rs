@@ -14,7 +14,6 @@ use crate::call_on::*;
 use crate::client_context::*;
 use crate::container::*;
 use crate::draw::*;
-use crate::event_queue::*;
 use crate::events::*;
 use crate::image::*;
 use crate::min_size::*;
@@ -110,26 +109,18 @@ impl ToplevelWindow
                 Some(EventOption::Default)
         });
         let maximize_button: &mut TitleButton = container_widget_mut(&mut window, &maximize_button_path)?;
-        maximize_button.set_on(move |_, queue_context, event| {
+        maximize_button.set_on(move |_, _, event| {
                 match event {
-                    Event::Click | Event::DoubleClick | Event::LongClick => {
-                        let current_window_idx = queue_context.current_call_on_path()?.window_index();
-                        queue_context.event_queue_mut().push(EventPair::new(CallOnPath::Window(current_window_idx), Event::Maximize));
-                    },
-                    _ => (),
+                    Event::Click | Event::DoubleClick | Event::LongClick => Some(EventOption::Some(Event::Maximize)),
+                    _ => Some(EventOption::Default),
                 }
-                Some(EventOption::Default)
         });
         let close_button: &mut TitleButton = container_widget_mut(&mut window, &close_button_path)?;
-        close_button.set_on(move |_, queue_context, event| {
+        close_button.set_on(move |_, _, event| {
                 match event {
-                    Event::Click | Event::DoubleClick | Event::LongClick => {
-                        let current_window_idx = queue_context.current_call_on_path()?.window_index();
-                        queue_context.event_queue_mut().push(EventPair::new(CallOnPath::Window(current_window_idx), Event::Close));
-                    },
-                    _ => (),
+                    Event::Click | Event::DoubleClick | Event::LongClick => Some(EventOption::Some(Event::Close)),
+                    _ => Some(EventOption::Default),
                 }
-                Some(EventOption::Default)
         });
         window.set_menu_button_path(Some(menu_button_path));
         window.set_title_path(Some(title_path));
