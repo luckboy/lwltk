@@ -15,9 +15,9 @@ use crate::themes::default_title_button_icons::*;
 use crate::types::*;
 use crate::utils::*;
 
-const CHECK_SIZE: i32 = 10;
+const CHECK_SIZE: i32 = 12;
 
-const RADIO_SIZE: i32 = 10;
+const RADIO_SIZE: i32 = 12;
 
 pub struct DefaultTheme
 {
@@ -280,7 +280,7 @@ impl DefaultTheme
         } else {
             set_cairo_color(cairo_context, self.bg_color);
         }
-        cairo_context.rectangle(x + 1.0, y + 1.0, 8.0, 8.0);
+        cairo_context.rectangle(x + 1.0, y + 1.0, 10.0, 10.0);
         cairo_context.fill()?;
         if is_focused_window {
             if is_enabled {
@@ -295,12 +295,12 @@ impl DefaultTheme
                 set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
             }
         }
-        cairo_context.rectangle(x + 1.0, y + 1.0, 8.0, 8.0);
+        cairo_context.rectangle(x + 1.0, y + 1.0, 10.0, 10.0);
         cairo_context.stroke()?;
         if is_checked {
-            cairo_context.move_to(x + 1.0, y + 5.0);
-            cairo_context.line_to(x + 5.0, y + 9.0);
-            cairo_context.line_to(x + 9.0, y + 1.0);
+            cairo_context.move_to(x + 2.0, y + 6.0);
+            cairo_context.line_to(x + 6.0, y + 10.0);
+            cairo_context.line_to(x + 10.0, y + 2.0);
             cairo_context.stroke()?;
         }
         Ok(())
@@ -315,7 +315,7 @@ impl DefaultTheme
         } else {
             set_cairo_color(cairo_context, self.bg_color);
         }
-        cairo_context.arc(x + 5.0, y + 5.0, 4.0, 0.0, PI * 2.0);
+        cairo_context.arc(x + 6.0, y + 6.0, 5.0, 0.0, PI * 2.0);
         cairo_context.fill()?;
         if is_focused_window {
             if is_enabled {
@@ -330,10 +330,10 @@ impl DefaultTheme
                 set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
             }
         }
-        cairo_context.arc(x + 5.0, y + 5.0, 4.0, 0.0, PI * 2.0);
+        cairo_context.arc(x + 6.0, y + 6.0, 5.0, 0.0, PI * 2.0);
         cairo_context.stroke()?;
         if is_selected {
-            cairo_context.arc(x + 5.0, y + 5.0, 1.0, 0.0, PI * 2.0);
+            cairo_context.arc(x + 6.0, y + 6.0, 2.0, 0.0, PI * 2.0);
             cairo_context.fill()?;
         }
         Ok(())
