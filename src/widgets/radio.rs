@@ -304,7 +304,7 @@ impl Draw for Radio
         cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64,  self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
         let is_selected = self.is_selected();
-        theme.draw_check_bg(cairo_context, self.bounds, is_selected, self.state, self.is_enabled, self.is_focused, is_focused_window)?;
+        theme.draw_radio_bg(cairo_context, self.bounds, is_selected, self.state, self.is_enabled, self.is_focused, is_focused_window)?;
         let padding_bounds = inner_rect(self.bounds, theme.radio_padding_edges());
         cairo_context.rectangle(padding_bounds.x as f64, padding_bounds.y as f64,  padding_bounds.width as f64, padding_bounds.height as f64);
         cairo_context.clip();

@@ -646,7 +646,7 @@ impl Theme for DefaultTheme
                 },
             }
         }
-        let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.width - CHECK_SIZE) / 2);
+        let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.height - CHECK_SIZE) / 2);
         self.draw_check(cairo_context, pos, is_checked, is_enabled, is_focused_window)?;
         if is_focused_window {
             if is_enabled && is_focused {
@@ -711,7 +711,7 @@ impl Theme for DefaultTheme
                 },
             }
         }
-        let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.width - RADIO_SIZE) / 2);
+        let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.height - RADIO_SIZE) / 2);
         self.draw_radio(cairo_context, pos, is_selected, is_enabled, is_focused_window)?;
         if is_focused_window {
             if is_enabled && is_focused {
