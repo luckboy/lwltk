@@ -20,6 +20,7 @@ use lwltk::widgets::RadioGroup;
 use lwltk::windows::ToplevelWindow;
 use lwltk::AbsWidgetPath;
 use lwltk::App;
+use lwltk::HAlign;
 use lwltk::Orient;
 use lwltk::PreferredSize;
 use lwltk::QueueContext;
@@ -55,6 +56,7 @@ fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwL
     let window_idx = window_context.add_window(window)?;
     let mut layout = LinearLayout::new();
     layout.set_orient(Orient::Vertical);
+    layout.set_h_align(HAlign::Fill);
     let layout_path = window_context.abs_widget_path1(window_idx, |window: &mut ToplevelWindow| window.set(layout))?;
     let label1 = Label::new("Some button:");
     let label1_path = window_context.abs_widget_path(&layout_path, |layout: &mut LinearLayout| layout.add(label1))?;
