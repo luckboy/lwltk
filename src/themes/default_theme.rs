@@ -5,6 +5,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::f64::consts::PI;
 use cairo::FontSlant;
 use cairo::FontWeight;
 use crate::image::*;
@@ -13,6 +14,10 @@ use crate::themes::default_button_icons::*;
 use crate::themes::default_title_button_icons::*;
 use crate::types::*;
 use crate::utils::*;
+
+const CHECK_SIZE: i32 = 10;
+
+const RADIO_SIZE: i32 = 10;
 
 pub struct DefaultTheme
 {
@@ -265,7 +270,76 @@ impl DefaultTheme
 
     pub fn set_fg5_color_for_unfocused_window(&mut self, color: Color)
     { self.fg5_color_for_unfocused_window = color; }
+
+    fn draw_check(&self, cairo_context: &CairoContext, pos: Pos<i32>, is_checked: bool, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError> 
+    {
+        let x = pos.x as f64;
+        let y = pos.y as f64;
+        if is_enabled {
+            set_cairo_color(cairo_context, self.light_bg_color);
+        } else {
+            set_cairo_color(cairo_context, self.bg_color);
+        }
+        cairo_context.rectangle(x + 1.0, y + 1.0, 8.0, 8.0);
+        cairo_context.fill()?;
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
+            }
+        }
+        cairo_context.rectangle(x + 1.0, y + 1.0, 8.0, 8.0);
+        cairo_context.stroke()?;
+        if is_checked {
+            cairo_context.move_to(x + 1.0, y + 5.0);
+            cairo_context.line_to(x + 5.0, y + 9.0);
+            cairo_context.line_to(x + 9.0, y + 1.0);
+            cairo_context.stroke()?;
+        }
+        Ok(())
+    }
+
+    fn draw_radio(&self, cairo_context: &CairoContext, pos: Pos<i32>, is_selected: bool, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError> 
+    {
+        let x = pos.x as f64;
+        let y = pos.y as f64;
+        if is_enabled {
+            set_cairo_color(cairo_context, self.light_bg_color);
+        } else {
+            set_cairo_color(cairo_context, self.bg_color);
+        }
+        cairo_context.arc(x + 5.0, y + 5.0, 4.0, 0.0, PI * 2.0);
+        cairo_context.fill()?;
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
+            }
+        }
+        cairo_context.arc(x + 5.0, y + 5.0, 4.0, 0.0, PI * 2.0);
+        cairo_context.stroke()?;
+        if is_selected {
+            cairo_context.arc(x + 5.0, y + 5.0, 1.0, 0.0, PI * 2.0);
+            cairo_context.fill()?;
+        }
+        Ok(())
+    }
 }
+
 
 impl Theme for DefaultTheme
 {
@@ -410,6 +484,59 @@ impl Theme for DefaultTheme
 
     fn draw_title_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: TitleButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     { draw_default_title_button_icon(cairo_context, self, pos, icon, state, is_enabled, is_focused, is_focused_window) }
+
+    fn empty_margin_edges(&self) -> Edges<i32>
+    { Edges::new(2, 2, 2, 2) }
+    
+    fn label_margin_edges(&self) -> Edges<i32>
+    { Edges::new(2, 2, 2, 2) }
+
+    fn label_padding_edges(&self) -> Edges<i32>
+    { Edges::new(4, 4, 4, 4) }
+    
+    fn draw_label_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window && is_enabled {
+            match state {
+                WidgetState::None => (),
+                WidgetState::Hover => {
+                    set_cairo_color(cairo_context, self.hover_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+                WidgetState::Active => {
+                    set_cairo_color(cairo_context, self.active_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+            }
+        }
+        Ok(())
+    }
+
+    fn set_label_font(&self, _cairo_context: &CairoContext) -> Result<(), CairoError>
+    { Ok(()) }
+    
+    fn draw_label_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        let font_extents = cairo_context.font_extents()?;
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
+            }
+        }
+        cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
+        cairo_context.show_text(s)?;
+        Ok(())
+    }
     
     fn button_margin_edges(&self) -> Edges<i32>
     { Edges::new(2, 2, 2, 2) }
@@ -496,6 +623,136 @@ impl Theme for DefaultTheme
     fn draw_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: ButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     { draw_default_button_icon(cairo_context, self, pos, icon, state, is_enabled, is_focused, is_focused_window) }
 
+    fn check_margin_edges(&self) -> Edges<i32>
+    { Edges::new(2, 2, 2, 2) }
+
+    fn check_padding_edges(&self) -> Edges<i32>
+    { Edges::new(4, 4, 4 + CHECK_SIZE + 4, 4) }
+    
+    fn draw_check_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_checked: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window && is_enabled {
+            match state {
+                WidgetState::None => (),
+                WidgetState::Hover => {
+                    set_cairo_color(cairo_context, self.hover_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+                WidgetState::Active => {
+                    set_cairo_color(cairo_context, self.active_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+            }
+        }
+        let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.width - CHECK_SIZE) / 2);
+        self.draw_check(cairo_context, pos, is_checked, is_enabled, is_focused_window)?;
+        if is_focused_window {
+            if is_enabled && is_focused {
+                set_cairo_color(cairo_context, self.focused_border_color);
+                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+                cairo_context.stroke()?;
+            }
+        } else {
+            if is_enabled && is_focused {
+                set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
+                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+                cairo_context.stroke()?;
+            }
+        }
+        Ok(())
+    }
+
+    fn set_check_font(&self, _cairo_context: &CairoContext) -> Result<(), CairoError>
+    { Ok(()) }
+    
+    fn draw_check_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _is_checked: bool, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        let font_extents = cairo_context.font_extents()?;
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
+            }
+        }
+        cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
+        cairo_context.show_text(s)?;
+        Ok(())
+    }
+
+    fn radio_margin_edges(&self) -> Edges<i32>
+    { Edges::new(2, 2, 2, 2) }
+
+    fn radio_padding_edges(&self) -> Edges<i32>
+    { Edges::new(4, 4, 4 + RADIO_SIZE + 4, 4) } 
+    
+    fn draw_radio_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_selected: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        if is_focused_window && is_enabled {
+            match state {
+                WidgetState::None => (),
+                WidgetState::Hover => {
+                    set_cairo_color(cairo_context, self.hover_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+                WidgetState::Active => {
+                    set_cairo_color(cairo_context, self.active_color);
+                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+                    cairo_context.fill()?;
+                },
+            }
+        }
+        let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.width - RADIO_SIZE) / 2);
+        self.draw_radio(cairo_context, pos, is_selected, is_enabled, is_focused_window)?;
+        if is_focused_window {
+            if is_enabled && is_focused {
+                set_cairo_color(cairo_context, self.focused_border_color);
+                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+                cairo_context.stroke()?;
+            }
+        } else {
+            if is_enabled && is_focused {
+                set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
+                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+                cairo_context.stroke()?;
+            }
+        }
+        Ok(())
+    }
+
+    fn set_radio_font(&self, _cairo_context: &CairoContext) -> Result<(), CairoError>
+    { Ok(()) }
+    
+    fn draw_radio_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _is_selected: bool, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        let font_extents = cairo_context.font_extents()?;
+        if is_focused_window {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color);
+            }
+        } else {
+            if is_enabled {
+                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
+            } else {
+                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
+            }
+        }
+        cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
+        cairo_context.show_text(s)?;
+        Ok(())
+    }
+    
     fn draw_linear_layout_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
 

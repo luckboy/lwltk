@@ -43,6 +43,18 @@ pub trait Theme: Send + Sync
     fn title_button_icon_size(&self) -> Size<i32>;
     
     fn draw_title_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: TitleButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;    
+
+    fn empty_margin_edges(&self) -> Edges<i32>;
+    
+    fn label_margin_edges(&self) -> Edges<i32>;
+
+    fn label_padding_edges(&self) -> Edges<i32>;
+    
+    fn draw_label_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>; 
+
+    fn set_label_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>;
+    
+    fn draw_label_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;    
     
     fn button_margin_edges(&self) -> Edges<i32>;
 
@@ -59,6 +71,26 @@ pub trait Theme: Send + Sync
     fn button_icon_size(&self) -> Size<i32>;
     
     fn draw_button_icon(&self, cairo_context: &CairoContext, pos: Pos<i32>, icon: ButtonIcon, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn check_margin_edges(&self) -> Edges<i32>;
+
+    fn check_padding_edges(&self) -> Edges<i32>;
+    
+    fn draw_check_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_checked: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>; 
+
+    fn set_check_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>;
+    
+    fn draw_check_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, is_checked: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn radio_margin_edges(&self) -> Edges<i32>;
+
+    fn radio_padding_edges(&self) -> Edges<i32>;
+    
+    fn draw_radio_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_selected: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>; 
+
+    fn set_radio_font(&self, cairo_context: &CairoContext) -> Result<(), CairoError>;
+    
+    fn draw_radio_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, is_selected: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;    
     
     fn draw_linear_layout_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
 
