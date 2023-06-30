@@ -31,6 +31,9 @@ impl RadioGroup
     pub fn count(&self) -> usize
     { self.count.load(Ordering::SeqCst) }    
     
+    pub fn reset_count(&self)
+    { self.count.store(0, Ordering::SeqCst); }
+    
     pub fn increase_count(&self) -> usize
     { self.count.fetch_add(1, Ordering::SeqCst) + 1 }
 }

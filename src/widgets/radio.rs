@@ -150,6 +150,9 @@ impl Radio
     
     pub fn is_selected(&self) -> bool
     { self.group.selected() == self.number }
+
+    pub fn number(&self) -> usize
+    { self.number }
     
     pub fn select(&self) -> usize
     { self.group.select(self.number) }
