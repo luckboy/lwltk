@@ -198,19 +198,23 @@ impl Widget for Radio
     { self.is_enabled }
     
     fn is_focusable(&self) -> bool
-    { true }
+    { self.is_enabled }
     
     fn is_focused(&self) -> bool
-    { self.is_focused }
+    { self.is_enabled && self.is_focused }
     
     fn set_focus(&mut self, is_focused: bool) -> bool
     {
-        let old_focus_flag = self.is_focused;
-        self.is_focused = is_focused;
-        if old_focus_flag != self.is_focused {
-            self.change_flag_arc.store(true, Ordering::SeqCst);
+        if self.is_enabled {
+            let old_focus_flag = self.is_focused;
+            self.is_focused = is_focused;
+            if old_focus_flag != self.is_focused {
+                self.change_flag_arc.store(true, Ordering::SeqCst);
+            }
+            true
+        } else {
+            false
         }
-        true
     }
     
     fn h_scroll_bar_slider_x(&self, viewport_width: i32, trough_width: i32) -> f64
@@ -304,14 +308,14 @@ impl Draw for Radio
         cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64,  self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
         let is_selected = self.is_selected();
-        theme.draw_radio_bg(cairo_context, self.bounds, is_selected, self.state, self.is_enabled, self.is_focused, is_focused_window)?;
+        theme.draw_radio_bg(cairo_context, self.bounds, is_selected, self.state, self.is_enabled, self.is_focused(), is_focused_window)?;
         let padding_bounds = inner_rect(self.bounds, theme.radio_padding_edges());
         cairo_context.rectangle(padding_bounds.x as f64, padding_bounds.y as f64,  padding_bounds.width as f64, padding_bounds.height as f64);
         cairo_context.clip();
         self.text.draw(cairo_context, padding_bounds, |cairo_context| {
                 theme.set_radio_font(cairo_context)
         }, |cairo_context, pos, s| {
-                theme.draw_radio_text(cairo_context, pos, s, is_selected, self.state, self.is_enabled, self.is_focused, is_focused_window)
+                theme.draw_radio_text(cairo_context, pos, s, is_selected, self.state, self.is_enabled, self.is_focused(), is_focused_window)
         })?;
         cairo_context.restore()?;
         Ok(())
