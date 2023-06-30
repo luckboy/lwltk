@@ -22,7 +22,7 @@ pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme,
     match icon {
         ButtonIcon::Cancel => {
             cairo_context.set_line_width(4.0);
-            theme.set_fg3(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
+            theme.set_red_fg(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
             cairo_context.move_to(x + 2.0, y + 2.0);
             cairo_context.line_to(x + 22.0, y + 22.0);
             cairo_context.stroke()?;
@@ -32,7 +32,7 @@ pub fn draw_default_button_icon(cairo_context: &CairoContext, theme: &dyn Theme,
         },
         ButtonIcon::Ok => {
             cairo_context.set_line_width(4.0);
-            theme.set_fg4(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
+            theme.set_green_fg(cairo_context, state, is_enabled, is_focused, is_focused_window)?;
             cairo_context.move_to(x + 2.0, y + 12.0);
             cairo_context.line_to(x + 12.0, y + 22.0);
             cairo_context.line_to(x + 22.0, y + 2.0);
