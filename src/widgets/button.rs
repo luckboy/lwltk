@@ -73,10 +73,10 @@ impl Button
     }
 
     pub fn new(s: &str) -> Self
-    { Button::new_with_opt_icon(None, s) }
+    { Self::new_with_opt_icon(None, s) }
 
     pub fn new_with_icon(icon: ButtonIcon, s: &str) -> Self
-    { Button::new_with_opt_icon(Some(icon), s) }
+    { Self::new_with_opt_icon(Some(icon), s) }
 
     pub fn set_weight(&mut self, weight: u32)
     {
