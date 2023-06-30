@@ -470,7 +470,7 @@ impl Draw for ToplevelWindow
         let mut bounds = Rect::new(0, 0, self.size.width, self.size.height);
         match &self.widgets.title_bar {
             Some(title_bar) => {
-                theme.draw_toplevel_window_title_bar_bg(cairo_context, Rect::new(0, 0, self.size.width, self.size.height), is_focused_window)?;
+                theme.draw_toplevel_window_title_bar_bg(cairo_context, Rect::new(0, 0, self.size.width, title_bar.margin_y() + title_bar.margin_height()), is_focused_window)?;
                 bounds.y += title_bar.margin_y() + title_bar.margin_height();
                 bounds.height -= title_bar.margin_y() + title_bar.margin_height(); 
                 is_title_bar = true;

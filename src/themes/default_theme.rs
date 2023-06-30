@@ -8,6 +8,7 @@
 use std::f64::consts::PI;
 use cairo::FontSlant;
 use cairo::FontWeight;
+use cairo::LinearGradient;
 use crate::image::*;
 use crate::theme::*;
 use crate::themes::default_button_icons::*;
@@ -24,10 +25,13 @@ pub struct DefaultTheme
     // Background colors.
     bg_color: Color,
     light_bg_color: Color,
-    dark_bg_color: Color,
+    dark_bg_color1: Color,
+    dark_bg_color2: Color,
     selected_bg_color: Color,
-    title_bg_color: Color,
-    title_bg_color_for_unfocused_window: Color,
+    title_bg_color1: Color,
+    title_bg_color2: Color,
+    title_bg_color1_for_unfocused_window: Color,
+    title_bg_color2_for_unfocused_window: Color,
     // Hover color and active color.
     hover_color: Color,
     active_color: Color,
@@ -56,6 +60,19 @@ pub struct DefaultTheme
     fg5_color_for_unfocused_window: Color,
 }
 
+fn set_cairo_gradient(cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, color1: Color, color2: Color) -> Result<(), CairoError>
+{
+    let gradient = match orient {
+        Orient::Horizontal => LinearGradient::new(0.0, bounds.y as f64, 0.0, (bounds.y + bounds.height) as f64),
+        Orient::Vertical => LinearGradient::new(bounds.x as f64, 0.0, (bounds.x + bounds.width) as f64, 0.0),
+    };
+    gradient.add_color_stop_rgba(0.0, color1.red, color1.green, color1.blue, color1.alpha);
+    gradient.add_color_stop_rgba(0.5, color2.red, color2.green, color2.blue, color2.alpha);
+    gradient.add_color_stop_rgba(1.0, color1.red, color1.green, color1.blue, color1.alpha);
+    cairo_context.set_source(&gradient)?;
+    Ok(())
+}
+
 impl DefaultTheme
 {
     pub fn new() -> Self
@@ -64,10 +81,13 @@ impl DefaultTheme
             // Background colors.
             bg_color: Color::new_from_argb_u32(0xffcccccc),
             light_bg_color: Color::new_from_argb_u32(0xffffffff),
-            dark_bg_color: Color::new_from_argb_u32(0xffbbbbbb),
+            dark_bg_color1: Color::new_from_argb_u32(0xff888888),
+            dark_bg_color2: Color::new_from_argb_u32(0xffcccccc),
             selected_bg_color: Color::new_from_argb_u32(0xffbbbbee),
-            title_bg_color: Color::new_from_argb_u32(0xff2222ee),
-            title_bg_color_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
+            title_bg_color1: Color::new_from_argb_u32(0xff2222ee),
+            title_bg_color2: Color::new_from_argb_u32(0xff6666ee),
+            title_bg_color1_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
+            title_bg_color2_for_unfocused_window: Color::new_from_argb_u32(0xff8888ee),
             // Hover color and active color.
             hover_color: Color::new_from_argb_u32(0x88dddddd),
             active_color: Color::new_from_argb_u32(0xcceeeeee),
@@ -109,11 +129,17 @@ impl DefaultTheme
     pub fn set_light_bg_color(&mut self, color: Color)
     { self.light_bg_color = color; }
 
-    pub fn dark_bg_color(&self) -> Color
-    { self.dark_bg_color }
+    pub fn dark_bg_color1(&self) -> Color
+    { self.dark_bg_color1 }
 
-    pub fn set_dark_bg_color(&mut self, color: Color)
-    { self.dark_bg_color = color; }
+    pub fn set_dark_bg_color1(&mut self, color: Color)
+    { self.dark_bg_color1 = color; }
+
+    pub fn dark_bg_color2(&self) -> Color
+    { self.dark_bg_color2 }
+
+    pub fn set_dark_bg_color2(&mut self, color: Color)
+    { self.dark_bg_color2 = color; }
     
     pub fn selected_bg_color(&self) -> Color
     { self.selected_bg_color }
@@ -121,17 +147,29 @@ impl DefaultTheme
     pub fn set_selected_bg_color(&mut self, color: Color)
     { self.selected_bg_color = color; }
 
-    pub fn title_bg_color(&self) -> Color
-    { self.title_bg_color }
+    pub fn title_bg_color1(&self) -> Color
+    { self.title_bg_color1 }
 
-    pub fn set_title_bg_color(&mut self, color: Color)
-    { self.title_bg_color = color; }
+    pub fn set_title_bg_color1(&mut self, color: Color)
+    { self.title_bg_color1 = color; }
 
-    pub fn title_bg_color_for_unfocused_window(&self) -> Color
-    { self.title_bg_color_for_unfocused_window }
+    pub fn title_bg_color2(&self) -> Color
+    { self.title_bg_color2 }
 
-    pub fn set_title_bg_color_for_unfocused_window(&mut self, color: Color)
-    { self.title_bg_color_for_unfocused_window = color; }
+    pub fn set_title_bg_color2(&mut self, color: Color)
+    { self.title_bg_color2 = color; }    
+    
+    pub fn title_bg_color1_for_unfocused_window(&self) -> Color
+    { self.title_bg_color1_for_unfocused_window }
+
+    pub fn set_title_bg_color1_for_unfocused_window(&mut self, color: Color)
+    { self.title_bg_color2_for_unfocused_window = color; }
+
+    pub fn title_bg_color2_for_unfocused_window(&self) -> Color
+    { self.title_bg_color2_for_unfocused_window }
+
+    pub fn set_title_bg_color2_for_unfocused_window(&mut self, color: Color)
+    { self.title_bg_color2_for_unfocused_window = color; }
     
     pub fn hover_color(&self) -> Color
     { self.hover_color }
@@ -283,15 +321,15 @@ impl DefaultTheme
         }
     }
 
-    fn set_dark_bg_cairo_color(&self, cairo_context: &CairoContext)
-    { set_cairo_color(cairo_context, self.dark_bg_color); }
+    fn set_dark_bg_cairo_gradient(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient) -> Result<(), CairoError>
+    { set_cairo_gradient(cairo_context, bounds, orient, self.dark_bg_color1, self.dark_bg_color2) }
     
-    fn set_title_bg_cairo_color(&self, cairo_context: &CairoContext, is_focused_window: bool)
+    fn set_title_bg_cairo_gradient(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>
     {
         if is_focused_window {
-            set_cairo_color(cairo_context, self.title_bg_color);
+            set_cairo_gradient(cairo_context, bounds, Orient::Horizontal, self.title_bg_color1, self.title_bg_color2)            
         } else {
-            set_cairo_color(cairo_context, self.title_bg_color_for_unfocused_window);
+            set_cairo_gradient(cairo_context, bounds, Orient::Horizontal, self.title_bg_color1_for_unfocused_window, self.title_bg_color2_for_unfocused_window)
         }
     }
     
@@ -434,7 +472,7 @@ impl Theme for DefaultTheme
 
     fn draw_toplevel_window_title_bar_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>
     {
-        self.set_title_bg_cairo_color(cairo_context, is_focused_window);
+        self.set_title_bg_cairo_gradient(cairo_context, bounds, is_focused_window)?;
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64);
         cairo_context.fill()?;
         self.set_border_cairo_color(cairo_context, true, false, is_focused_window);
@@ -501,7 +539,7 @@ impl Theme for DefaultTheme
 
     fn draw_title_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        set_cairo_color(cairo_context, self.dark_bg_color);
+        self.set_dark_bg_cairo_gradient(cairo_context, bounds, Orient::Horizontal)?;
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
         cairo_context.fill()?;
         if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
@@ -561,7 +599,7 @@ impl Theme for DefaultTheme
     
     fn draw_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        self.set_dark_bg_cairo_color(cairo_context);
+        self.set_dark_bg_cairo_gradient(cairo_context, bounds, Orient::Horizontal)?;
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
         cairo_context.fill()?;
         if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
