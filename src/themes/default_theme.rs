@@ -271,17 +271,95 @@ impl DefaultTheme
     pub fn set_fg5_color_for_unfocused_window(&mut self, color: Color)
     { self.fg5_color_for_unfocused_window = color; }
 
-    fn draw_check(&self, cairo_context: &CairoContext, pos: Pos<i32>, is_checked: bool, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError> 
+    fn set_bg_cairo_color(&self, cairo_context: &CairoContext)
+    { set_cairo_color(cairo_context, self.bg_color); }
+
+    fn set_light_bg_cairo_color(&self, cairo_context: &CairoContext, is_enabled: bool)
     {
-        let x = pos.x as f64;
-        let y = pos.y as f64;
         if is_enabled {
             set_cairo_color(cairo_context, self.light_bg_color);
         } else {
             set_cairo_color(cairo_context, self.bg_color);
         }
-        cairo_context.rectangle(x + 1.0, y + 1.0, 10.0, 10.0);
-        cairo_context.fill()?;
+    }
+
+    fn set_dark_bg_cairo_color(&self, cairo_context: &CairoContext)
+    { set_cairo_color(cairo_context, self.dark_bg_color); }
+    
+    fn set_title_bg_cairo_color(&self, cairo_context: &CairoContext, is_focused_window: bool)
+    {
+        if is_focused_window {
+            set_cairo_color(cairo_context, self.title_bg_color);
+        } else {
+            set_cairo_color(cairo_context, self.title_bg_color_for_unfocused_window);
+        }
+    }
+    
+    fn set_state_cairo_color(&self, cairo_context: &CairoContext, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> bool
+    {
+        if is_focused_window && is_enabled {
+            match state {
+                WidgetState::None => false,
+                WidgetState::Hover => {
+                    set_cairo_color(cairo_context, self.hover_color);
+                    true
+                },
+                WidgetState::Active => {
+                    set_cairo_color(cairo_context, self.active_color);
+                    true
+                },
+            }
+        } else {
+            false
+        }
+    }
+    
+    fn set_border_cairo_color(&self, cairo_context: &CairoContext, is_enabled: bool, is_focused: bool, is_focused_window: bool)
+    {
+        if is_focused_window {
+            if is_enabled {
+                if is_focused {
+                    set_cairo_color(cairo_context, self.focused_border_color);
+                } else {
+                    set_cairo_color(cairo_context, self.border_color);
+                }
+            } else {
+                set_cairo_color(cairo_context, self.disabled_border_color);
+            }
+        } else {
+            if is_enabled {
+                if is_focused {
+                    set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
+                } else {
+                    set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
+                }
+            } else {
+                set_cairo_color(cairo_context, self.disabled_border_color_for_unfocused_window);
+            }
+        }
+    }
+    
+    fn set_focused_border_cairo_color(&self, cairo_context: &CairoContext, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> bool
+    {
+        if is_focused_window {
+            if is_enabled && is_focused {
+                set_cairo_color(cairo_context, self.focused_border_color);
+                true
+            } else {
+                false
+            }
+        } else {
+            if is_enabled && is_focused {
+                set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    fn set_fg_cairo_color(&self, cairo_context: &CairoContext, is_enabled: bool, is_focused_window: bool)
+    {
         if is_focused_window {
             if is_enabled {
                 set_cairo_color(cairo_context, self.fg_color);
@@ -295,6 +373,19 @@ impl DefaultTheme
                 set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
             }
         }
+    }    
+    
+    fn set_title_fg_cairo_color(&self, cairo_context: &CairoContext)
+    { set_cairo_color(cairo_context, self.title_fg_color); }
+
+    fn draw_check(&self, cairo_context: &CairoContext, pos: Pos<i32>, is_checked: bool, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError> 
+    {
+        let x = pos.x as f64;
+        let y = pos.y as f64;
+        self.set_light_bg_cairo_color(cairo_context, is_enabled);
+        cairo_context.rectangle(x + 1.0, y + 1.0, 10.0, 10.0);
+        cairo_context.fill()?;
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         cairo_context.rectangle(x + 1.0, y + 1.0, 10.0, 10.0);
         cairo_context.stroke()?;
         if is_checked {
@@ -310,26 +401,10 @@ impl DefaultTheme
     {
         let x = pos.x as f64;
         let y = pos.y as f64;
-        if is_enabled {
-            set_cairo_color(cairo_context, self.light_bg_color);
-        } else {
-            set_cairo_color(cairo_context, self.bg_color);
-        }
+        self.set_light_bg_cairo_color(cairo_context, is_enabled);
         cairo_context.arc(x + 6.0, y + 6.0, 5.0, 0.0, PI * 2.0);
         cairo_context.fill()?;
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
-            }
-        }
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         cairo_context.arc(x + 6.0, y + 6.0, 5.0, 0.0, PI * 2.0);
         cairo_context.stroke()?;
         if is_selected {
@@ -339,7 +414,6 @@ impl DefaultTheme
         Ok(())
     }
 }
-
 
 impl Theme for DefaultTheme
 {
@@ -360,18 +434,10 @@ impl Theme for DefaultTheme
 
     fn draw_toplevel_window_title_bar_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool) -> Result<(), CairoError>
     {
-        if is_focused_window {
-            set_cairo_color(cairo_context, self.title_bg_color);
-        } else {
-            set_cairo_color(cairo_context, self.title_bg_color_for_unfocused_window);
-        }
+        self.set_title_bg_cairo_color(cairo_context, is_focused_window);
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64);
         cairo_context.fill()?;
-        if is_focused_window {
-            set_cairo_color(cairo_context, self.border_color);
-        } else {
-            set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
-        }
+        self.set_border_cairo_color(cairo_context, true, false, is_focused_window);
         cairo_context.move_to((bounds.x as f64) + 1.0, (bounds.y as f64) + (bounds.height as f64));
         cairo_context.line_to((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0);
         cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, (bounds.y as f64) + 1.0);
@@ -382,14 +448,10 @@ impl Theme for DefaultTheme
     
     fn draw_toplevel_window_content_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_focused_window: bool, is_tool_bar: bool) -> Result<(), CairoError>
     {
-        set_cairo_color(cairo_context, self.bg_color);
+        self.set_bg_cairo_color(cairo_context);
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64);
         cairo_context.fill()?;
-        if is_focused_window {
-            set_cairo_color(cairo_context, self.border_color);
-        } else {
-            set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
-        }
+        self.set_border_cairo_color(cairo_context, true, false, is_focused_window);
         if !is_tool_bar {
             cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0);
             cairo_context.stroke()?;
@@ -422,14 +484,10 @@ impl Theme for DefaultTheme
         Ok(())
     }
     
-    fn draw_title_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _state: WidgetState, _is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
+    fn draw_title_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     {
         let font_extents = cairo_context.font_extents()?;
-        if is_focused_window {
-            set_cairo_color(cairo_context, self.fg2_color);
-        } else {
-            set_cairo_color(cairo_context, self.fg2_color_for_unfocused_window);
-        }
+        self.set_title_fg_cairo_color(cairo_context);
         cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
         cairo_context.show_text(s)?;
         Ok(())
@@ -446,34 +504,11 @@ impl Theme for DefaultTheme
         set_cairo_color(cairo_context, self.dark_bg_color);
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
         cairo_context.fill()?;
-        if is_focused_window && is_enabled {
-            match state {
-                WidgetState::None => (),
-                WidgetState::Hover => {
-                    set_cairo_color(cairo_context, self.hover_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-                WidgetState::Active => {
-                    set_cairo_color(cairo_context, self.active_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-            }
+        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
+            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+            cairo_context.fill()?;
         }
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.border_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_border_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_border_color_for_unfocused_window);
-            }
-        }
+        self.set_border_cairo_color(cairo_context, is_enabled, false, is_focused_window);
         cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
         cairo_context.stroke()?;
         Ok(())
@@ -496,20 +531,9 @@ impl Theme for DefaultTheme
     
     fn draw_label_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        if is_focused_window && is_enabled {
-            match state {
-                WidgetState::None => (),
-                WidgetState::Hover => {
-                    set_cairo_color(cairo_context, self.hover_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-                WidgetState::Active => {
-                    set_cairo_color(cairo_context, self.active_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-            }
+        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
+            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+            cairo_context.fill()?;
         }
         Ok(())
     }
@@ -520,19 +544,7 @@ impl Theme for DefaultTheme
     fn draw_label_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         let font_extents = cairo_context.font_extents()?;
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
-            }
-        }
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
         cairo_context.show_text(s)?;
         Ok(())
@@ -549,45 +561,14 @@ impl Theme for DefaultTheme
     
     fn draw_button_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        set_cairo_color(cairo_context, self.dark_bg_color);
+        self.set_dark_bg_cairo_color(cairo_context);
         cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
         cairo_context.fill()?;
-        if is_focused_window && is_enabled {
-            match state {
-                WidgetState::None => (),
-                WidgetState::Hover => {
-                    set_cairo_color(cairo_context, self.hover_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-                WidgetState::Active => {
-                    set_cairo_color(cairo_context, self.active_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-            }
+        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
+            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+            cairo_context.fill()?;
         }
-        if is_focused_window {
-            if is_enabled {
-                if is_focused {
-                    set_cairo_color(cairo_context, self.focused_border_color);
-                } else {
-                    set_cairo_color(cairo_context, self.border_color);
-                }
-            } else {
-                set_cairo_color(cairo_context, self.disabled_border_color);
-            }
-        } else {
-            if is_enabled {
-                if is_focused {
-                    set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
-                } else {
-                    set_cairo_color(cairo_context, self.border_color_for_unfocused_window);
-                }
-            } else {
-                set_cairo_color(cairo_context, self.disabled_border_color_for_unfocused_window);
-            }
-        }
+        self.set_border_cairo_color(cairo_context, is_enabled, is_focused, is_focused_window);
         cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
         cairo_context.stroke()?;
         Ok(())
@@ -599,19 +580,7 @@ impl Theme for DefaultTheme
     fn draw_button_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         let font_extents = cairo_context.font_extents()?;
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
-            }
-        }
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
         cairo_context.show_text(s)?;
         Ok(())
@@ -631,35 +600,15 @@ impl Theme for DefaultTheme
     
     fn draw_check_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_checked: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        if is_focused_window && is_enabled {
-            match state {
-                WidgetState::None => (),
-                WidgetState::Hover => {
-                    set_cairo_color(cairo_context, self.hover_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-                WidgetState::Active => {
-                    set_cairo_color(cairo_context, self.active_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-            }
+        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
+            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+            cairo_context.fill()?;
         }
         let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.height - CHECK_SIZE) / 2);
         self.draw_check(cairo_context, pos, is_checked, is_enabled, is_focused_window)?;
-        if is_focused_window {
-            if is_enabled && is_focused {
-                set_cairo_color(cairo_context, self.focused_border_color);
-                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
-                cairo_context.stroke()?;
-            }
-        } else {
-            if is_enabled && is_focused {
-                set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
-                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
-                cairo_context.stroke()?;
-            }
+        if self.set_focused_border_cairo_color(cairo_context, is_enabled, is_focused, is_focused_window) {
+            cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+            cairo_context.stroke()?;
         }
         Ok(())
     }
@@ -670,19 +619,7 @@ impl Theme for DefaultTheme
     fn draw_check_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _is_checked: bool, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         let font_extents = cairo_context.font_extents()?;
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
-            }
-        }
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
         cairo_context.show_text(s)?;
         Ok(())
@@ -696,35 +633,15 @@ impl Theme for DefaultTheme
     
     fn draw_radio_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, is_selected: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        if is_focused_window && is_enabled {
-            match state {
-                WidgetState::None => (),
-                WidgetState::Hover => {
-                    set_cairo_color(cairo_context, self.hover_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-                WidgetState::Active => {
-                    set_cairo_color(cairo_context, self.active_color);
-                    cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-                    cairo_context.fill()?;
-                },
-            }
+        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
+            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+            cairo_context.fill()?;
         }
         let pos = Pos::new(bounds.x + 4, bounds.y + (bounds.height - RADIO_SIZE) / 2);
         self.draw_radio(cairo_context, pos, is_selected, is_enabled, is_focused_window)?;
-        if is_focused_window {
-            if is_enabled && is_focused {
-                set_cairo_color(cairo_context, self.focused_border_color);
-                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
-                cairo_context.stroke()?;
-            }
-        } else {
-            if is_enabled && is_focused {
-                set_cairo_color(cairo_context, self.focused_border_color_for_unfocused_window);
-                cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
-                cairo_context.stroke()?;
-            }
+        if self.set_focused_border_cairo_color(cairo_context, is_enabled, is_focused, is_focused_window) {
+            cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
+            cairo_context.stroke()?;
         }
         Ok(())
     }
@@ -735,45 +652,21 @@ impl Theme for DefaultTheme
     fn draw_radio_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, _is_selected: bool, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         let font_extents = cairo_context.font_extents()?;
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
-            }
-        }
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         cairo_context.move_to(pos.x as f64, (pos.y as f64) + font_extents.ascent);
         cairo_context.show_text(s)?;
         Ok(())
     }
     
-    fn draw_linear_layout_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    fn draw_linear_layout_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
 
-    fn draw_grid_layout_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    fn draw_grid_layout_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
     
     fn set_fg(&self, cairo_context: &CairoContext, _state: WidgetState, is_enabled: bool, _is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
-        if is_focused_window {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color);
-            }
-        } else {
-            if is_enabled {
-                set_cairo_color(cairo_context, self.fg_color_for_unfocused_window);
-            } else {
-                set_cairo_color(cairo_context, self.disabled_fg_color_for_unfocused_window);
-            }
-        }
+        self.set_fg_cairo_color(cairo_context, is_enabled, is_focused_window);
         Ok(())
     }
 

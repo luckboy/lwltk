@@ -292,7 +292,7 @@ impl Draw for LinearLayout
         cairo_context.save()?;
         cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64, self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
-        theme.draw_linear_layout_bg(cairo_context, self.bounds, self.state, self.is_enabled, is_focused_window)?;
+        theme.draw_linear_layout_bg(cairo_context, self.bounds, self.orient, self.state, self.is_enabled, is_focused_window)?;
         self.widgets.draw(cairo_context, theme, is_focused_window)?;
         cairo_context.restore()?;
         Ok(())

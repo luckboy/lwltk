@@ -92,9 +92,9 @@ pub trait Theme: Send + Sync
     
     fn draw_radio_text(&self, cairo_context: &CairoContext, pos: Pos<i32>, s: &str, is_selected: bool, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;    
     
-    fn draw_linear_layout_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+    fn draw_linear_layout_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
 
-    fn draw_grid_layout_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;    
+    fn draw_grid_layout_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;    
     
     fn set_fg(&self, cairo_context: &CairoContext, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
 
