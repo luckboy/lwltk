@@ -73,11 +73,11 @@ fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwL
     let label3 = Label::new("Some radios:");
     let label3_path = window_context.abs_widget_path(&layout_path, |layout: &mut LinearLayout| layout.add(label3))?;
     let radio_group = Arc::new(RadioGroup::new());
-    let radio1 = Radio::new("Some radio1", radio_group.clone());
+    let radio1 = Radio::new_with_group("Some radio1", radio_group.clone());
     let radio1_path = window_context.abs_widget_path(&layout_path, |layout: &mut LinearLayout| layout.add(radio1))?;
-    let radio2 = Radio::new("Some radio2", radio_group.clone());
+    let radio2 = Radio::new_with_group("Some radio2", radio_group.clone());
     let radio2_path = window_context.abs_widget_path(&layout_path, |layout: &mut LinearLayout| layout.add(radio2))?;
-    let radio3 = Radio::new("Some radio3", radio_group.clone());
+    let radio3 = Radio::new_with_group("Some radio3", radio_group.clone());
     let radio3_path = window_context.abs_widget_path(&layout_path, |layout: &mut LinearLayout| layout.add(radio3))?;
     Some(AppData {
             window_index: window_idx,

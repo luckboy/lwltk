@@ -45,7 +45,10 @@ pub struct Radio
 
 impl Radio
 {
-    pub fn new(s: &str, group: Arc<RadioGroup>) -> Self
+    pub fn new(s: &str) -> Self
+    { Self::new_with_group(s, Arc::new(RadioGroup::new())) }
+            
+    pub fn new_with_group(s: &str, group: Arc<RadioGroup>) -> Self
     {
         Radio {
             margin_bounds: Rect::new(0, 0, 0, 0),
