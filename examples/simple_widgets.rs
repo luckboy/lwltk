@@ -25,6 +25,7 @@ use lwltk::Orient;
 use lwltk::PreferredSize;
 use lwltk::QueueContext;
 use lwltk::Size;
+use lwltk::ThreadSignalSender;
 use lwltk::WindowIndex;
 use lwltk::WindowContext;
 
@@ -48,7 +49,7 @@ struct AppData
     radio3_path: AbsWidgetPath,
 }
 
-fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>) -> Option<AppData>
+fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _thread_signal_sender: ThreadSignalSender) -> Option<AppData>
 {
     let mut window = ToplevelWindow::new()?;
     window.set_title("simple widgets");
@@ -95,7 +96,7 @@ fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwL
     })
 }
 
-fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _app_data2: Arc<RwLock<AppData>>) -> Option<()>
+fn set_app_data(window_context: &mut WindowContext, app_data: &mut AppData, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _thread_signal_sender: ThreadSignalSender, _app_data2: Arc<RwLock<AppData>>) -> Option<()>
 {
     window_context.widget_mut::<Button>(&app_data.button_path)?.set_on(move |_, _, event| {
             match event {
