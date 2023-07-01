@@ -381,7 +381,22 @@ impl GridLayoutWidgets
     {
         self.zero_weight_pairs.clear();
         if !self.widgets.is_empty() {
-            let mut weight_idx = 0;
+            let mut weight_idx: u32;
+            let mut weight_end = 0;
+            for row in &self.widgets {
+                weight_idx = 0;
+                for widget in row {
+                    let widget_weight = widget.weight();
+                    let weight_inc = if widget_weight > 0 {
+                        widget_weight
+                    } else {
+                        1
+                    };
+                    weight_idx += weight_inc;
+                }
+                weight_end = max(weight_end, weight_idx);
+            }
+            weight_idx = 0;
             for widget in &self.widgets[0] {
                 let widget_weight = widget.weight();
                 let weight_inc = if widget_weight > 0 {
@@ -391,6 +406,10 @@ impl GridLayoutWidgets
                     1
                 };
                 weight_idx += weight_inc;
+            }
+            for _ in weight_idx..weight_end {
+                self.zero_weight_pairs.insert(weight_idx, GridLayoutWidgetPair::new());
+                weight_idx += 1;
             }
             for row in &self.widgets[1..] {
                 weight_idx = 0;
@@ -403,6 +422,13 @@ impl GridLayoutWidgets
                         }
                     }
                     weight_idx = tmp_weight_idx;
+                }
+                for _ in weight_idx..weight_end {
+                    match self.zero_weight_pairs.get_mut(&weight_idx) {
+                        Some(pair) => pair.count += 1,
+                        None => (),
+                    }
+                    weight_idx += 1;
                 }
             }
             let weight_pair_keys: Vec<u32> = self.zero_weight_pairs.keys().map(|k| *k).collect();
