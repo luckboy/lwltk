@@ -295,9 +295,9 @@ impl LinearLayoutWidgets
         Ok(())
     }
     
-    pub fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>, orient: Orient, h_align: HAlign, v_align: VAlign) -> Result<(), CairoError>
+    pub fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>, orient: Orient, h_align: HAlign, v_align: VAlign, preferred_size: Size<Option<i32>>) -> Result<(), CairoError>
     {
-        let size = self.size(Size::new(Some(area_bounds.width), Some(area_bounds.height)), orient, h_align, v_align);
+        let size = self.size(Size::new(Some(area_bounds.width), Some(area_bounds.height)), orient, h_align, v_align, preferred_size);
         let mut pos = pos_for_h_align_and_v_align(size, area_bounds, h_align, v_align);
         let mut rem_count = 0;
         for widget in &mut self.widgets {
@@ -335,12 +335,26 @@ impl LinearLayoutWidgets
     pub fn max_widget_height(&self, orient: Orient) -> i32
     { self.widgets.iter().fold(0, |w, w2| max(w, orient_size_height(w2.margin_size(), orient))) }
     
-    pub fn size(&self, area_size: Size<Option<i32>>, orient: Orient, h_align: HAlign, v_align: VAlign) -> Size<i32>
-    { 
+    pub fn size(&self, area_size: Size<Option<i32>>, orient: Orient, h_align: HAlign, v_align: VAlign, preferred_size: Size<Option<i32>>) -> Size<i32>
+    {
         let max_height = self.max_widget_height(orient);
         let height = match orient {
-            Orient::Horizontal => height_for_v_align(max_height, area_size.height, v_align),
-            Orient::Vertical => width_for_h_align(max_height, area_size.width, h_align),
+            Orient::Horizontal => {
+                let area_height2 = min_opt_height_for_opt_height(area_size.height, preferred_size.height);
+                if preferred_size.height.is_none() {
+                    height_for_v_align(max_height, area_height2, v_align)
+                } else {
+                    area_height2.unwrap_or(max_height)
+                }
+            },
+            Orient::Vertical => {
+                let area_width2 = min_opt_width_for_opt_width(area_size.width, preferred_size.width);
+                if preferred_size.width.is_none() {
+                    width_for_h_align(max_height, area_width2, h_align)
+                } else {
+                    area_width2.unwrap_or(max_height)
+                }
+            },
         };
         orient_size(self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, height, orient)
     }

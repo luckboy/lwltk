@@ -273,7 +273,7 @@ impl Draw for LinearLayout
     fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>) -> Result<(), CairoError>
     {
         self.widgets.update_size(cairo_context, theme, area_size, self.orient, self.h_align, self.v_align, self.preferred_size)?;
-        self.bounds.set_size(self.widgets.size(area_size, self.orient, self.h_align, self.v_align));
+        self.bounds.set_size(self.widgets.size(area_size, self.orient, self.h_align, self.v_align, self.preferred_size));
         Ok(())
     }
     
@@ -282,7 +282,7 @@ impl Draw for LinearLayout
         let mut area_bounds2 = area_bounds;
         area_bounds2.x -= self.client_pos.x;
         area_bounds2.y -= self.client_pos.y;
-        self.widgets.update_pos(cairo_context, theme, area_bounds2, self.orient, self.h_align, self.v_align)?;
+        self.widgets.update_pos(cairo_context, theme, area_bounds2, self.orient, self.h_align, self.v_align, self.preferred_size)?;
         self.bounds.set_pos(pos_for_h_align_and_v_align(self.bounds.size(), area_bounds2, self.h_align, self.v_align));
         Ok(())
     }
