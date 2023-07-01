@@ -337,6 +337,25 @@ impl LinearLayoutWidgets
     
     pub fn size(&self, area_size: Size<Option<i32>>, orient: Orient, h_align: HAlign, v_align: VAlign, preferred_size: Size<Option<i32>>) -> Size<i32>
     {
+        let width_sum = self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem;
+        let width = match orient {
+            Orient::Horizontal => {
+                let area_width2 = min_opt_width_for_opt_width(area_size.width, preferred_size.width);
+                if preferred_size.width.is_none() {
+                    width_for_h_align(width_sum, area_width2, h_align)
+                } else {
+                    area_width2.unwrap_or(width_sum)
+                }
+            },
+            Orient::Vertical => {
+                let area_height2 = min_opt_height_for_opt_height(area_size.height, preferred_size.height);
+                if preferred_size.height.is_none() {
+                    height_for_v_align(width_sum, area_height2, v_align)
+                } else {
+                    area_height2.unwrap_or(width_sum)
+                }
+            },
+        };
         let max_height = self.max_widget_height(orient);
         let height = match orient {
             Orient::Horizontal => {
@@ -356,6 +375,6 @@ impl LinearLayoutWidgets
                 }
             },
         };
-        orient_size(self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, height, orient)
+        orient_size(width, height, orient)
     }
 }

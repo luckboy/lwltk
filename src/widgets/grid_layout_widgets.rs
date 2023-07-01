@@ -643,9 +643,9 @@ impl GridLayoutWidgets
         Ok(())
     }
     
-    pub fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>, orient: Orient, h_align: HAlign, v_align: VAlign) -> Result<(), CairoError>
+    pub fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>, orient: Orient, h_align: HAlign, v_align: VAlign, preferred_size: Size<Option<i32>>) -> Result<(), CairoError>
     {
-        let size = self.size(orient);
+        let size = self.size(Size::new(Some(area_bounds.width), Some(area_bounds.height)), orient, h_align, v_align, preferred_size);
         let mut pos = pos_for_h_align_and_v_align(size, area_bounds, h_align, v_align);
         self.start_y = pos.y;
         let mut row_rem_count = 0;
@@ -699,6 +699,46 @@ impl GridLayoutWidgets
         Ok(())
     }
 
-    pub fn size(&self, orient: Orient) -> Size<i32>
-    { orient_size(self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem, self.row_height * (self.widgets.len() as i32) + self.row_height_rem, orient) }
+    pub fn size(&self, area_size: Size<Option<i32>>, orient: Orient, h_align: HAlign, v_align: VAlign, preferred_size: Size<Option<i32>>) -> Size<i32>
+    {
+        let width_sum = self.zero_weight_width_sum + self.weight_width * (self.weight_sum as i32) + self.weight_width_rem;
+        let width = match orient {
+            Orient::Horizontal => {
+                let area_width2 = min_opt_width_for_opt_width(area_size.width, preferred_size.width);
+                if preferred_size.width.is_none() {
+                    width_for_h_align(width_sum, area_width2, h_align)
+                } else {
+                    area_width2.unwrap_or(width_sum)
+                }
+            },
+            Orient::Vertical => {
+                let area_height2 = min_opt_height_for_opt_height(area_size.height, preferred_size.height);
+                if preferred_size.height.is_none() {
+                    height_for_v_align(width_sum, area_height2, v_align)
+                } else {
+                    area_height2.unwrap_or(width_sum)
+                }
+            },
+        };
+        let height_sum = self.row_height * (self.widgets.len() as i32) + self.row_height_rem;
+        let height = match orient {
+            Orient::Horizontal => {
+                let area_height2 = min_opt_height_for_opt_height(area_size.height, preferred_size.height);
+                if preferred_size.width.is_none() {
+                    height_for_v_align(height_sum, area_height2, v_align)
+                } else {
+                    area_height2.unwrap_or(height_sum)
+                }
+            },
+            Orient::Vertical => {
+                let area_width2 = min_opt_width_for_opt_width(area_size.width, preferred_size.width);
+                if preferred_size.height.is_none() {
+                    width_for_h_align(height_sum, area_width2, h_align)
+                } else {
+                    area_width2.unwrap_or(height_sum)
+                }
+            },
+        };
+        orient_size(width, height, orient)
+    }
 }
