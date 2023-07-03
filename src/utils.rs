@@ -310,7 +310,6 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                     if window.is_focusable() {
                         window_context.set_focused_window_index(Some(current_window_idx));
                     }
-                    let current_window_idx = window_context.current_window_index()?;
                     let current_pos = window_context.current_pos()?;
                     let window = window_context.dyn_window_mut(current_window_idx)?;
                     window.set_focused_rel_widget_path(window.point_focusable(current_pos));
