@@ -16,8 +16,7 @@ use crate::window_container::*;
 /// A structure of window context.
 ///
 /// This structure is used to menage widgets and windows. The structure of window context contains 
-/// a theme and a window container. The window container contains windows. See [WindowContainer] for
-/// more informations.
+/// a theme and a window container.
 pub struct WindowContext
 {
     pub(crate) theme: Box<dyn Theme>,
@@ -150,65 +149,65 @@ impl WindowContext
         }
     }
     
-    /// See [WindowContainer::add_dyn].
+    /// See [`WindowContainer::add_dyn`].
     pub fn add_dyn_window(&mut self, window: Box<dyn Window>) -> Option<WindowIndex>
     { self.window_container.add_dyn(window) }
     
-    /// See [WindowContainer::add].
+    /// See [`WindowContainer::add`].
     pub fn add_window<T: Window + 'static>(&mut self, window: T) -> Option<WindowIndex>
     { self.window_container.add_dyn(Box::new(window)) }
     
-    /// See [WindowContainer::remove].
+    /// See [`WindowContainer::remove`].
     pub fn remove_window(&mut self, idx: WindowIndex) -> Option<Box<dyn Window>>
     { self.window_container.remove(idx) }
 
-    /// See [WindowContainer::dyn_window].
+    /// See [`WindowContainer::dyn_window`].
     pub fn dyn_window(&self, idx: WindowIndex) -> Option<&dyn Window>
     { self.window_container.dyn_window(idx) }
 
-    /// See [WindowContainer::dyn_window_mut].
+    /// See [`WindowContainer::dyn_window_mut`].
     pub fn dyn_window_mut(&mut self, idx: WindowIndex) -> Option<&mut dyn Window>
     { self.window_container.dyn_window_mut(idx) }
 
-    /// See [WindowContainer::window].
+    /// See [`WindowContainer::window`].
     pub fn window<T: Any>(&self, idx: WindowIndex) -> Option<&T>
     { self.window_container.window(idx) }
 
-    /// See [WindowContainer::window_mut].
+    /// See [`WindowContainer::window_mut`].
     pub fn window_mut<T: Any>(&mut self, idx: WindowIndex) -> Option<&mut T>
     { self.window_container.window_mut(idx) }
 
-    /// See [WindowContainer::abs_widget_path1].
+    /// See [`WindowContainer::abs_widget_path1`].
     pub fn abs_widget_path1<C: Container + Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
     { self.window_container.abs_widget_path1(idx, f) }
     
-    /// See [WindowContainer::dyn_widget].
+    /// See [`WindowContainer::dyn_widget`].
     pub fn dyn_widget(&self, path: &AbsWidgetPath) -> Option<&dyn Widget>
     { self.window_container.dyn_widget(path) }
 
-    /// See [WindowContainer::dyn_widget_mut].
+    /// See [`WindowContainer::dyn_widget_mut`].
     pub fn dyn_widget_mut(&mut self, path: &AbsWidgetPath) -> Option<&mut dyn Widget>
     { self.window_container.dyn_widget_mut(path) }
 
-    /// See [WindowContainer::widget].
+    /// See [`WindowContainer::widget`].
     pub fn widget<T: Any>(&self, path: &AbsWidgetPath) -> Option<&T>
     { self.window_container.widget(path) }
 
-    /// See [WindowContainer::widget_mut].
+    /// See [`WindowContainer::widget_mut`].
     pub fn widget_mut<T: Any>(&mut self, path: &AbsWidgetPath) -> Option<&mut T>
     { self.window_container.widget_mut(path) }
     
-    /// See [WindowContainer::abs_widget_path].
+    /// See [`WindowContainer::abs_widget_path`].
     pub fn abs_widget_path<T: Any, F>(&mut self, path: &AbsWidgetPath, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
     { self.window_container.abs_widget_path(path, f) }
     
-    /// See [WindowContainer::set_parent].
+    /// See [`WindowContainer::set_parent`].
     pub fn set_parent_window(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> Option<()>
     { self.window_container.set_parent(child_idx, parent_idx, pos) }
 
-    /// See [WindowContainer::unset_parent].
+    /// See [`WindowContainer::unset_parent`].
     pub fn unset_parent_window(&mut self, child_idx: WindowIndex) -> Option<()>
     { self.window_container.unset_parent(child_idx) }
 }

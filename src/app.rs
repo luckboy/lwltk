@@ -19,7 +19,7 @@ use crate::window_context::*;
 
 /// An application structure.
 ///
-/// The application structure is a main structure that allows run an application. This structure
+/// The application structure is a main structure that allows to run an application. This structure
 /// contains contexts, the thread signal channel, and an application data.
 ///
 /// # Examples

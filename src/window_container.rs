@@ -58,6 +58,7 @@ impl PartialOrd for IndexRange
     { Some(self.cmp(other)) }
 }
 
+/// An iterator that iterates over window indices.
 #[derive(Clone)]
 pub struct WindowIndices<'a>
 {
@@ -87,6 +88,7 @@ impl<'a> Iterator for WindowIndices<'a>
     { self.iter.size_hint() }
 }
 
+/// An iterator that iterates over windows.
 #[derive(Clone)]
 pub struct Windows<'a>
 {
@@ -116,6 +118,10 @@ impl<'a> Iterator for Windows<'a>
     { self.iter.size_hint() }
 }
 
+/// A structure of window container.
+///
+/// This structure contains windows. A structure of window container allows to add the windows, remove
+/// the windows, have access to the wigdets and the windows. 
 pub struct WindowContainer
 {
     windows: BTreeMap<WindowIndex, Box<dyn Window>>,
@@ -136,6 +142,9 @@ impl WindowContainer
         }
     }
     
+    /// Adds a dynamic window to the window container.
+    ///
+    /// This method is similar to the [`add`](Self::add) but takes the dynamic window. 
     pub fn add_dyn(&mut self, mut window: Box<dyn Window>) -> Option<WindowIndex>
     {
         match self.free_indices.iter().next().map(|ir| *ir) {
@@ -176,9 +185,19 @@ impl WindowContainer
         }
     }
     
+    /// Adds a window to the window container.
+    ///
+    /// This method returns the window index of the added window if the dynamic window is added,
+    /// otherwise `None`. Also, this method sets the window index for the added window.
     pub fn add<T: Window + 'static>(&mut self, window: T) -> Option<WindowIndex>
     { self.add_dyn(Box::new(window)) }
     
+    /// Removes the window that has the specified window index.
+    ///
+    /// This method returns the removed dynamic window. Also, this method automatically unsets the
+    /// window index from the window, unsets the parent from the window, and removes the children
+    /// from the window. Also, the window are automatically removed from the parent and
+    /// the parents of the children are automatically unsets from the children.
     pub fn remove(&mut self, idx: WindowIndex) -> Option<Box<dyn Window>>
     {
         match self.windows.remove(&idx) {
@@ -262,6 +281,8 @@ impl WindowContainer
     pub(crate) fn window_map(&self) -> &BTreeMap<WindowIndex, Box<dyn Window>>
     { &self.windows }
 
+    /// Returns the reference to the dynamic window for the specified window index if the window
+    /// exists, otherwise `None`.
     pub fn dyn_window(&self, idx: WindowIndex) -> Option<&dyn Window>
     {
         match self.windows.get(&idx) {
@@ -270,6 +291,8 @@ impl WindowContainer
         }
     }
 
+    /// Returns the mutable reference to the dynamic window for the specified window index if the
+    /// window exists, otherwise `None`.
     pub fn dyn_window_mut(&mut self, idx: WindowIndex) -> Option<&mut dyn Window>
     { 
         match self.windows.get_mut(&idx) {
@@ -278,18 +301,30 @@ impl WindowContainer
         }
     }
 
+    /// Returns the reference to the window for the specified window index if the window exists,
+    /// otherwise `None`.
     pub fn window<T: Any>(&self, idx: WindowIndex) -> Option<&T>
     { self.dyn_window(idx).map(|w| w.as_any().downcast_ref::<T>()).flatten() }
 
+    /// Returns the mutable reference to the window for the specified window index if the window
+    /// exists, otherwise `None`.
     pub fn window_mut<T: Any>(&mut self, idx: WindowIndex) -> Option<&mut T>
     { self.dyn_window_mut(idx).map(|w| w.as_any_mut().downcast_mut::<T>()).flatten() }
     
+    /// Returns an iterator that iterates over the window indicies.
     pub fn window_indices(&self) -> WindowIndices
     { WindowIndices::new(&self.windows) }
 
+    /// Returns an iterator that iterates over the windows.
     pub fn dyn_windows(&self) -> Windows
     { Windows::new(&self.windows) }
 
+    /// Returns an absolute widget path for the window index and a `f` function that returns a pair 
+    /// of widget index or `None`.
+    ///
+    /// This method returns an absolute widget path if the window exists, has the window type, and
+    /// the `f` function returns the pair of widget index. The `f` function can set a content
+    /// widget and return the pair of widget index.
     pub fn abs_widget_path1<C: Container + Any, F>(&mut self, idx: WindowIndex, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
     {
@@ -304,18 +339,32 @@ impl WindowContainer
         }
     }
     
+    /// Returns the reference to the dynamic window for the specified absolute widget path if the
+    /// widget exists, otherwise `None`.
     pub fn dyn_widget(&self, path: &AbsWidgetPath) -> Option<&dyn Widget>
     { self.dyn_window(path.window_index()).map(|w| w.dyn_widget(path.as_rel_widget_path())).flatten() }
 
+    /// Returns the mutable reference to the dynamic window for the specified absolute widget path
+    /// if the widget exists, otherwise `None`.
     pub fn dyn_widget_mut(&mut self, path: &AbsWidgetPath) -> Option<&mut dyn Widget>
     { self.dyn_window_mut(path.window_index()).map(|w| w.dyn_widget_mut(path.as_rel_widget_path())).flatten() }
 
+    /// Returns the reference to the window for the specified absolute widget path if the widget
+    /// exists and has the window type, otherwise `None`.
     pub fn widget<T: Any>(&self, path: &AbsWidgetPath) -> Option<&T>
     { self.dyn_window(path.window_index()).map(|w| container_widget(w, path.as_rel_widget_path())).flatten() }
 
+    /// Returns the mutable reference to the window for the specified absolute widget path if the
+    /// widget exists and has the window type, otherwise `None`.
     pub fn widget_mut<T: Any>(&mut self, path: &AbsWidgetPath) -> Option<&mut T>
     { self.dyn_window_mut(path.window_index()).map(|w| container_widget_mut(w, path.as_rel_widget_path())).flatten() }
     
+    /// Returns an absolute widget path for the absolute widget path and a `f` function that returns
+    /// a pair of widget index or `None`.
+    ///
+    /// This method returns an absolute widget path if the widget exists, has the widget type, and
+    /// the `f` function returns the pair of widget index. The `f` function can add a widget
+    /// and return the pair of widget index.
     pub fn abs_widget_path<T: Any, F>(&mut self, path: &AbsWidgetPath, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
     { 
@@ -330,6 +379,10 @@ impl WindowContainer
         }
     }
 
+    /// Sets a parent for a child if the parent and the child exist.
+    ///
+    /// This methods automatically adds the child to the parent and returns `Some(())` if the child
+    /// have the set parent, otherwise `None`.
     pub fn set_parent(&mut self, child_idx: WindowIndex, parent_idx: WindowIndex, pos: Pos<i32>) -> Option<()>
     {
         self.unset_parent(child_idx);
@@ -349,6 +402,10 @@ impl WindowContainer
         Some(())
     }
 
+    /// Unsets a parent for a child if the child exists and has the parent.
+    ///
+    /// This method automatically removes the child from the parent and returns `Some(())` if the
+    /// child haven't the parent, otherwise `None`.
     pub fn unset_parent(&mut self, child_idx: WindowIndex) -> Option<()>
     {
         let parent_idx = {
