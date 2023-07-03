@@ -28,7 +28,7 @@ struct AppData
 fn create_app_data(window_context: &mut WindowContext, _window_context2: Arc<RwLock<WindowContext>>, _queue_context2: Arc<Mutex<QueueContext>>, _thread_signal_sender: ThreadSignalSender) -> Option<AppData>
 {
     let mut window = ToplevelWindow::new()?;
-    window.set_title("empty window");
+    window.set_title("Empty window");
     window.set_preferred_size(Size::new(Some(256), Some(256)));
     let window_idx = window_context.add_window(window)?;
     Some(AppData {
