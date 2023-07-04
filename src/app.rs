@@ -83,7 +83,7 @@ impl<T> App<T>
 {
     /// Creates an application object.
     ///
-    /// This method takes two arguments which are functions. The first closure creates an
+    /// This method takes two arguments which are closures. The first closure creates an
     /// application data. The second closure sets the application data, widgets, and windows. The
     /// first closure that takes arguments:
     /// - a reference to the window context
