@@ -15,8 +15,8 @@ use crate::window_container::*;
 
 /// A structure of window context.
 ///
-/// This structure is used to menage widgets and windows. The structure of window context contains 
-/// a theme and a window container.
+/// The window context is used to menage widgets and windows. The structure of window context
+/// contains a theme and a window container.
 pub struct WindowContext
 {
     pub(crate) theme: Box<dyn Theme>,

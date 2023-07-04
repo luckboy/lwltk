@@ -120,8 +120,8 @@ impl<'a> Iterator for Windows<'a>
 
 /// A structure of window container.
 ///
-/// This structure contains windows. A structure of window container allows to add windows, remove
-/// the windows, have access to the wigdets, and have access to the windows.
+/// The window container contains windows. The structure of window container allows to add windows,
+/// remove the windows, have access to the wigdets, and have access to the windows.
 pub struct WindowContainer
 {
     windows: BTreeMap<WindowIndex, Box<dyn Window>>,
