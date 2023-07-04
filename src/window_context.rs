@@ -45,11 +45,11 @@ impl WindowContext
     pub fn theme(&self) -> &dyn Theme
     { &*self.theme }
     
-    /// Returns the reference to the window container.
+    /// Returns a reference to the window container.
     pub fn window_container(&self) -> &WindowContainer
     { &self.window_container }
 
-    /// Returns the mutable reference to the window container.
+    /// Returns a mutable reference to the window container.
     pub fn window_container_mut(&mut self) -> &mut WindowContainer
     { &mut self.window_container }
     
@@ -69,7 +69,7 @@ impl WindowContext
     pub fn set_focused_window_index(&mut self, idx: Option<WindowIndex>)
     { self.focused_window_index = idx; }
     
-    /// Returns the reference to the dynamic current window or `None`.
+    /// Returns a reference to the dynamic current window or `None`.
     pub fn dyn_current_window(&self) -> Option<&dyn Window>
     {
         match self.current_window_index {
@@ -78,7 +78,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the dynamic current window or `None`.
+    /// Returns a mutable reference to the dynamic current window or `None`.
     pub fn dyn_current_window_mut(&mut self) -> Option<&mut dyn Window>
     {
         match self.current_window_index {
@@ -87,7 +87,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the reference to the current window or `None`.
+    /// Returns a reference to the current window or `None`.
     pub fn current_window<T: Any>(&self) -> Option<&T>
     {
         match self.current_window_index {
@@ -96,7 +96,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the current window or `None`.
+    /// Returns a mutable reference to the current window or `None`.
     pub fn current_window_mut<T: Any>(&mut self) -> Option<&mut T>
     {
         match self.current_window_index {
@@ -105,7 +105,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the reference to the dynamic focused window or `None`.
+    /// Returns a reference to the dynamic focused window or `None`.
     pub fn dyn_focused_window(&self) -> Option<&dyn Window>
     {
         match self.focused_window_index {
@@ -114,7 +114,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the dynamic focused window or `None`.
+    /// Returns a mutable reference to the dynamic focused window or `None`.
     pub fn dyn_focused_window_mut(&mut self) -> Option<&mut dyn Window>
     {
         match self.focused_window_index {
@@ -123,7 +123,7 @@ impl WindowContext
         }
     }    
     
-    /// Returns the reference to the focused window or `None`.
+    /// Returns a reference to the focused window or `None`.
     pub fn focused_window<T: Any>(&self) -> Option<&T>
     {
         match self.focused_window_index {
@@ -132,7 +132,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the focused window or `None`.
+    /// Returns a mutable reference to the focused window or `None`.
     pub fn focused_window_mut<T: Any>(&mut self) -> Option<&mut T>
     {
         match self.focused_window_index {

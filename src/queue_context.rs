@@ -18,20 +18,32 @@ use crate::event_queue::*;
 use crate::types::*;
 use crate::window_context::*;
 
+/// An enumeration of call-on identifier.
+///
+/// The call-on identifier identifies a mause pointer or a touch.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum CallOnId
 {
+    /// The mause pointer.
     Pointer,
+    /// The touch with the unique touch identifier.
     Touch(i32),
 }
 
+/// An enumeration of active identifier.
+///
+/// The active identifier identifies a call-on identifier or a keyboard. This identifier is used to
+/// set an active widget state.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum ActiveId
 {
+    /// The call-on identifier.
     CallOnId(CallOnId),
+    /// The keyboard.
     Keyboard,
 }
 
+/// A queue context iterator that iterates over pairs of widget indices.
 #[derive(Clone)]
 pub struct QueueContextIter<'a>
 {
@@ -67,6 +79,10 @@ impl<'a> Iterator for QueueContextIter<'a>
     { self.iter.size_hint() }
 }
 
+/// A structure of queue context.
+///
+/// The queue context is used to manage events and callbacks. The queue context contains the event
+/// queue and the callback queue.
 pub struct QueueContext
 {
     pub(crate) event_queue: EventQueue,
@@ -103,18 +119,23 @@ impl QueueContext
         }
     }
 
+    /// Returns a reference to the event queue.
     pub fn event_queue(&self) -> &EventQueue
     { &self.event_queue }
 
+    /// Returns a mutable reference to the event queue.
     pub fn event_queue_mut(&mut self) -> &mut EventQueue
     { &mut self.event_queue }
 
+    /// Returns a reference to the callback queue.
     pub fn callback_queue(&self) -> &CallbackQueue
     { &self.callback_queue }
 
+    /// Returns a mutable reference to the callback queue.
     pub fn callback_queue_mut(&mut self) -> &mut CallbackQueue
     { &mut self.callback_queue }
 
+    /// Returns a reference to the current call-on path or `None`.
     pub fn current_call_on_path(&self) -> Option<&CallOnPath>
     {
         match &self.current_call_on_path {
@@ -123,18 +144,32 @@ impl QueueContext
         }
     }
     
+    /// Returns an iterator that iterates over the pairs of the indices of the descentant widgets.
     pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
     { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
+    /// Returns the motion call-on path for the specified call-on identifier or `None`.
+    ///
+    /// The motion call-on path points to the widget or the window that is pointed by a mause pointer
+    /// or a touch.
     pub fn motion_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.motion_call_on_paths.get(&call_on_id) }
 
+    /// Sets a call-on path for the specified call-on identifier.
+    ///
+    /// See [`motion_call_on_path`](Self::motion_call_on_path).
     pub fn set_motion_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.motion_call_on_paths.insert(call_on_id, call_on_path); }
 
+    /// Removes a call-on path for the specified call-on identifier.
+    ///
+    /// See [`motion_call_on_path`](Self::motion_call_on_path).
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
     { self.motion_call_on_paths.remove(&call_on_id); }
 
+    /// Returns the motion resize edges for the call-on identifier or `None`.
+    ///
+    /// The motion resize edges is used to resize a window.
     pub fn motion_resize_edges(&self, call_on_id: CallOnId) -> Option<ClientResize>
     {
         match self.motion_resize_edge_map.get(&call_on_id) {
@@ -142,43 +177,79 @@ impl QueueContext
             None => None,
         }
     }
-    
+ 
+    /// Sets a motion resize edges for the specified call-on identifier.
+    ///
+    /// See [`motion_resize_edges`](Self::motion_resize_edges).
     pub fn set_motion_resize_edges(&mut self, call_on_id: CallOnId, edges: ClientResize)
     { self.motion_resize_edge_map.insert(call_on_id, edges); }
     
+    /// Removes the motion resize edges for the specified call-on identifier.
+    ///
+    /// See [`motion_resize_edges`](Self::motion_resize_edges).
     pub fn unset_motion_resize_edges(&mut self, call_on_id: CallOnId)
     { self.motion_resize_edge_map.remove(&call_on_id); }
     
+    /// Returns the call-on path of the pressed button for the specified call-on identifier or
+    /// `None`.
+    ///
+    /// The call-on path of the pressed button is pointed to the widget or the window that is pressed
+    /// by the mause or touched.
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
 
+    /// Sets a call-on path of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_call_on_path`](Self::pressed_call_on_path).
     pub fn set_pressed_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.pressed_call_on_paths.insert(call_on_id, call_on_path); }
 
+    /// Sets the call-on path of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_call_on_path`](Self::pressed_call_on_path).
     pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
     { self.pressed_call_on_paths.remove(&call_on_id); }
     
+    /// Returns the clock measurement of the pressed button for the specified call-on identifier
+    /// or `None`.
+    ///
+    /// The clock measurement of the pressed button is used to check whether a click is long.
     pub fn pressed_instant(&self, call_on_id: CallOnId) -> Option<&Instant>
     { self.pressed_instants.get(&call_on_id) }
 
+    /// Sets a clock measurement of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_instant`](Self::pressed_instant).
     pub fn set_pressed_instant(&mut self, call_on_id: CallOnId, instant: Instant)
     { self.pressed_instants.insert(call_on_id, instant); }
 
+    /// Removes a clock measurement of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_instant`](Self::pressed_instant).
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
 
+    /// Returns `true` if there occured a double click, otherwise `false`.
     pub fn has_double_click(&self) -> bool
     { self.has_double_click }
 
+    /// Sets the double click flag.
     pub fn set_double_click(&mut self, flag: bool)
     { self.has_double_click = flag }
     
+    /// Returns `true` if there occured a long click, otherwise `false`.
     pub fn has_long_click(&self) -> bool
     { self.has_long_click }
 
+    /// Sets the long click flag.
     pub fn set_long_click(&mut self, flag: bool)
     { self.has_long_click = flag }
     
+    /// Adds an active identifier for the specified call-on path.
+    ///
+    /// This method returns `true` if a new set of active identidfiers is created while add the
+    /// active identifier, otherwise `false`. The set of active identifier contains the active
+    /// identifiers for the widget or the window.
     pub fn add_active_id(&mut self, call_on_path: &CallOnPath, active_id: ActiveId) -> bool
     {
         match self.active_id_sets.get_mut(call_on_path) {
@@ -195,6 +266,11 @@ impl QueueContext
         }
     }
 
+    /// Removed an active identifier for the specified call-on path.
+    ///
+    /// This method returns `true` if the set of active identifiers is removed while remove the
+    /// active identifier, otherwise `false`. The set of active identifier contains the active
+    /// identifiers for the widget or the window.
     pub fn remove_active_id(&mut self, call_on_path: &CallOnPath, active_id: ActiveId) -> bool
     {
         match self.active_id_sets.get_mut(call_on_path) {
@@ -241,12 +317,17 @@ impl QueueContext
         }
     }
 
+    /// Returns `true` if a wait cursor is set, otherwise `false`.
     pub fn has_wait_cursor(&self) -> bool
     { self.has_wait_cursor }
 
+    /// Sets the flag of the wait cursor.
     pub fn set_wait_cursor(&mut self, flag: bool)
     { self.has_wait_cursor = flag }
     
+    /// Pushes event to the event queue for the current call-on path.
+    ///
+    /// This method returns `Some(())` if the current call-on path exists, otherwise `None`.
     pub fn push_event(&mut self, event: Event) -> Option<()>
     {
         match self.current_call_on_path.clone() {
@@ -258,9 +339,11 @@ impl QueueContext
         }
     }
 
+    /// See [`CallbackQueue::push_dyn`].
     pub fn push_dyn_callback(&mut self, f: Box<dyn FnMut(&mut ClientContext, &mut WindowContext, &mut QueueContext) -> Option<()> + Send + Sync + 'static>)
     { self.callback_queue.push_dyn(f); }
 
+    /// See [`CallbackQueue::push`].
     pub fn push_callback<F>(&mut self, f: F)
         where F: FnMut(&mut ClientContext, &mut WindowContext, &mut QueueContext) -> Option<()> + Send + Sync + 'static
     { self.callback_queue.push(f); }

@@ -196,7 +196,7 @@ impl WindowContainer
     ///
     /// This method returns the removed dynamic window. Also, this method automatically unsets the
     /// window index from the window, removes the parent from the window, and removes the children
-    /// from the window. Also, the window are automatically removed from the parent and
+    /// from the window. The window are automatically removed from the parent and
     /// the parents of the children are automatically removed from the children.
     pub fn remove(&mut self, idx: WindowIndex) -> Option<Box<dyn Window>>
     {
@@ -281,7 +281,7 @@ impl WindowContainer
     pub(crate) fn window_map(&self) -> &BTreeMap<WindowIndex, Box<dyn Window>>
     { &self.windows }
 
-    /// Returns the reference to the dynamic window for the specified window index or `None`.
+    /// Returns a reference to the dynamic window for the specified window index or `None`.
     pub fn dyn_window(&self, idx: WindowIndex) -> Option<&dyn Window>
     {
         match self.windows.get(&idx) {
@@ -290,7 +290,7 @@ impl WindowContainer
         }
     }
 
-    /// Returns the mutable reference to the dynamic window for the specified window index or `None`.
+    /// Returns a mutable reference to the dynamic window for the specified window index or `None`.
     pub fn dyn_window_mut(&mut self, idx: WindowIndex) -> Option<&mut dyn Window>
     { 
         match self.windows.get_mut(&idx) {
@@ -299,11 +299,11 @@ impl WindowContainer
         }
     }
 
-    /// Returns the reference to the window for the specified window index or `None`.
+    /// Returns a reference to the window for the specified window index or `None`.
     pub fn window<T: Any>(&self, idx: WindowIndex) -> Option<&T>
     { self.dyn_window(idx).map(|w| w.as_any().downcast_ref::<T>()).flatten() }
 
-    /// Returns the mutable reference to the window for the specified window index or `None`.
+    /// Returns a mutable reference to the window for the specified window index or `None`.
     pub fn window_mut<T: Any>(&mut self, idx: WindowIndex) -> Option<&mut T>
     { self.dyn_window_mut(idx).map(|w| w.as_any_mut().downcast_mut::<T>()).flatten() }
     
@@ -334,20 +334,20 @@ impl WindowContainer
         }
     }
     
-    /// Returns the reference to the dynamic window for the specified absolute widget path or `None`.
+    /// Returns a reference to the dynamic window for the specified absolute widget path or `None`.
     pub fn dyn_widget(&self, path: &AbsWidgetPath) -> Option<&dyn Widget>
     { self.dyn_window(path.window_index()).map(|w| w.dyn_widget(path.as_rel_widget_path())).flatten() }
 
-    /// Returns the mutable reference to the dynamic window for the specified absolute widget path
+    /// Returns a mutable reference to the dynamic window for the specified absolute widget path
     /// or otherwise `None`.
     pub fn dyn_widget_mut(&mut self, path: &AbsWidgetPath) -> Option<&mut dyn Widget>
     { self.dyn_window_mut(path.window_index()).map(|w| w.dyn_widget_mut(path.as_rel_widget_path())).flatten() }
 
-    /// Returns the reference to the window for the specified absolute widget path or `None`.
+    /// Returns a reference to the window for the specified absolute widget path or `None`.
     pub fn widget<T: Any>(&self, path: &AbsWidgetPath) -> Option<&T>
     { self.dyn_window(path.window_index()).map(|w| container_widget(w, path.as_rel_widget_path())).flatten() }
 
-    /// Returns the mutable reference to the window for the specified absolute widget path or `None`.
+    /// Returns a mutable reference to the window for the specified absolute widget path or `None`.
     pub fn widget_mut<T: Any>(&mut self, path: &AbsWidgetPath) -> Option<&mut T>
     { self.dyn_window_mut(path.window_index()).map(|w| container_widget_mut(w, path.as_rel_widget_path())).flatten() }
     

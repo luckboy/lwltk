@@ -86,18 +86,18 @@ impl<T> App<T>
     /// This method takes two arguments which are functions. The first function creates an
     /// application data. The second functions sets the application data, widgets, and windows. The
     /// first function that takes arguments:
-    /// - the reference to the window context
-    /// - the reference-counting pointer to the window context
-    /// - the reference-counting pointer to the queue context
+    /// - a reference to the window context
+    /// - a reference-counting pointer to the window context
+    /// - a reference-counting pointer to the queue context
     /// - the thread signal sender
     ///
     /// The second function that takes arguments:
-    /// - the reference to the window context
-    /// - the reference to the application data
-    /// - the reference-counting pointer to the window context
-    /// - the reference-counting pointer to the queue context
+    /// - a reference to the window context
+    /// - a reference to the application data
+    /// - a reference-counting pointer to the window context
+    /// - a reference-counting pointer to the queue context
     /// - the thread signal sender
-    /// - the reference-counting pointer to the application data
+    /// - a reference-counting pointer to the application data
     pub fn new<F, G>(creating_f: F, setting_f: G) -> Result<Self, ClientError>
         where F: FnOnce(&mut WindowContext, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>, ThreadSignalSender) -> Option<T>,
               G: FnOnce(&mut WindowContext, &mut T, Arc<RwLock<WindowContext>>, Arc<Mutex<QueueContext>>, ThreadSignalSender, Arc<RwLock<T>>) -> Option<()>
@@ -176,15 +176,15 @@ impl<T> App<T>
         res2
     }
 
-    /// Returns the reference-counting pointer to the client context.
+    /// Returns a reference-counting pointer to the client context.
     pub fn client_context(&self) -> Rc<RefCell<ClientContext>>
     { self.client_context.clone() }
 
-    /// Returns the reference-counting pointer to the window context.
+    /// Returns a reference-counting pointer to the window context.
     pub fn window_context(&self) -> Arc<RwLock<WindowContext>>
     { self.window_context.clone() }
 
-    /// Returns the reference-counting pointer to the queue context.
+    /// Returns a reference-counting pointer to the queue context.
     pub fn queue_context(&self) -> Arc<Mutex<QueueContext>>
     { self.queue_context.clone() }
 
@@ -192,13 +192,14 @@ impl<T> App<T>
     pub fn thread_signal_sender(&self) -> ThreadSignalSender
     { self.thread_signal_sender }
     
-    /// Returns the reference-counting pointer to the application data.
+    /// Returns a reference-counting pointer to the application data.
     pub fn data(&self) -> Arc<RwLock<T>>
     { self.data.clone() }
     
     /// Runs the application.
     ///
-    /// This method executes a main loop for a graphic thread.
+    /// This method executes a main loop for a graphic thread. The graphic thread usually is a
+    /// main thread. A main loop handles wayland events and thread signals in the graphic thread.
     pub fn run(&mut self) -> Result<(), ClientError>
     { run_main_loop(&mut self.client_display, self.client_context.clone(), self.window_context.clone(), self.queue_context.clone(), self.thread_signal_sender, self.thread_signal_receiver) }
 }
