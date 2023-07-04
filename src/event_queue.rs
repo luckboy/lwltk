@@ -11,7 +11,7 @@ use crate::types::*;
 
 /// An enumaration of call-on path.
 ///
-/// The call-on path points to a widget or a window.
+/// The call-on path refers to a widget or a window.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum CallOnPath
 {
@@ -37,7 +37,7 @@ impl CallOnPath
 #[derive(Clone)]
 pub struct EventPair
 {
-    /// The call-on path that points the widget or the window for an event.
+    /// The call-on path that refers the widget or the window for an event.
     pub call_on_path: CallOnPath,
     /// The event.
     pub event: Event,

@@ -150,7 +150,7 @@ impl QueueContext
     
     /// Returns the motion call-on path for the specified call-on identifier or `None`.
     ///
-    /// The motion call-on path points to the widget or the window that is pointed by a mause pointer
+    /// The motion call-on path refers to the widget or the window that is pointed by a mause pointer
     /// or a touch.
     pub fn motion_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.motion_call_on_paths.get(&call_on_id) }
@@ -193,8 +193,8 @@ impl QueueContext
     /// Returns the call-on path of the pressed button for the specified call-on identifier or
     /// `None`.
     ///
-    /// The call-on path of the pressed button is pointed to the widget or the window that is pressed
-    /// by the mause or touched.
+    /// The call-on path of the pressed button refers to the widget or the window that is pressed by
+    /// the mause or touched.
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
 

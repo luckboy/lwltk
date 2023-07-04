@@ -83,15 +83,15 @@ impl<T> App<T>
 {
     /// Creates an application object.
     ///
-    /// This method takes two arguments which are functions. The first function creates an
-    /// application data. The second functions sets the application data, widgets, and windows. The
-    /// first function that takes arguments:
+    /// This method takes two arguments which are functions. The first closure creates an
+    /// application data. The second closure sets the application data, widgets, and windows. The
+    /// first closure that takes arguments:
     /// - a reference to the window context
     /// - a reference-counting pointer to the window context
     /// - a reference-counting pointer to the queue context
     /// - the thread signal sender
     ///
-    /// The second function that takes arguments:
+    /// The second closure that takes arguments:
     /// - a reference to the window context
     /// - a reference to the application data
     /// - a reference-counting pointer to the window context
