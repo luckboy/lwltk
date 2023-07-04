@@ -334,11 +334,11 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             }
             if widget.is_enabled() {
                 if queue_context.has_double_click() {
-                    queue_context.push_event(Event::DoubleClick);
+                    queue_context.push_event(Event::DoubleClick)?;
                 } else if queue_context.has_long_click() {
-                    queue_context.push_event(Event::LongClick);
+                    queue_context.push_event(Event::LongClick)?;
                 } else {
-                    queue_context.push_event(Event::Click);
+                    queue_context.push_event(Event::Click)?;
                 }
             }
             Some(Some(None))
@@ -358,10 +358,10 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
         },
         Event::Client(ClientEvent::KeyboardKey(_, keys, s, ClientState::Pressed)) => {
             for key in keys {
-                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()));
+                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()))?;
             }
             for c in s.chars() {
-                queue_context.push_event(Event::Char(c));
+                queue_context.push_event(Event::Char(c))?;
             }
             if widget.is_clickable_by_key() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
@@ -385,7 +385,7 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
                         }
                     }
                     if widget.is_enabled() {
-                        queue_context.push_event(Event::Click);
+                        queue_context.push_event(Event::Click)?;
                     }
                 }
             }
@@ -394,10 +394,10 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
         Event::Client(ClientEvent::KeyboardModifiers(_)) => Some(Some(None)),
         Event::Client(ClientEvent::RepeatedKey(keys, s)) => {
             for key in keys {
-                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()));
+                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()))?;
             }
             for c in s.chars() {
-                queue_context.push_event(Event::Char(c));
+                queue_context.push_event(Event::Char(c))?;
             }
             Some(Some(None))
         },
@@ -449,9 +449,9 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
                 let duration = Duration::from_millis(client_context.long_click_delay());
                 if widget.is_enabled() {
                     if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
-                        queue_context.push_event(Event::LongClick);
+                        queue_context.push_event(Event::LongClick)?;
                     } else {
-                        queue_context.push_event(Event::Click);
+                        queue_context.push_event(Event::Click)?;
                     }
                 }
             } else {
@@ -802,11 +802,11 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Released)) => Some(Some(None)),
         Event::Client(ClientEvent::PostButtonRelease) => {
             if queue_context.has_double_click() {
-                queue_context.push_event(Event::DoubleClick);
+                queue_context.push_event(Event::DoubleClick)?;
             } else if queue_context.has_long_click() {
-                queue_context.push_event(Event::LongClick);
+                queue_context.push_event(Event::LongClick)?;
             } else {
-                queue_context.push_event(Event::Click);
+                queue_context.push_event(Event::Click)?;
             }
             Some(Some(None))
         },
@@ -826,10 +826,10 @@ pub fn default_window_on_for_client_keyboard(window: &mut dyn Window, client_con
         },
         Event::Client(ClientEvent::KeyboardKey(_, keys, s, ClientState::Pressed)) => {
             for key in keys {
-                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()));
+                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()))?;
             }
             for c in s.chars() {
-                queue_context.push_event(Event::Char(c));
+                queue_context.push_event(Event::Char(c))?;
             }
             Some(Some(None))
         },
@@ -837,10 +837,10 @@ pub fn default_window_on_for_client_keyboard(window: &mut dyn Window, client_con
         Event::Client(ClientEvent::KeyboardModifiers(_)) => Some(Some(None)),
         Event::Client(ClientEvent::RepeatedKey(keys, s)) => {
             for key in keys {
-                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()));
+                queue_context.push_event(Event::Key(*key, client_context.key_modifiers()))?;
             }
             for c in s.chars() {
-                queue_context.push_event(Event::Char(c));
+                queue_context.push_event(Event::Char(c))?;
             }
             Some(Some(None))
         },
@@ -881,9 +881,9 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
                 if pressed_call_on_path == queue_context.current_call_on_path() {
                     let duration = Duration::from_millis(client_context.long_click_delay());
                     if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
-                        queue_context.push_event(Event::LongClick);
+                        queue_context.push_event(Event::LongClick)?;
                     } else {
-                        queue_context.push_event(Event::Click);
+                        queue_context.push_event(Event::Click)?;
                     }
                 } else {
                     match pressed_call_on_path {
@@ -982,7 +982,7 @@ pub fn default_window_on_for_key(window: &mut dyn Window, client_context: &mut C
             } else if *modifiers == KeyModifiers::ALT {
                 match *key {
                     VKey::F4 => {
-                        queue_context.push_event(Event::Close);
+                        queue_context.push_event(Event::Close)?;
                         Some(Some(None))
                     },
                     _ => Some(None),
