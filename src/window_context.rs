@@ -53,15 +53,15 @@ impl WindowContext
     pub fn window_container_mut(&mut self) -> &mut WindowContainer
     { &mut self.window_container }
     
-    /// Returns the current window index if the current window exists, otherwise `None`.
+    /// Returns the current window index or `None`.
     pub fn current_window_index(&self) -> Option<WindowIndex>
     { self.current_window_index }
 
-    /// Returns the current position if the current position exists, otherwise `None`.
+    /// Returns the current position or `None`.
     pub fn current_pos(&self) -> Option<Pos<f64>>
     { self.current_pos }
     
-    /// Returns the focused window index if the focused window exists, otherwise `None`.
+    /// Returns the focused window index or `None`.
     pub fn focused_window_index(&self) -> Option<WindowIndex>
     { self.focused_window_index }
     
@@ -69,8 +69,7 @@ impl WindowContext
     pub fn set_focused_window_index(&mut self, idx: Option<WindowIndex>)
     { self.focused_window_index = idx; }
     
-    /// Returns the reference to the dynamic current window if the current window exists, otherwise
-    /// `None`.
+    /// Returns the reference to the dynamic current window or `None`.
     pub fn dyn_current_window(&self) -> Option<&dyn Window>
     {
         match self.current_window_index {
@@ -79,8 +78,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the dynamic current window if the current window exists,
-    /// otherwise `None`.
+    /// Returns the mutable reference to the dynamic current window or `None`.
     pub fn dyn_current_window_mut(&mut self) -> Option<&mut dyn Window>
     {
         match self.current_window_index {
@@ -89,8 +87,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the reference to the current window if the current window exists and has the window
-    /// type, otherwise `None`.
+    /// Returns the reference to the current window or `None`.
     pub fn current_window<T: Any>(&self) -> Option<&T>
     {
         match self.current_window_index {
@@ -99,8 +96,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the current window if the current window exists and has the
-    /// window type, otherwise `None`.
+    /// Returns the mutable reference to the current window or `None`.
     pub fn current_window_mut<T: Any>(&mut self) -> Option<&mut T>
     {
         match self.current_window_index {
@@ -109,8 +105,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the reference to the dynamic focused window if the focused window exists, otherwise
-    /// `None`.
+    /// Returns the reference to the dynamic focused window or `None`.
     pub fn dyn_focused_window(&self) -> Option<&dyn Window>
     {
         match self.focused_window_index {
@@ -119,8 +114,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the dynamic focused window if the focused window exists,
-    /// otherwise `None`.
+    /// Returns the mutable reference to the dynamic focused window or `None`.
     pub fn dyn_focused_window_mut(&mut self) -> Option<&mut dyn Window>
     {
         match self.focused_window_index {
@@ -129,8 +123,7 @@ impl WindowContext
         }
     }    
     
-    /// Returns the reference to the focused window if the focused window exists and has the window
-    /// type, otherwise `None`.
+    /// Returns the reference to the focused window or `None`.
     pub fn focused_window<T: Any>(&self) -> Option<&T>
     {
         match self.focused_window_index {
@@ -139,8 +132,7 @@ impl WindowContext
         }
     }
 
-    /// Returns the mutable reference to the focused window if the focused window exists and has the 
-    /// window type, otherwise `None`.
+    /// Returns the mutable reference to the focused window or `None`.
     pub fn focused_window_mut<T: Any>(&mut self) -> Option<&mut T>
     {
         match self.focused_window_index {
