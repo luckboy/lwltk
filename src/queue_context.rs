@@ -157,13 +157,13 @@ impl QueueContext
 
     /// Sets a call-on path for the specified call-on identifier.
     ///
-    /// See [`motion_call_on_path`](Self::motion_call_on_path).
+    /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn set_motion_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.motion_call_on_paths.insert(call_on_id, call_on_path); }
 
     /// Removes a call-on path for the specified call-on identifier.
     ///
-    /// See [`motion_call_on_path`](Self::motion_call_on_path).
+    /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
     { self.motion_call_on_paths.remove(&call_on_id); }
 
@@ -180,13 +180,13 @@ impl QueueContext
  
     /// Sets a motion resize edges for the specified call-on identifier.
     ///
-    /// See [`motion_resize_edges`](Self::motion_resize_edges).
+    /// See [`motion_resize_edges`](Self::motion_resize_edges) for more informations.
     pub fn set_motion_resize_edges(&mut self, call_on_id: CallOnId, edges: ClientResize)
     { self.motion_resize_edge_map.insert(call_on_id, edges); }
     
     /// Removes the motion resize edges for the specified call-on identifier.
     ///
-    /// See [`motion_resize_edges`](Self::motion_resize_edges).
+    /// See [`motion_resize_edges`](Self::motion_resize_edges) for more informations.
     pub fn unset_motion_resize_edges(&mut self, call_on_id: CallOnId)
     { self.motion_resize_edge_map.remove(&call_on_id); }
     
@@ -200,13 +200,13 @@ impl QueueContext
 
     /// Sets a call-on path of the pressed button for the specified call-on identifier.
     ///
-    /// See [`pressed_call_on_path`](Self::pressed_call_on_path).
+    /// See [`pressed_call_on_path`](Self::pressed_call_on_path) for more informations.
     pub fn set_pressed_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.pressed_call_on_paths.insert(call_on_id, call_on_path); }
 
     /// Sets the call-on path of the pressed button for the specified call-on identifier.
     ///
-    /// See [`pressed_call_on_path`](Self::pressed_call_on_path).
+    /// See [`pressed_call_on_path`](Self::pressed_call_on_path) for more informations.
     pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
     { self.pressed_call_on_paths.remove(&call_on_id); }
     
@@ -219,13 +219,13 @@ impl QueueContext
 
     /// Sets a clock measurement of the pressed button for the specified call-on identifier.
     ///
-    /// See [`pressed_instant`](Self::pressed_instant).
+    /// See [`pressed_instant`](Self::pressed_instant) for more informations.
     pub fn set_pressed_instant(&mut self, call_on_id: CallOnId, instant: Instant)
     { self.pressed_instants.insert(call_on_id, instant); }
 
     /// Removes a clock measurement of the pressed button for the specified call-on identifier.
     ///
-    /// See [`pressed_instant`](Self::pressed_instant).
+    /// See [`pressed_instant`](Self::pressed_instant) for more informations.
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
 
