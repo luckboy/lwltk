@@ -85,13 +85,13 @@ impl<T> App<T>
     ///
     /// This method takes two arguments which are closures. The first closure creates an
     /// application data. The second closure sets the application data, widgets, and windows. The
-    /// first closure that takes arguments:
+    /// first closure that takes the following arguments:
     /// - a reference to the window context
     /// - a reference-counting pointer to the window context
     /// - a reference-counting pointer to the queue context
     /// - the thread signal sender
     ///
-    /// The second closure that takes arguments:
+    /// The second closure that takes the following arguments:
     /// - a reference to the window context
     /// - a reference to the application data
     /// - a reference-counting pointer to the window context
@@ -199,7 +199,7 @@ impl<T> App<T>
     /// Runs the application.
     ///
     /// This method executes a main loop for a graphic thread. The graphic thread usually is a
-    /// main thread. A main loop handles wayland events and thread signals in the graphic thread.
+    /// main thread. The main loop handles wayland events and thread signals in the graphic thread.
     pub fn run(&mut self) -> Result<(), ClientError>
     { run_main_loop(&mut self.client_display, self.client_context.clone(), self.window_context.clone(), self.queue_context.clone(), self.thread_signal_sender, self.thread_signal_receiver) }
 }
