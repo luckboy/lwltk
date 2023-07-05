@@ -266,7 +266,7 @@ impl QueueContext
         }
     }
 
-    /// Removed an active identifier for the specified call-on path.
+    /// Removes an active identifier for the specified call-on path.
     ///
     /// This method returns `true` if the set of active identifiers is removed while remove the
     /// active identifier, otherwise `false`. The set of active identifier contains the active
