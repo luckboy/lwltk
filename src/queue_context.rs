@@ -20,13 +20,13 @@ use crate::window_context::*;
 
 /// An enumeration of call-on identifier.
 ///
-/// The call-on identifier identifies a mouse pointer or a touch.
+/// The call-on identifier identifies a pointer or a touch.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum CallOnId
 {
-    /// The mouse pointer.
+    /// A pointer.
     Pointer,
-    /// The touch with the unique touch identifier.
+    /// A touch with an unique touch identifier.
     Touch(i32),
 }
 
@@ -37,9 +37,9 @@ pub enum CallOnId
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum ActiveId
 {
-    /// The call-on identifier.
+    /// A call-on identifier.
     CallOnId(CallOnId),
-    /// The keyboard.
+    /// A keyboard.
     Keyboard,
 }
 
@@ -150,8 +150,8 @@ impl QueueContext
     
     /// Returns the motion call-on path for the specified call-on identifier or `None`.
     ///
-    /// The motion call-on path refers to the widget or the window that is pointed by a mouse pointer
-    /// or a touch.
+    /// The motion call-on path refers to the widget or the window that is pointed by the pointer or
+    /// the touch.
     pub fn motion_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.motion_call_on_paths.get(&call_on_id) }
 
@@ -194,7 +194,7 @@ impl QueueContext
     /// `None`.
     ///
     /// The call-on path of the pressed button refers to the widget or the window that is pressed by
-    /// the mouse or touched.
+    /// the pointer or touched.
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
 
@@ -229,19 +229,19 @@ impl QueueContext
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
 
-    /// Returns `true` if a double click occurred by a mouse, otherwise `false`.
+    /// Returns `true` if a double click occurred by the pointer, otherwise `false`.
     pub fn has_double_click(&self) -> bool
     { self.has_double_click }
 
-    /// Sets the double click flag for a mouse.
+    /// Sets the double click flag for the pointer.
     pub fn set_double_click(&mut self, flag: bool)
     { self.has_double_click = flag }
     
-    /// Returns `true` if a long click occurred by a mouse, otherwise `false`.
+    /// Returns `true` if a long click occurred by the pointer, otherwise `false`.
     pub fn has_long_click(&self) -> bool
     { self.has_long_click }
 
-    /// Sets the long click flag for a mouse.
+    /// Sets the long click flag for the pointer.
     pub fn set_long_click(&mut self, flag: bool)
     { self.has_long_click = flag }
     

@@ -15,9 +15,9 @@ use crate::types::*;
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum CallOnPath
 {
-    /// The window index.
+    /// A window index.
     Window(WindowIndex),
-    /// The abslolute widget path.
+    /// An abslolute widget path.
     Widget(AbsWidgetPath),
 }
 
