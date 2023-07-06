@@ -144,11 +144,11 @@ impl QueueContext
         }
     }
     
-    /// Returns an iterator that iterates over the current  pairs of the indices of the descentant
+    /// Returns an iterator that iterates over the current  pairs of the indices of the descendant
     /// widgets.
     ///
-    /// The current pairs of indices of the descentant widgets are in order from youngest to oldest.
-    /// These pairs of widget indices are set by an event propagation.
+    /// The current pairs of the indices of the descendant widgets are arranged in order from
+    /// youngest to oldest. These pairs of widget indices are set by an event propagation.
     pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
     { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
