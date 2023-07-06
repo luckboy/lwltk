@@ -144,7 +144,11 @@ impl QueueContext
         }
     }
     
-    /// Returns an iterator that iterates over the pairs of the indices of the descentant widgets.
+    /// Returns an iterator that iterates over the current  pairs of the indices of the descentant
+    /// widgets.
+    ///
+    /// The current pairs of indices of the descentant widgets are in order from youngest to oldest.
+    /// These pairs of widget indices are set by an event propagation.
     pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
     { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
@@ -317,7 +321,7 @@ impl QueueContext
         }
     }
 
-    /// Returns `true` if a wait cursor is set, otherwise `false`.
+    /// Returns `true` if the wait cursor is set, otherwise `false`.
     pub fn has_wait_cursor(&self) -> bool
     { self.has_wait_cursor }
 
