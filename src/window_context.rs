@@ -54,10 +54,16 @@ impl WindowContext
     { &mut self.window_container }
     
     /// Returns the current window index or `None`.
+    ///
+    /// The current window index refers the window for an wayland event that is called or a thread
+    /// signal.
     pub fn current_window_index(&self) -> Option<WindowIndex>
     { self.current_window_index }
 
     /// Returns the current position or `None`.
+    ///
+    /// The current position is pointed by the pointer or the touch for an wayland event that is
+    /// called or a thread signal.
     pub fn current_pos(&self) -> Option<Pos<f64>>
     { self.current_pos }
     

@@ -136,6 +136,8 @@ impl QueueContext
     { &mut self.callback_queue }
 
     /// Returns a reference to the current call-on path or `None`.
+    ///
+    /// The current call-on path refers the widget or the window for an event that is called.
     pub fn current_call_on_path(&self) -> Option<&CallOnPath>
     {
         match &self.current_call_on_path {
