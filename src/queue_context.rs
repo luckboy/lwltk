@@ -150,7 +150,8 @@ impl QueueContext
     /// widgets.
     ///
     /// The current pairs of the indices of the descendant widgets are arranged in order from
-    /// youngest to oldest. These pairs of widget indices are set by an event propagation.
+    /// great-...-great-grandchild to child. These pairs of widget indices are set by an event
+    /// propagation.
     pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
     { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
