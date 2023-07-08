@@ -195,9 +195,9 @@ impl WindowContainer
     /// Removes the window that has the specified window index.
     ///
     /// This method returns the removed dynamic window. Also, this method automatically unsets the
-    /// window index from the window, removes the parent from the window, and removes the children
-    /// from the window. The window are automatically removed from the parent and
-    /// the parents of the children are automatically removed from the children.
+    /// window index for the window, unsets the parent for the window, and removes the children
+    /// from the window. The window are automatically removed from the parent and the parents of
+    /// the children are automatically unset for the children.
     pub fn remove(&mut self, idx: WindowIndex) -> Option<Box<dyn Window>>
     {
         match self.windows.remove(&idx) {
@@ -393,10 +393,10 @@ impl WindowContainer
         Some(())
     }
 
-    /// Removes a parent from a child.
+    /// Unsets a parent for a child.
     ///
     /// This method automatically removes the child from the parent and returns `Some(())` if the
-    /// parent is removed from the child, otherwise `None`.
+    /// parent is unset for the child, otherwise `None`.
     pub fn unset_parent(&mut self, child_idx: WindowIndex) -> Option<()>
     {
         let parent_idx = {

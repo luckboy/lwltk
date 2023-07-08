@@ -168,7 +168,7 @@ impl QueueContext
     pub fn set_motion_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.motion_call_on_paths.insert(call_on_id, call_on_path); }
 
-    /// Removes a call-on path for the specified call-on identifier.
+    /// Unsets a call-on path for the specified call-on identifier.
     ///
     /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
@@ -191,7 +191,7 @@ impl QueueContext
     pub fn set_motion_resize_edges(&mut self, call_on_id: CallOnId, edges: ClientResize)
     { self.motion_resize_edge_map.insert(call_on_id, edges); }
     
-    /// Removes the motion resize edges for the specified call-on identifier.
+    /// Unsets the motion resize edges for the specified call-on identifier.
     ///
     /// See [`motion_resize_edges`](Self::motion_resize_edges) for more informations.
     pub fn unset_motion_resize_edges(&mut self, call_on_id: CallOnId)
@@ -230,7 +230,7 @@ impl QueueContext
     pub fn set_pressed_instant(&mut self, call_on_id: CallOnId, instant: Instant)
     { self.pressed_instants.insert(call_on_id, instant); }
 
-    /// Removes a clock measurement of the pressed button for the specified call-on identifier.
+    /// Unsets a clock measurement of the pressed button for the specified call-on identifier.
     ///
     /// See [`pressed_instant`](Self::pressed_instant) for more informations.
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
@@ -273,7 +273,7 @@ impl QueueContext
         }
     }
 
-    /// Removes an active identifier for the specified call-on path.
+    /// Removes the active identifier for the specified call-on path.
     ///
     /// This method returns `true` if the set of active identifiers is removed while remove the
     /// active identifier, otherwise `false`. The set of active identifier contains the active
