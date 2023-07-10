@@ -162,9 +162,9 @@ impl Color
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Pos<T>
 {
-    /// A X coordinate field.
+    /// A field of X coordinate.
     pub x: T,
-    /// An Y coordinate field.
+    /// A field of Y coordinate.
     pub y: T,
 }
 
@@ -256,9 +256,9 @@ impl Size<f64>
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Rect<T>
 {
-    /// A X coordinate field.
+    /// A field of X coordinate.
     pub x: T,
-    /// An Y coordinate field.
+    /// A field of Y coordinate.
     pub y: T,
     /// A width field.
     pub width: T,
