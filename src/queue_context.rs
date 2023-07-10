@@ -220,7 +220,8 @@ impl QueueContext
     /// Returns the clock measurement of the pressed button for the specified call-on identifier
     /// or `None`.
     ///
-    /// The clock measurement of the pressed button is used to check whether a click is long.
+    /// The clock measurement of the pressed button is measured when the widget or the window that
+    /// is pressed by the pointer or touched.
     pub fn pressed_instant(&self, call_on_id: CallOnId) -> Option<&Instant>
     { self.pressed_instants.get(&call_on_id) }
 
