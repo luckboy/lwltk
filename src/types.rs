@@ -295,7 +295,8 @@ impl<T: Copy + PartialOrd + Add<Output = T>> Rect<T>
 
 impl<T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T>> Rect<T>
 {
-    /// Returns an intersection of two rectangles or `None`.
+    /// Returns an intersection of two rectangles if the intersection of two rectangles isn't empty,
+    /// otherwise `None`.
     ///
     /// # Examples
     /// ```
