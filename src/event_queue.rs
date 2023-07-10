@@ -24,6 +24,20 @@ pub enum CallOnPath
 impl CallOnPath
 {
     /// Returns the window index.
+    ///
+    /// # Examples
+    /// ```
+    /// use lwltk::AbsWidgetPath;
+    /// use lwltk::CallOnPath;
+    /// use lwltk::WidgetIndexPair;
+    /// use lwltk::WindowIndex;
+    ///
+    /// let call_on_path1 = CallOnPath::Window(WindowIndex(2));
+    /// assert_eq!(WindowIndex(2), call_on_path1.window_index());
+    ///
+    /// let call_on_path2 = CallOnPath::Widget(AbsWidgetPath::new(WindowIndex(3), WidgetIndexPair(1, 2)));
+    /// assert_eq!(WindowIndex(3), call_on_path2.window_index());
+    /// ```
     pub fn window_index(&self) -> WindowIndex
     {
         match self {
