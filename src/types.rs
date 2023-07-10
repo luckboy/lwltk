@@ -250,6 +250,32 @@ impl<T> Edges<T>
     { Edges { top, bottom, left, right, } }
 }
 
+impl Edges<i32>
+{
+    pub fn to_f64_egdes(&self) -> Edges<f64>
+    {
+        Edges {
+            top: self.top as f64,
+            bottom: self.bottom as f64,
+            left: self.left as f64,
+            right: self.right as f64,
+        }
+    }
+}
+
+impl Edges<f64>
+{
+    pub fn to_i32_egdes(&self) -> Edges<i32>
+    {
+        Edges {
+            top: self.top as i32,
+            bottom: self.bottom as i32,
+            left: self.left as i32,
+            right: self.right as i32,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Corners<T>
 {
@@ -276,6 +302,40 @@ impl<T> Corners<T>
             bottom_left_height,
             bottom_right_width,
             bottom_right_height,
+        }
+    }
+}
+
+impl Corners<i32>
+{
+    pub fn to_f64_corners(&self) -> Corners<f64>
+    {
+        Corners {
+            top_left_width: self.top_left_width as f64,
+            top_left_height: self.top_left_height as f64,
+            top_right_width: self.top_right_width as f64,
+            top_right_height: self.top_right_height as f64,
+            bottom_left_width: self.bottom_left_width as f64,
+            bottom_left_height: self.bottom_left_height as f64,
+            bottom_right_width: self.bottom_right_width as f64,
+            bottom_right_height: self.bottom_right_height as f64,
+        }
+    }
+}
+
+impl Corners<f64>
+{
+    pub fn to_i32_corners(&self) -> Corners<i32>
+    {
+        Corners {
+            top_left_width: self.top_left_width as i32,
+            top_left_height: self.top_left_height as i32,
+            top_right_width: self.top_right_width as i32,
+            top_right_height: self.top_right_height as i32,
+            bottom_left_width: self.bottom_left_width as i32,
+            bottom_left_height: self.bottom_left_height as i32,
+            bottom_right_width: self.bottom_right_width as i32,
+            bottom_right_height: self.bottom_right_height as i32,
         }
     }
 }

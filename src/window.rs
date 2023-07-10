@@ -263,6 +263,22 @@ pub trait Window: Container + MinSize + PreferredSize
         }
     }
     
+    fn dyn_focused_widget(&self) -> Option<&dyn Widget>
+    {
+        match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+            Some(rel_widget_path) => self.dyn_widget(&rel_widget_path),
+            None => None,
+        }
+    }
+
+    fn dyn_focused_widget_mut(&mut self) -> Option<&mut dyn Widget>
+    {
+        match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+            Some(rel_widget_path) => self.dyn_widget_mut(&rel_widget_path),
+            None => None,
+        }
+    }    
+    
     fn update_focused_rel_widget_path(&mut self) -> bool
     {
         let is_widget = match self.focused_rel_widget_path() {
@@ -458,6 +474,22 @@ pub fn dyn_window_as_window<T: Any>(window: &dyn Window) -> Option<&T>
 
 pub fn dyn_window_mut_as_window_mut<T: Any>(window: &mut dyn Window) -> Option<&mut T>
 { window.as_any_mut().downcast_mut::<T>() }
+
+pub fn window_focused_widget<W: Window + ?Sized, T: Any>(window: &W) -> Option<&T>
+{
+    match window.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+        Some(rel_widget_path) => container_widget(window, &rel_widget_path),
+        None => None,
+    }
+}
+
+pub fn window_focused_widget_mut<W: Window + ?Sized, T: Any>(window: &mut W) -> Option<&mut T>
+{
+    match window.focused_rel_widget_path().map(|rwp| rwp.clone()) {
+        Some(rel_widget_path) => container_widget_mut(window, &rel_widget_path),
+        None => None,
+    }
+}
 
 #[cfg(test)]
 mod tests
