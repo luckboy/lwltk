@@ -43,7 +43,7 @@ pub enum ActiveId
     Keyboard,
 }
 
-/// A queue context iterator that iterates over pairs of widget indices.
+/// An iterator of queue context that iterates over pairs of widget indices.
 #[derive(Clone)]
 pub struct QueueContextIter<'a>
 {

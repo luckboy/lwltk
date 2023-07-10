@@ -556,7 +556,7 @@ pub struct WindowIndex(pub usize);
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct WidgetIndexPair(pub usize, pub usize);
 
-/// A widget path iterator that iterates over pairs of widget indices.
+/// An iterator of widget path that iterates over pairs of widget indices.
 #[derive(Clone)]
 pub struct WidgetPathIter<'a>
 {
