@@ -552,7 +552,7 @@ impl Corners<f64>
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct WindowIndex(pub usize);
 
-/// A structure of pairs of widget indices.
+/// A structure of pair of widget indices.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct WidgetIndexPair(pub usize, pub usize);
 
