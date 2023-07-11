@@ -469,7 +469,7 @@ pub fn container_widget_mut<'a, C: Container + ?Sized, T: Any>(container: &'a mu
 /// container or `None`.
 ///
 /// The closure can be used to add the widget to the container. The returned relative widget path
-/// refers to the content widget.
+/// refers to an added widget.
 ///
 /// # Examples
 /// ```
