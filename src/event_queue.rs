@@ -67,7 +67,7 @@ impl EventPair
 /// A structure of event queue.
 ///
 /// The event queue contains the events. The events in the event queue are popped and called when a
-/// wayland event is called or other thread sends a thread signal to a graphic thread. The event
+/// Wayland event is called or other thread sends a thread signal to a graphic thread. The event
 /// queue empties before a callback queue.
 pub struct EventQueue
 {

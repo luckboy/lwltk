@@ -14,7 +14,7 @@ use crate::window_context::*;
 ///
 /// The callback queue contains the callabcks. The callbacks are used to get access to the window
 /// context in event handler, because event handler hasn't access to this context. The callbacks in
-/// the callback queue are popped and called when a wayland event is called or other thread sends a
+/// the callback queue are popped and called when a Wayland event is called or other thread sends a
 /// thread signal to a graphic thread. The callback queue empties after an event queue.
 pub struct CallbackQueue
 {
