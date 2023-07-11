@@ -354,8 +354,8 @@ impl WindowContainer
     /// Returns an absolute widget path that is joint the specified absolute widget path with a pair
     /// of widget indices from the closure or `None`.
     ///
-    /// The closure can be used to add the widget to the descendant container. The returned absolute
-    /// widget path refers to an added widget.
+    /// The closure can be used to add a widget to the descendant container. The returned absolute
+    /// widget path refers to the added widget.
     pub fn abs_widget_path<T: Any, F>(&mut self, path: &AbsWidgetPath, f: F) -> Option<AbsWidgetPath>
         where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
     { 

@@ -468,8 +468,8 @@ pub fn container_widget_mut<'a, C: Container + ?Sized, T: Any>(container: &'a mu
 /// Returns a relative widget path that contains a pair of widget indices from the closure for the
 /// container or `None`.
 ///
-/// The closure can be used to add the widget to the container. The returned relative widget path
-/// refers to an added widget.
+/// The closure can be used to add a widget to the container. The returned relative widget path
+/// refers to the added widget.
 ///
 /// # Examples
 /// ```
@@ -498,8 +498,8 @@ pub fn container_rel_widget_path1<'a, C: Container, F>(container: &'a mut C, f: 
 /// Returns a relative widget path that is joint the specified relative widget path with a pair
 /// of widget indices from the closure for the container or `None`.
 ///
-/// The closure can be used to add the widget to the descendant container. The returned relative
-/// widget path refers to an added widget.
+/// The closure can be used to add a widget to the descendant container. The returned relative
+/// widget path refers to the added widget.
 ////
 /// # Examples
 /// ```
