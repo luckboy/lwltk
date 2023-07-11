@@ -105,8 +105,9 @@ impl<'a> StackElem<'a>
 
 /// A window trait.
 ///
-/// The windows can contain the widgets. The window is drawn with own widgets and reacts on events
-/// if the window is visible.
+/// The windows are for example toplevel windows and message windows. A content widget with
+/// descendant widgets can be in the window. The window is drawn with own widgets and reacts on
+/// events if the window is visible.
 pub trait Window: Container + MinSize + PreferredSize
 {
     /// Returns the size of the window.
@@ -306,9 +307,9 @@ pub trait Window: Container + MinSize + PreferredSize
     fn focused_rel_widget_path(&self) -> Option<&RelWidgetPath>
     { None }
 
-    /// Sets only the focused relative widget path if the focused relative widget path can be set.
+    /// Sets only the focused relative widget path.
     ///
-    /// This method should return `true` if the focused relative widget path can be set, otherwise
+    /// This method should return `true` if the focused relative widget path is set, otherwise
     /// `false`. This method doesn't check widgets and set the widget focuses. This method
     /// defaultly returns `false`.
     #[allow(unused_variables)]
@@ -351,10 +352,10 @@ pub trait Window: Container + MinSize + PreferredSize
     fn padding_height(&self) -> i32
     { self.padding_bounds().height }
     
-    /// Sets the focused relative widget path if the focused relative widget path can be set.
+    /// Sets the focused relative widget path.
     ///
-    /// This method returns `true` if the focused relative widget path can be set, otherwise
-    /// `false`. This method checks widgets and sets the widget focuses.
+    /// This method returns `true` if the focused relative widget path is set, otherwise `false`.
+    /// This method checks widgets and sets the widget focuses.
     fn set_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
     {
         let saved_old_rel_widget_path = match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
@@ -401,10 +402,9 @@ pub trait Window: Container + MinSize + PreferredSize
         }
     }
 
-    /// Updates the focused relative widget path if the focused relative widget path can be
-    /// updated.
+    /// Updates the focused relative widget path.
     ///
-    /// This method returns `true` if the focused relative widget path can be updated, otherwise
+    /// This method returns `true` if the focused relative widget path is updated, otherwise
     /// `false`. If the focused relative widget path refers a non-existent widget, this method
     /// unsets the focused relative widget path.
     fn update_focused_rel_widget_path(&mut self) -> bool
@@ -438,7 +438,8 @@ pub trait Window: Container + MinSize + PreferredSize
         }
     }    
 
-    /// Returns the previous or next focused relative widget path, `Some(None)`, or`None`.
+    /// Returns the previous or next focused relative widget path, `Some(None)` for no the previous
+    /// or next focused relative widget path, or `None` for an error.
     fn prev_or_next_focused_widget(&self, dir: Dir, is_down: bool) -> Option<Option<RelWidgetPath>>
     {
         let mut stack: Vec<StackElem<'_>> = Vec::new();

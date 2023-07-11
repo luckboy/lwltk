@@ -11,10 +11,10 @@ use std::ops::Sub;
 use std::slice::Iter;
 use cairo;
 
-/// A type of cairo context.
+/// A type of Cairo context.
 pub type CairoContext = cairo::Context;
 
-/// A type of cairo error.
+/// A type of Cairo error.
 pub type CairoError = cairo::Error;
 
 /// An integer type for a widget client.
