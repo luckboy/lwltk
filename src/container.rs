@@ -14,35 +14,83 @@ use crate::draw::*;
 use crate::types::*;
 use crate::widget::*;
 
+/// A direction enumeration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum Dir
 {
+    /// A previous.
     Prev,
+    /// A next.
     Next,
 }
 
+/// A container trait.
+///
+/// The container contains widgets. This trait allows to hava access to widgets of container.
 pub trait Container: Draw + CallOn
 {
+    /// Returns a pair of the indices of the previous widget for the pair of widget indices or
+    /// `None`.
+    ///
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn prev(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
     { None }
 
+    /// Returns a pair of the indices of the next widget for the pair of widget indices or
+    /// `None`.
+    ///
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn next(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
     { None }
     
+    /// Returns a reference to the dynamic widget for the pair of widget indices or `None`.
+    ///
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn dyn_widget_for_index_pair(&self, idx_pair: WidgetIndexPair) -> Option<&dyn Widget>
     { None }
 
+    /// Returns a mutable reference to the dynamic widget for the pair of widget indices or
+    /// `None`.
+    ///
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn dyn_widget_mut_for_index_pair(&mut self, idx_pair: WidgetIndexPair) -> Option<&mut dyn Widget>
     { None }
     
+    /// Returns a pair of the widget indices refers to a widget that is pointed the position or
+    /// `None`.
+    ///
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn point_for_index_pair(&self, pos: Pos<f64>) -> Option<WidgetIndexPair>
     { None }
 
+    /// Returns a reference to the dynamic widget for the relative widget path or `None`
+    ///
+    /// # Examples
+    /// ```
+    /// use lwltk::widgets::Button;
+    /// use lwltk::widgets::LinearLayout;
+    /// use lwltk::Container;
+    /// use lwltk::container_rel_widget_path1;
+    /// use lwltk::container_rel_widget_path;
+    /// use lwltk::dyn_widget_as_widget;
+    ///
+    /// let mut layout1 = LinearLayout::new();
+    /// let layout2 = LinearLayout::new();
+    /// let layout2_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(layout2)).unwrap();
+    /// let button1 = Button::new("test1");
+    /// let button1_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(button1)).unwrap();
+    /// let button2 = Button::new("test2");
+    /// let button2_path = container_rel_widget_path(&mut layout1, &layout2_path, |layout: &mut LinearLayout| layout.add(button2)).unwrap();
+    /// let widget1 = layout1.dyn_widget(&button1_path);
+    /// assert_eq!(Some(Some("test1")), widget1.map(|w| dyn_widget_as_widget::<Button>(w).map(|b| b.text())));
+    /// let widget2 = layout1.dyn_widget(&button2_path);
+    /// assert_eq!(Some(Some("test2")), widget2.map(|w| dyn_widget_as_widget::<Button>(w).map(|b| b.text())));
+    /// ```
     fn dyn_widget<'a>(&'a self, path: &RelWidgetPath) -> Option<&'a dyn Widget>
     {
         let mut idx_pair_iter = path.widget_index_pairs();
@@ -61,6 +109,29 @@ pub trait Container: Draw + CallOn
         }
     }
 
+    /// Returns a mutable reference to the dynamic widget for the relative widget path or `None`
+    ///
+    /// # Examples
+    /// ```
+    /// use lwltk::widgets::Button;
+    /// use lwltk::widgets::LinearLayout;
+    /// use lwltk::Container;
+    /// use lwltk::container_rel_widget_path1;
+    /// use lwltk::container_rel_widget_path;
+    /// use lwltk::dyn_widget_mut_as_widget_mut;
+    ///
+    /// let mut layout1 = LinearLayout::new();
+    /// let layout2 = LinearLayout::new();
+    /// let layout2_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(layout2)).unwrap();
+    /// let button1 = Button::new("test1");
+    /// let button1_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(button1)).unwrap();
+    /// let button2 = Button::new("test2");
+    /// let button2_path = container_rel_widget_path(&mut layout1, &layout2_path, |layout: &mut LinearLayout| layout.add(button2)).unwrap();
+    /// let widget1 = layout1.dyn_widget_mut(&button1_path);
+    /// assert_eq!(Some(Some("test1")), widget1.map(|w| dyn_widget_mut_as_widget_mut::<Button>(w).map(|b| b.text())));
+    /// let widget2 = layout1.dyn_widget_mut(&button2_path);
+    /// assert_eq!(Some(Some("test2")), widget2.map(|w| dyn_widget_mut_as_widget_mut::<Button>(w).map(|b| b.text())));
+    /// ```
     fn dyn_widget_mut<'a>(&'a mut self, path: &RelWidgetPath) -> Option<&'a mut dyn Widget>
     {
         let mut idx_pair_iter = path.widget_index_pairs();
@@ -79,6 +150,7 @@ pub trait Container: Draw + CallOn
         }
     }
     
+    /// Returns a relative widget path refers to a widget that is pointed the position or `None`.
     fn point(&self, pos: Pos<f64>) -> Option<RelWidgetPath>
     {
         match self.point_for_index_pair(pos) {
@@ -107,6 +179,8 @@ pub trait Container: Draw + CallOn
         }
     }
 
+    /// Returns a relative widget path refers to a focusable widget that is pointed the position
+    /// or `None`.
     fn point_focusable(&self, pos: Pos<f64>) -> Option<RelWidgetPath>
     {
         match self.point_for_index_pair(pos) {
@@ -146,6 +220,8 @@ pub trait Container: Draw + CallOn
         }
     }
     
+    /// Returns a pair of the indices of the previous or next widget for the pair of the widget
+    /// indices and the direction or `None`.
     fn prev_or_next(&self, idx_pair: Option<WidgetIndexPair>, dir: Dir) -> Option<WidgetIndexPair>
     {
         match dir {
@@ -153,7 +229,8 @@ pub trait Container: Draw + CallOn
             Dir::Next => self.next(idx_pair),
         }
     }
-    
+
+    /// Resets the states for the descendant widgets.
     fn reset_descendant_states(&mut self)
     {
         let mut prev_idx_pair = None;
@@ -174,6 +251,7 @@ pub trait Container: Draw + CallOn
         }
     }
 
+    /// Sets the reference-counting pointers to the change flag for the descendant widgets.
     fn set_descendant_change_flag_arcs(&mut self, flag_arc: Arc<AtomicBool>)
     {
         let mut prev_idx_pair = None;
@@ -195,6 +273,7 @@ pub trait Container: Draw + CallOn
     }
 }
 
+/// A reversed iterator that iterates over pairs of widget indices.
 #[derive(Clone)]
 pub struct RevWidgetIndexPairs<'a>
 {
@@ -204,6 +283,7 @@ pub struct RevWidgetIndexPairs<'a>
 
 impl<'a> RevWidgetIndexPairs<'a>
 {
+    /// Creates a reversed iterator that iterates over pairs of widget indices.
     pub fn new(container: &'a dyn Container) -> Self
     { RevWidgetIndexPairs { container, widget_index_pair: Some(None), } }
 }
@@ -232,6 +312,7 @@ impl<'a> Iterator for RevWidgetIndexPairs<'a>
     }
 }
 
+/// An iterator that iterates over pairs of widget indices.
 #[derive(Clone)]
 pub struct WidgetIndexPairs<'a>
 {
@@ -241,6 +322,7 @@ pub struct WidgetIndexPairs<'a>
 
 impl<'a> WidgetIndexPairs<'a>
 {
+    /// Creates an iterator that iterates over pairs of widget indices.
     pub fn new(container: &'a dyn Container) -> Self
     { WidgetIndexPairs { container, widget_index_pair: Some(None), } }
 }
@@ -269,6 +351,7 @@ impl<'a> Iterator for WidgetIndexPairs<'a>
     }
 }
 
+/// A reversed iterator that iterates over widgets.
 #[derive(Clone)]
 pub struct RevWidgets<'a>
 {
@@ -277,6 +360,7 @@ pub struct RevWidgets<'a>
 
 impl<'a> RevWidgets<'a>
 {
+    /// Creates a reversed iterator that iterates over widgets.
     pub fn new(container: &'a dyn Container) -> Self
     { RevWidgets { iter: RevWidgetIndexPairs::new(container), } }
 }
@@ -297,6 +381,7 @@ impl<'a> Iterator for RevWidgets<'a>
     }
 }
 
+/// An iterator that iterates over widgets.
 #[derive(Clone)]
 pub struct Widgets<'a>
 {
@@ -305,6 +390,7 @@ pub struct Widgets<'a>
 
 impl<'a> Widgets<'a>
 {
+    /// Creates an iterator that iterates over widgets.
     pub fn new(container: &'a dyn Container) -> Self
     { Widgets { iter: WidgetIndexPairs::new(container), } }
 }
@@ -325,12 +411,80 @@ impl<'a> Iterator for Widgets<'a>
     }
 }
 
+/// Returns a reference to the widget for the container and the relative widget path or `None`.
+///
+/// # Examples
+/// ```
+/// use lwltk::widgets::Button;
+/// use lwltk::widgets::LinearLayout;
+/// use lwltk::Container;
+/// use lwltk::container_rel_widget_path1;
+/// use lwltk::container_rel_widget_path;
+/// use lwltk::container_widget;
+///
+/// let mut layout1 = LinearLayout::new();
+/// let layout2 = LinearLayout::new();
+/// let layout2_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(layout2)).unwrap();
+/// let button1 = Button::new("test1");
+/// let button1_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(button1)).unwrap();
+/// let button2 = Button::new("test2");
+/// let button2_path = container_rel_widget_path(&mut layout1, &layout2_path, |layout: &mut LinearLayout| layout.add(button2)).unwrap();
+/// let widget1: Option<&Button> = container_widget(&layout1, &button1_path);
+/// assert_eq!(Some("test1"), widget1.map(|w| w.text()));
+/// let widget2: Option<&Button> = container_widget(&layout1, &button2_path);
+/// assert_eq!(Some("test2"), widget2.map(|w| w.text()));
+/// ```
 pub fn container_widget<'a, C: Container + ?Sized, T: Any>(container: &'a C, path: &RelWidgetPath) -> Option<&'a T>
 { container.dyn_widget(path).map(|wg| wg.as_any().downcast_ref::<T>()).flatten() }
 
+/// Returns a mutable reference to the widget for the container and the relative widget path or
+/// `None`.
+///
+/// # Examples
+/// ```
+/// use lwltk::widgets::Button;
+/// use lwltk::widgets::LinearLayout;
+/// use lwltk::Container;
+/// use lwltk::container_rel_widget_path1;
+/// use lwltk::container_rel_widget_path;
+/// use lwltk::container_widget_mut;
+///
+/// let mut layout1 = LinearLayout::new();
+/// let layout2 = LinearLayout::new();
+/// let layout2_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(layout2)).unwrap();
+/// let button1 = Button::new("test1");
+/// let button1_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(button1)).unwrap();
+/// let button2 = Button::new("test2");
+/// let button2_path = container_rel_widget_path(&mut layout1, &layout2_path, |layout: &mut LinearLayout| layout.add(button2)).unwrap();
+/// let widget1: Option<&mut Button> = container_widget_mut(&mut layout1, &button1_path);
+/// assert_eq!(Some("test1"), widget1.map(|w| w.text()));
+/// let widget2: Option<&mut Button> = container_widget_mut(&mut layout1, &button2_path);
+/// assert_eq!(Some("test2"), widget2.map(|w| w.text()));
+/// ```
 pub fn container_widget_mut<'a, C: Container + ?Sized, T: Any>(container: &'a mut C, path: &RelWidgetPath) -> Option<&'a mut T>
 { container.dyn_widget_mut(path).map(|wg| wg.as_any_mut().downcast_mut::<T>()).flatten() }
 
+/// Returns a relative widget path that contains a pair of widget indices from the closure for the
+/// container or `None`.
+///
+/// The closure can be used to add the widget to the container. The returned relative widget path
+/// refers to the content widget.
+///
+/// # Examples
+/// ```
+/// use lwltk::widgets::Button;
+/// use lwltk::widgets::LinearLayout;
+/// use lwltk::Container;
+/// use lwltk::RelWidgetPath;
+/// use lwltk::WidgetIndexPair;
+/// use lwltk::container_rel_widget_path1;
+///
+/// let mut layout = LinearLayout::new();
+/// let button = Button::new("test");
+/// let button_path = container_rel_widget_path1(&mut layout, |layout: &mut LinearLayout| layout.add(button)).unwrap();
+/// let expected_button_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+/// assert_eq!(expected_button_path, button_path);
+/// ```
 pub fn container_rel_widget_path1<'a, C: Container, F>(container: &'a mut C, f: F) -> Option<RelWidgetPath>
     where F: FnOnce(&mut C) -> Option<WidgetIndexPair>
 {
@@ -340,6 +494,31 @@ pub fn container_rel_widget_path1<'a, C: Container, F>(container: &'a mut C, f: 
     }
 }
 
+/// Returns a relative widget path that is joint the specified relative widget path with a pair
+/// of widget indices from the closure for the container or `None`.
+///
+/// The closure can be used to add the widget to the descendant container. The returned relative
+/// widget path refers to an added widget.
+////
+/// # Examples
+/// ```
+/// use lwltk::widgets::Button;
+/// use lwltk::widgets::LinearLayout;
+/// use lwltk::Container;
+/// use lwltk::RelWidgetPath;
+/// use lwltk::WidgetIndexPair;
+/// use lwltk::container_rel_widget_path1;
+/// use lwltk::container_rel_widget_path;
+///
+/// let mut layout1 = LinearLayout::new();
+/// let layout2 = LinearLayout::new();
+/// let layout2_path = container_rel_widget_path1(&mut layout1, |layout: &mut LinearLayout| layout.add(layout2)).unwrap();
+/// let button = Button::new("test");
+/// let button_path = container_rel_widget_path(&mut layout1, &layout2_path, |layout: &mut LinearLayout| layout.add(button)).unwrap();
+/// let mut expected_button_path = RelWidgetPath::new(WidgetIndexPair(0, 0));
+/// expected_button_path.push(WidgetIndexPair(0, 0));
+/// assert_eq!(expected_button_path, button_path);
+/// ```
 pub fn container_rel_widget_path<'a, C: Container + ?Sized, T: Any, F>(container: &'a mut C, path: &RelWidgetPath, f: F) -> Option<RelWidgetPath>
     where F: FnOnce(&mut T) -> Option<WidgetIndexPair>
 {

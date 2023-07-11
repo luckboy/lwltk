@@ -122,6 +122,7 @@ pub trait Widget: Container + PreferredSize
     ///
     /// This method defaultly the default corsor if the specified flag of the wait cursor is set,
     /// otherwise `false`. 
+    #[allow(unused_variables)]
     fn cursor(&self, pos: Pos<f64>, is_wait_cursor: bool) -> Cursor
     {
         if !is_wait_cursor {
