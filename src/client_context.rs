@@ -40,7 +40,6 @@ use wayland_client::EventQueue as WaylandEventQueue;
 use wayland_client::Filter;
 use wayland_client::GlobalManager;
 use wayland_client::Main;
-use wayland_client::event_enum;
 use wayland_cursor::CursorTheme;
 use wayland_cursor::Cursor as WaylandCursor;
 use xkbcommon::xkb;
@@ -1043,12 +1042,20 @@ fn destroy_map_client_windows(client_windows: &BTreeMap<WindowIndex, Box<ClientW
     Ok(())
 }
 
-event_enum!(
-    WaylandEvent |
-    Pointer => wl_pointer::WlPointer,
-    Keyboard => wl_keyboard::WlKeyboard,
-    Touch => wl_touch::WlTouch
-);
+mod priv_wayland
+{
+    use wayland_client::protocol::wl_keyboard;
+    use wayland_client::protocol::wl_pointer;
+    use wayland_client::protocol::wl_touch;
+    use wayland_client::event_enum;
+
+    event_enum!(
+        WaylandEvent |
+        Pointer => wl_pointer::WlPointer,
+        Keyboard => wl_keyboard::WlKeyboard,
+        Touch => wl_touch::WlTouch
+    );
+}
 
 enum ThreadTimerRepeat
 {
@@ -1087,7 +1094,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
         let mut client_context_r = client_context.borrow_mut();
         let filter = Filter::new(move |event, _, _| {
                 match event {
-                    WaylandEvent::Pointer { event, .. } => {
+                    priv_wayland::WaylandEvent::Pointer { event, .. } => {
                         match event {
                             wl_pointer::Event::Enter { serial, surface, surface_x, surface_y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1210,7 +1217,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             _ => (),
                         }
                     },
-                    WaylandEvent::Keyboard { event, .. } => {
+                    priv_wayland::WaylandEvent::Keyboard { event, .. } => {
                         match event {
                             wl_keyboard::Event::Keymap { format, fd, size, } => {
                                 let mut client_context_r = client_context2.borrow_mut();
@@ -1315,7 +1322,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             _ => (),
                         }
                     },
-                    WaylandEvent::Touch { event, .. } => {
+                    priv_wayland::WaylandEvent::Touch { event, .. } => {
                         match event {
                             wl_touch::Event::Down { serial, time, surface, id, x, y, } => {
                                 let client_context3 = client_context2.clone();
