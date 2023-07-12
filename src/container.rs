@@ -26,8 +26,8 @@ pub enum Dir
 
 /// A container trait.
 ///
-/// The container contains widgets. This trait allows to hava access to widgets of container. The
-/// widget or the window is the container.
+/// The container can contain widgets. This trait allows to hava access to widgets of container.
+/// The widget or the window is the container.
 pub trait Container: Draw + CallOn
 {
     /// Returns a pair of the indices of the previous widget for the pair of widget indices or
