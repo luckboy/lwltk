@@ -187,12 +187,18 @@ pub trait Window: Container + MinSize + PreferredSize
     fn unmaximize(&mut self) -> bool
     { self.set_maximized(false) }
 
+    /// Returns `true` if the window is moveable, otherwise `false`.
+    ///
+    /// This method defaultly returns `false`.
+    fn is_moveable(&self) -> bool
+    { false }
+
     /// Returns `true` if the window is resizeble, otherwise `false`.
     ///
     /// This method defaultly returns `false`.
     fn is_resizable(&self) -> bool
     { false }    
-    
+
     /// Sets the window index for the window.
     #[allow(unused_variables)]
     fn set_index(&mut self, idx: SelfWindowIndex)

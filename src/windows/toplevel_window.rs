@@ -324,6 +324,9 @@ impl Window for ToplevelWindow
         true
     }
     
+    fn is_moveable(&self) -> bool
+    { true }
+    
     fn is_resizable(&self) -> bool
     { !self.is_maximized && self.is_resizable }
 
