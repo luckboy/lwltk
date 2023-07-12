@@ -216,16 +216,16 @@ pub trait Window: Container + MinSize + PreferredSize
 
     /// Sets the parent with the position in the parent.
     ///
-    /// This method should return `Some(())` if the parent is set, otherwise `None`. This method
-    /// defaultly returns `None`.
+    /// This method should return `Some(())` if the parent is set, otherwise `None` for an error.
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn set_parent(&mut self, idx: ParentWindowIndex, pos: Pos<i32>) -> Option<()>
     { None }
 
     /// Unsets the parent window.
     ///
-    /// This method should return `Some(())` if the parent is unset, otherwise `None`. This method
-    /// defaultly returns `None`.
+    /// This method should return `Some(())` if the parent is unset, otherwise `None` for an error.
+    /// This method defaultly returns `None`.
     fn unset_parent(&mut self, _tag: ParentWindowTag) -> Option<()>
     { None }
 
@@ -237,24 +237,28 @@ pub trait Window: Container + MinSize + PreferredSize
     
     /// Adds a child to the window.
     ///
-    /// This method should return `Some(())` if the child is added, otherwise `None`. This method
-    /// defaultly returns `None`.
+    /// This method should return `Some(())` if the child is added, otherwise `None` for an error.
+    /// This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn add_child(&mut self, idx: ChildWindowIndex) -> Option<()>
     { None }
 
-    /// Removes a child to the window.
+    /// Removes the child to the window.
     ///
-    /// This method should return `Some(())` if the child is removed, otherwise `None`. This method
-    /// defaultly returns `None`.
+    /// This method should return `Some(())` if the child is removed, otherwise `None` for an
+    /// error. This method defaultly returns `None`.
     #[allow(unused_variables)]
     fn remove_child(&mut self, idx: ChildWindowIndex) -> Option<()>
     { None }
     
     /// Returns `true` if the window is changed, otherwise `false`.
+    ///
+    /// If the window is changed, the window is redrawn.
     fn is_changed(&self) -> bool;
     
     /// Clears the change flag of the window.
+    ///
+    /// This method is called after redraw the window.
     fn clear_change_flag(&mut self);
 
     /// Returns `true` if the window is moved, otherwise `false`.
@@ -310,8 +314,8 @@ pub trait Window: Container + MinSize + PreferredSize
     /// Sets only the focused relative widget path.
     ///
     /// This method should return `true` if the focused relative widget path is set, otherwise
-    /// `false`. This method doesn't check widgets and set the widget focuses. This method
-    /// defaultly returns `false`.
+    /// `false`. Also, this method doesn't check widgets and set the widget focuses. A default
+    /// result of this method is `false`. This method shouldn't be directly used by an application.
     #[allow(unused_variables)]
     fn set_only_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
     { false }    
@@ -355,7 +359,9 @@ pub trait Window: Container + MinSize + PreferredSize
     /// Sets the focused relative widget path.
     ///
     /// This method returns `true` if the focused relative widget path is set, otherwise `false`.
-    /// This method checks widgets and sets the widget focuses.
+    /// Also, this method checks widgets and sets the widget focuses. This method should be
+    /// directly used by an application instead the 
+    /// [`set_only_focused_rel_widget_path`](Self::set_only_focused_rel_widget_path) method.
     fn set_focused_rel_widget_path(&mut self, rel_widget_path: Option<RelWidgetPath>) -> bool
     {
         let saved_old_rel_widget_path = match self.focused_rel_widget_path().map(|rwp| rwp.clone()) {
