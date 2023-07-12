@@ -105,8 +105,8 @@ impl<'a> StackElem<'a>
 
 /// A window trait.
 ///
-/// The windows are for example toplevel windows and message windows. A content widget with
-/// descendant widgets can be in the window. The window is drawn with own widgets and reacts on
+/// The windows are for example toplevel windows and message windows. A widget of title bar and a
+/// content widget can be in the window. The window is drawn with descendant widgets and reacts on
 /// events if the window is visible.
 pub trait Window: Container + MinSize + PreferredSize
 {

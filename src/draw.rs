@@ -11,18 +11,20 @@ use crate::types::*;
 
 /// A drawing trait.
 ///
-/// The drawing trait allows to update position, update size, draw. The drawable object is a window
-/// or a widget.
+/// The drawing trait allows to update position, update size, and draw. The drawable object is a
+/// window or a widget.
 pub trait Draw: AsAny + Send + Sync
 {
     /// Updates the size of the drawable object.
     ///
-    /// Also, this method can update the margin size and the sizes of the descendant widgets. 
+    /// Also, this method can update the margin size and the sizes of the descendant widgets. The
+    /// size and the margin size can't be greater from the area size.
     fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>) -> Result<(), CairoError>;
     
     /// Updates the position of the drawable object.
     ///
     /// Also, this method can update the margin position and the positions of the descendant widgets.
+    /// The position and the margin position depend from the area bounds.
     fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>) -> Result<(), CairoError>;
 
     /// Draws the drawable object.

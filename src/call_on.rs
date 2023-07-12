@@ -17,7 +17,9 @@ pub trait CallOn: Send + Sync
 {
     /// Calls the handler for an event.
     ///
-    /// This method returns an event that will be called for the parent widget, `Some(None)` for no
-    /// event propagation, or `None` for an error.
+    /// This method returns an event for an event propagration, `Some(None)` for no the event
+    /// propagation, or `None` for an error. If the event is returned and the parent of the call-on
+    /// object exists, the event propagation occurs. In other words, the returned event is called for
+    /// the parent of the call-on object.
     fn call_on(&mut self, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event) -> Option<Option<Event>>;
 }

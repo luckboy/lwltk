@@ -15,9 +15,9 @@ use crate::types::*;
 
 /// A widget trait.
 ///
-/// The widgets are for example buttons, labels, and text fields. Descendant widgets can be in the
-/// widget if the widget is for example a linear layout. The widget draws with the descendant
-/// widgets on a window and reacts on events.
+/// The widgets are for example buttons, labels, and text fields. Child widgets can be in the widget
+/// if the widget is for example a linear layout. The widget draws with descendant widgets on a
+/// window and reacts on events.
 pub trait Widget: Container + PreferredSize
 {
     /// Returns the margin bounds of the widget.
