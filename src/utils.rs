@@ -257,6 +257,7 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                     let window = window_context.dyn_window_mut(current_window_idx)?;
                     match window.point_focusable(current_pos) {
                         Some(focusable_widget) => {
+                            window.update_focused_rel_widget_path();
                             window.set_focused_rel_widget_path(Some(focusable_widget));
                         },
                         None => (),
@@ -312,9 +313,9 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                     }
                     let current_pos = window_context.current_pos()?;
                     let window = window_context.dyn_window_mut(current_window_idx)?;
-                    window.set_focused_rel_widget_path(window.point_focusable(current_pos));
                     match window.point_focusable(current_pos) {
                         Some(focusable_widget) => {
+                            window.update_focused_rel_widget_path();
                             window.set_focused_rel_widget_path(Some(focusable_widget));
                         },
                         None => (),
@@ -427,6 +428,7 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
                     let window = window_context.dyn_window_mut(current_window_idx)?;
                     match window.point_focusable(current_pos) {
                         Some(focusable_widget) => {
+                            window.update_focused_rel_widget_path();
                             window.set_focused_rel_widget_path(Some(focusable_widget));
                         },
                         None => (),
@@ -962,18 +964,22 @@ pub fn default_window_on_for_key(window: &mut dyn Window, client_context: &mut C
             if *modifiers == KeyModifiers::EMPTY {
                 match *key {
                     VKey::Escape | VKey::PageUp => {
+                        window.update_focused_rel_widget_path();
                         window.up_focused_widget()?;
                         Some(Some(None))
                     },
                     VKey::PageDown => {
+                        window.update_focused_rel_widget_path();
                         window.down_focused_widget()?;
                         Some(Some(None))
                     },
                     VKey::Up | VKey::Left => {
+                        window.update_focused_rel_widget_path();
                         window.prev_focused_widget()?;
                         Some(Some(None))
                     },
                     VKey::Down | VKey::Right => {
+                        window.update_focused_rel_widget_path();
                         window.next_focused_widget()?;
                         Some(Some(None))
                     },
