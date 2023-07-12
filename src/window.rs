@@ -544,7 +544,8 @@ pub trait Window: Container + MinSize + PreferredSize
     
     /// Sets the previous focused widget.
     ///
-    /// This method returns `Some(())` if the previous focused widget is set, otherwise `None`.
+    /// This method returns `Some(())` if the previous focused widget is set, otherwise `None` for
+    /// an error.
     fn prev_focused_widget(&mut self) -> Option<()>
     {
         if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Dir::Prev, false)?) {
@@ -556,7 +557,8 @@ pub trait Window: Container + MinSize + PreferredSize
 
     /// Sets the next focused widget.
     ///
-    /// This method returns `Some(())` if the next focused widget is set, otherwise `None`.
+    /// This method returns `Some(())` if the next focused widget is set, otherwise `None` for an
+    /// error.
     fn next_focused_widget(&mut self) -> Option<()>
     {
         if self.set_focused_rel_widget_path(self.prev_or_next_focused_widget(Dir::Next, false)?) {
@@ -568,7 +570,8 @@ pub trait Window: Container + MinSize + PreferredSize
     
     /// Sets the up focused widget.
     ///
-    /// This method returns `Some(())` if the up focused widget is set, otherwise `None`.
+    /// This method returns `Some(())` if the up focused widget is set, otherwise `None` for an
+    /// error.
     fn up_focused_widget(&mut self) -> Option<()>
     {
         match self.focused_rel_widget_path() {
@@ -601,7 +604,8 @@ pub trait Window: Container + MinSize + PreferredSize
 
     /// Sets the down focused widget.
     ///
-    /// This method returns `Some(())` if the down focused widget is set, otherwise `None`.
+    /// This method returns `Some(())` if the down focused widget is set, otherwise `None` for an
+    /// error.
     fn down_focused_widget(&mut self) -> Option<()>
     {
         match self.prev_or_next_focused_widget(Dir::Next, true)? {

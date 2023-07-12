@@ -116,7 +116,7 @@ pub trait Widget: Container + PreferredSize
     /// Sets only the reference-counting pointer to the change flag.
     ///
     /// This method doesn't set the referernce-counting pointer to the change flag for descendant
-    /// widgets.
+    /// widgets. This method shouldn't be direclty used by an application. 
     fn set_only_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>);
     
     /// Returns the cursor of the widget.
@@ -184,7 +184,9 @@ pub trait Widget: Container + PreferredSize
     /// Sets the reference-counting pointer to the change flag.
     ///
     /// This method sets the referernce-counting pointer to the change flag for descendant widgets.
-    /// The change flag is used to checks whether the window should be redrawn. 
+    /// The change flag is used to checks whether the window should be redrawn. This method
+    /// shouldn't be direclty used by an application instead the
+    /// [`set_only_change_flag_arc`](Self::set_only_change_flag_arc) method.
     fn set_change_flag_arc(&mut self, flag_arc: Arc<AtomicBool>)
     {
         self.set_only_change_flag_arc(flag_arc.clone());
