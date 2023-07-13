@@ -12,13 +12,16 @@ use crate::types::*;
 /// A drawing trait.
 ///
 /// The drawing trait allows to update position, update size, and draw. The drawable object is a
-/// window or a widget.
+/// window or a widget. The following methods are called in order:
+/// - [`update_size`](Self::update_size)
+/// - [`update_pos`](Self::update_pos)
+/// - [`draw`](Self::draw)
 pub trait Draw: AsAny + Send + Sync
 {
     /// Updates the size of the drawable object.
     ///
     /// Also, this method can update the margin size and the sizes of the descendant widgets. The
-    /// size and the margin size can't be greater from the area size.
+    /// size and the margin size can't be greater than the area size for the widget.
     fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>) -> Result<(), CairoError>;
     
     /// Updates the position of the drawable object.
@@ -28,5 +31,7 @@ pub trait Draw: AsAny + Send + Sync
     fn update_pos(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_bounds: Rect<i32>) -> Result<(), CairoError>;
 
     /// Draws the drawable object.
+    ///
+    /// Also, this method can draw the descendant widgets.
     fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>;
 }
