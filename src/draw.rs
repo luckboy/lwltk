@@ -21,7 +21,7 @@ pub trait Draw: AsAny + Send + Sync
     /// Updates the size of the drawable object.
     ///
     /// Also, this method can update the margin size and the sizes of the descendant widgets. The
-    /// size and the margin size can't be greater than the area size for the widget.
+    /// size and the margin size can't exceed the area size for the widget.
     fn update_size(&mut self, cairo_context: &CairoContext, theme: &dyn Theme, area_size: Size<Option<i32>>) -> Result<(), CairoError>;
     
     /// Updates the position of the drawable object.
