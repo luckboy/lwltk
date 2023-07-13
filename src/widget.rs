@@ -121,8 +121,8 @@ pub trait Widget: Container + PreferredSize
     
     /// Returns the cursor of the widget.
     ///
-    /// This method defaultly the default corsor if the specified flag of the wait cursor is set,
-    /// otherwise `false`. 
+    /// This method defaultly returns the default corsor if the specified flag of the wait cursor is
+    /// `false`, otherwise the wait cursor.
     #[allow(unused_variables)]
     fn cursor(&self, pos: Pos<f64>, is_wait_cursor: bool) -> Cursor
     {
