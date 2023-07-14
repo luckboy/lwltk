@@ -162,7 +162,8 @@ pub(crate) struct ClientContextFields
 
 /// A structure of client context.
 ///
-/// The client context allows to have indirect access to Wayland functions and system functions.
+/// The structure of client context allows to have indirect access to Wayland functions and system
+/// functions.
 pub struct ClientContext
 {
     pub(crate) fields: ClientContextFields,
