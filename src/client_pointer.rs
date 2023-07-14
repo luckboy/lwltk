@@ -177,7 +177,7 @@ pub(crate) fn prepare_event_for_client_post_button_release(client_context: &mut 
             Some(Event::Client(ClientEvent::PostButtonRelease))
         },
         None => {
-            eprintln!("lwltk: {}", ClientError::NoPostButtonReleaseOnCallPath);
+            eprintln!("lwltk: {}", ClientError::NoPostButtonReleaseCallOnPath);
             None
         },
     }

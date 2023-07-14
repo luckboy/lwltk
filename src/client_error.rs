@@ -14,44 +14,80 @@ use wayland_client::GlobalError;
 use crate::events::*;
 use crate::types::*;
 
+/// An enumaration of client error.
 #[derive(Debug)]
 pub enum ClientError
 {
+    /// A mutex error.
     Mutex,
+    /// An error of reader-writer lock.
     RwLock,
+    /// An error of channel receiving.
     Recv,
+    /// An error of channel sending.
     Send,
+    /// An error of thread joining.
     ThreadJoin,
+    /// An input/ouput error.
     Io(Error),
+    /// A Cairo error.
     Cairo(CairoError),
+    /// A Wayland connection error.
     Connect(ConnectError),
+    /// A Wayland global error.
     Global(GlobalError),
+    /// A Nix error.
     Nix(Errno),
+    /// A cursor error.
     Cursor,
+    /// An error of no XDG_RUNTIME_DIR variable.
     NoXdgRuntimeDir,
+    /// An error of invalid theme name.
     InvalidThemeName,
+    /// An error of invalid theme.
     InvalidTheme,
+    /// A data error.
     Data,
+    /// An event error.
     Event(Event),
+    /// A callback error.
     Callback,
+    /// An error of no Wayland serial
     NoSerial,
+    /// An error of window cycle.
     WindowCycle,
+    /// An error of no window.
     NoWindow,
+    /// An error of no client window.
     NoClientWindow,
+    /// An error of no widget.
     NoWidget,
+    /// An error of event preparation.
     EventPreparation,
+    /// An error of different windows.
     DifferentWindows,
+    /// An error of invalid Wayland button.
     InvalidButton,
+    /// An error of invalid Wayland state.
     InvalidState,
+    /// An error of invalid Wayland axis.
     InvalidAxis,
+    /// An error of unsupported XKB keymap format.
     UnsupportedXkbKeymapFormat,
+    /// An error of no XKB keymap.
     NoXkbKeymap,
+    /// An error of no XKB state.
     NoXkbState,
+    /// An error of no keyboard window index.
     NoKeyboardWindowIndex,
+    /// An error of no current call-on path.
     NoCurrentCallOnPath,
+    /// An error of no pair of widget indices.
     NoWidgetIndexPair,
+    /// An error of no cursor.
     NoCursor,
-    NoPostButtonReleaseOnCallPath,
+    /// An error of no call-on path of post button release.
+    NoPostButtonReleaseCallOnPath,
 }
 
 impl error::Error for ClientError
@@ -96,7 +132,7 @@ impl fmt::Display for ClientError
             ClientError::NoCurrentCallOnPath => write!(f, "no current call on path"),
             ClientError::NoWidgetIndexPair => write!(f, "no widget index pair"),
             ClientError::NoCursor => write!(f, "no cursor"),
-            ClientError::NoPostButtonReleaseOnCallPath => write!(f, "no post-button release on call path"),
+            ClientError::NoPostButtonReleaseCallOnPath => write!(f, "no post-button release call on path"),
         }
     }
 }

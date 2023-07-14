@@ -160,6 +160,9 @@ pub(crate) struct ClientContextFields
     pub(crate) has_sent_post_button_release_call_on_path: bool,
 }
 
+/// A structure of client context.
+///
+/// The client context allows to have indirect access to Wayland functions and system functions.
 pub struct ClientContext
 {
     pub(crate) fields: ClientContextFields,
@@ -758,15 +761,19 @@ impl ClientContext
         self.client_windows.clear();
     }
     
+    /// Returns the delay of long click in milliseconds.
     pub fn long_click_delay(&self) -> u64
     { self.fields.long_click_delay }
     
+    /// Returns `true` if the exit flag is `true`, otherwise `false`
     pub fn has_exit(&self) -> bool
     { self.fields.has_exit }
 
+    /// Sets the exit flag.
     pub fn set_exit(&mut self, is_exit: bool)
     { self.fields.has_exit = is_exit; }
 
+    /// Quits from an application.
     pub fn exit(&mut self)
     { self.fields.has_exit = true; }
     
@@ -891,12 +898,15 @@ impl ClientContext
         }
     }
     
+    /// Returns the key modifiers which are pressed.
     pub fn key_modifiers(&self) -> KeyModifiers
     { self.fields.key_modifiers }
     
+    /// Returns the cursor.
     pub fn cursor(&self) -> Cursor
     { self.fields.cursor }
 
+    /// Sets the cursor.
     pub fn set_cursor(&mut self, cursor: Cursor)
     { self.fields.cursor = cursor; }
 
@@ -948,6 +958,7 @@ impl ClientContext
         }
     }
     
+    /// Returns the call-on path of post button release.
     pub fn post_button_release_call_on_path(&self) -> Option<&CallOnPath>
     {
         match &self.fields.post_button_release_call_on_path {
@@ -956,18 +967,22 @@ impl ClientContext
         }
     }
 
+    /// Sets the call-on path of post button release.
     pub fn set_post_button_release_call_on_path(&mut self, call_on_path: Option<CallOnPath>)
     {
         self.fields.post_button_release_call_on_path = call_on_path;
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
 
+    /// Returns the position of post button release.
     pub fn post_button_release_pos(&self) -> Option<Pos<f64>>
     { self.fields.post_button_release_pos }
 
+    /// Sets the position of post button release.
     pub fn set_post_button_release_pos(&mut self, pos: Option<Pos<f64>>)
     { self.fields.post_button_release_pos = pos; }
     
+    /// Sends the call-on path of post button release and the position of post button release.
     pub fn send_after_button_release(&mut self, call_on_path: CallOnPath, pos: Pos<f64>)
     {
         self.fields.post_button_release_call_on_path = Some(call_on_path);
@@ -975,6 +990,8 @@ impl ClientContext
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
 
+    /// Undoes send the call-on path of post button release and the position of post button
+    /// release.
     pub fn unsend_after_button_release(&mut self)
     {
         self.fields.post_button_release_call_on_path = None;
