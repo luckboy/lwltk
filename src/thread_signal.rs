@@ -29,6 +29,11 @@ pub(crate) enum ThreadSignal
     Other,
 }
 
+/// A structure of sender of thread signal.
+///
+/// The sender of thread signal allows to send thread signals to a graphic thread. A main loop
+/// receives this signals and reacts on these signals. The thread signals for other threads are
+/// communication method with the graphic thread. These signals are implemented by a pipe.
 #[derive(Copy, Clone, Debug)]
 pub struct ThreadSignalSender(RawFd);
 
@@ -49,6 +54,10 @@ impl ThreadSignalSender
         }
     }
 
+    /// Sends the committing thread signal to the graphic thread.
+    ///
+    /// This thread signal confims committed change of windows, pushed events, and pushed callbacks
+    /// for the graphic thread.
     pub fn commit(&self) -> Result<(), ClientError>
     {
         let mut buf: [u8; 1] = [4];
