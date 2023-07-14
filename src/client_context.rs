@@ -959,7 +959,12 @@ impl ClientContext
         }
     }
     
-    /// Returns the call-on path of post button release.
+    /// Returns the call-on path of the post button release.
+    ///
+    /// The post button release is an event that is called double click delay after the button
+    /// release. The call-on path of the post button release refers to a widget or a window that is
+    /// released by the pointer. The position of the post button release is pointed by the pointer
+    /// when the widget or the window is released by the pointer.
     pub fn post_button_release_call_on_path(&self) -> Option<&CallOnPath>
     {
         match &self.fields.post_button_release_call_on_path {
@@ -968,22 +973,35 @@ impl ClientContext
         }
     }
 
-    /// Sets the call-on path of post button release.
+    /// Sets the call-on path of the post button release.
+    ///
+    /// See [`post_button_release_call_on_path`](Self::post_button_release_call_on_path) for more
+    /// informations.
     pub fn set_post_button_release_call_on_path(&mut self, call_on_path: Option<CallOnPath>)
     {
         self.fields.post_button_release_call_on_path = call_on_path;
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
 
-    /// Returns the position of post button release.
+    /// Returns the position of the post button release.
+    ///
+    /// See [`post_button_release_call_on_path`](Self::post_button_release_call_on_path) for more
+    /// informations.
     pub fn post_button_release_pos(&self) -> Option<Pos<f64>>
     { self.fields.post_button_release_pos }
 
-    /// Sets the position of post button release.
+    /// Sets the position of the post button release.
+    ///
+    /// See [`post_button_release_call_on_path`](Self::post_button_release_call_on_path) for more
+    /// informations.
     pub fn set_post_button_release_pos(&mut self, pos: Option<Pos<f64>>)
     { self.fields.post_button_release_pos = pos; }
     
-    /// Sends the call-on path of post button release and the position of post button release.
+    /// Sends the call-on path of the post button release and the position of the post button
+    /// release.
+    ///
+    /// See [`post_button_release_call_on_path`](Self::post_button_release_call_on_path) for more
+    /// informations.
     pub fn send_after_button_release(&mut self, call_on_path: CallOnPath, pos: Pos<f64>)
     {
         self.fields.post_button_release_call_on_path = Some(call_on_path);
@@ -993,6 +1011,9 @@ impl ClientContext
 
     /// Undoes send the call-on path of post button release and the position of post button
     /// release.
+    ///
+    /// See [`post_button_release_call_on_path`](Self::post_button_release_call_on_path) for more
+    /// informations.
     pub fn unsend_after_button_release(&mut self)
     {
         self.fields.post_button_release_call_on_path = None;
