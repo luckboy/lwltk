@@ -310,10 +310,15 @@ pub trait Window: Container + MinSize + PreferredSize
     
     /// Returns the pair of widget indices of the content if the window has the content, otherwise
     /// `None`.
+    ///
+    /// This method defaultly returns `None`.
     fn content_index_pair(&self) -> Option<WidgetIndexPair>
     { None }
 
-    /// Returns the focused relative widget path if the window has focused widget, otherwise `None`.
+    /// Returns a reference to the focused relative widget path if the window has the focused
+    /// widget, otherwise `None`.
+    ///
+    /// This method defaultly returns `None`.
     fn focused_rel_widget_path(&self) -> Option<&RelWidgetPath>
     { None }
 

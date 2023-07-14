@@ -959,7 +959,7 @@ impl ClientContext
         }
     }
     
-    /// Returns the call-on path of the post button release.
+    /// Returns a reference to the call-on path of the post button release or `None`.
     ///
     /// The post button release is an event that is called double click delay after the button
     /// release. The call-on path of the post button release refers to a widget or a window that is
@@ -983,7 +983,7 @@ impl ClientContext
         self.fields.has_sent_post_button_release_call_on_path = false;
     }
 
-    /// Returns the position of the post button release.
+    /// Returns the position of the post button release or `None`.
     ///
     /// See [`post_button_release_call_on_path`](Self::post_button_release_call_on_path) for more
     /// informations.

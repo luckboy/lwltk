@@ -155,20 +155,21 @@ impl QueueContext
     pub fn current_descendant_index_pairs(&self) -> QueueContextIter<'_>
     { QueueContextIter::new(self.current_descendant_index_pairs.as_slice()) }
     
-    /// Returns the motion call-on path for the specified call-on identifier or `None`.
+    /// Returns a reference to the motion call-on path for the specified call-on identifier or
+    /// `None`.
     ///
     /// The motion call-on path refers to the widget or the window that is pointed by the pointer or
     /// the touch.
     pub fn motion_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.motion_call_on_paths.get(&call_on_id) }
 
-    /// Sets a call-on path for the specified call-on identifier.
+    /// Sets the call-on path for the specified call-on identifier.
     ///
     /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn set_motion_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.motion_call_on_paths.insert(call_on_id, call_on_path); }
 
-    /// Unsets a call-on path for the specified call-on identifier.
+    /// Unsets the call-on path for the specified call-on identifier.
     ///
     /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
@@ -185,7 +186,7 @@ impl QueueContext
         }
     }
  
-    /// Sets a motion resize edges for the specified call-on identifier.
+    /// Sets the motion resize edges for the specified call-on identifier.
     ///
     /// See [`motion_resize_edges`](Self::motion_resize_edges) for more informations.
     pub fn set_motion_resize_edges(&mut self, call_on_id: CallOnId, edges: ClientResize)
@@ -197,21 +198,21 @@ impl QueueContext
     pub fn unset_motion_resize_edges(&mut self, call_on_id: CallOnId)
     { self.motion_resize_edge_map.remove(&call_on_id); }
     
-    /// Returns the call-on path of the pressed button for the specified call-on identifier or
-    /// `None`.
+    /// Returns a reference to the call-on path of the pressed button for the specified call-on
+    /// identifier or `None`.
     ///
     /// The call-on path of the pressed button refers to the widget or the window that is pressed by
     /// the pointer or touched.
     pub fn pressed_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.pressed_call_on_paths.get(&call_on_id) }
 
-    /// Sets a call-on path of the pressed button for the specified call-on identifier.
+    /// Sets the call-on path of the pressed button for the specified call-on identifier.
     ///
     /// See [`pressed_call_on_path`](Self::pressed_call_on_path) for more informations.
     pub fn set_pressed_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.pressed_call_on_paths.insert(call_on_id, call_on_path); }
 
-    /// Sets the call-on path of the pressed button for the specified call-on identifier.
+    /// Unsets the call-on path of the pressed button for the specified call-on identifier.
     ///
     /// See [`pressed_call_on_path`](Self::pressed_call_on_path) for more informations.
     pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
@@ -225,13 +226,13 @@ impl QueueContext
     pub fn pressed_instant(&self, call_on_id: CallOnId) -> Option<&Instant>
     { self.pressed_instants.get(&call_on_id) }
 
-    /// Sets a clock measurement of the pressed button for the specified call-on identifier.
+    /// Sets the clock measurement of the pressed button for the specified call-on identifier.
     ///
     /// See [`pressed_instant`](Self::pressed_instant) for more informations.
     pub fn set_pressed_instant(&mut self, call_on_id: CallOnId, instant: Instant)
     { self.pressed_instants.insert(call_on_id, instant); }
 
-    /// Unsets a clock measurement of the pressed button for the specified call-on identifier.
+    /// Unsets the clock measurement of the pressed button for the specified call-on identifier.
     ///
     /// See [`pressed_instant`](Self::pressed_instant) for more informations.
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
