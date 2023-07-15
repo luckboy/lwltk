@@ -1070,22 +1070,28 @@ impl ClientContext
         }
         self.fields.has_sent_post_button_release_call_on_path = true;
     }
-    
+
+    /// Returns `true` if the stop of the button timer is `true`, otherwise `false`.
     pub fn has_button_timer_stop(&self) -> bool
     { self.fields.has_button_timer_stop }
 
+    /// Sets the stop of the button timer.
     pub fn set_button_timer_stop(&mut self, is_stop: bool)
     { self.fields.has_button_timer_stop = is_stop; }
 
+    /// Stops the button timer.
     pub fn stop_button_timer(&mut self)
     { self.fields.has_button_timer_stop = true; }
 
+    /// Returns `true` if the stop of the touch timer is `true`, otherwise `false`.
     pub fn has_touch_timer_stop(&self) -> bool
     { self.fields.has_touch_timer_stop }
     
+    /// Sets the stop of the touch timer.
     pub fn set_touch_timer_stop(&mut self, is_stop: bool)
     { self.fields.has_touch_timer_stop = is_stop; }
     
+    /// Stops the touch timer.
     pub fn stop_touch_timer(&mut self)
     { self.fields.has_touch_timer_stop = true; }
     
