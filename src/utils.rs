@@ -751,6 +751,8 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
             match queue_context.motion_resize_edges(CallOnId::Pointer) {
                 Some(resize_edges) => {
                     if window.is_resizable() {
+                        client_context.stop_button_timer();
+                        queue_context.set_motion_resize_edges(CallOnId::Pointer, resize_edges);
                         window.resize(resize_edges);
                     }
                 },
@@ -891,6 +893,7 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
             let resize_edges = client_resize_for_pos(*pos, window.size(), window.edges(), window.corners());
             match resize_edges {
                 Some(resize_edges) => {
+                    client_context.stop_touch_timer();
                     queue_context.set_motion_resize_edges(CallOnId::Touch(*id), resize_edges);
                     window.resize(resize_edges);
                 },

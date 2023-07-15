@@ -203,63 +203,65 @@ impl ClientWindow
     
     pub(crate) fn assign(&self, client_context2: Rc<RefCell<ClientContext>>, window_context2: Arc<RwLock<WindowContext>>, queue_context2: Arc<Mutex<QueueContext>>, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
-         let timer_tx2 = timer_tx.clone();
-         self.shell_surface.quick_assign(move |shell_surface, event, _| {
-                 match  event {
-                     wl_shell_surface::Event::Ping { serial, } => {
-                         let mut client_context_r = client_context2.borrow_mut();
-                         client_context_r.fields.serial = Some(serial);
-                         shell_surface.pong(serial);
-                     },
-                     wl_shell_surface::Event::Configure { edges, width, height, } => {
-                         let client_context_fields3 = client_context2.clone();
-                         let window_context3 = window_context2.clone();
-                         let queue_context3 = queue_context2.clone();
-                         let mut client_context_r = client_context2.borrow_mut();
-                         match window_context2.write() {
-                             Ok(mut window_context_g) => {
-                                 match queue_context2.lock() {
-                                     Ok(mut queue_context_g) => {
-                                         match prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface, edges, width, height) {
-                                             Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
-                                             None => (),
-                                         }
-                                     },
-                                     Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
-                                 }
-                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3, &timer_tx2);
-                             },
-                             Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
-                         }
-                         client_context_r.update_cursor_surface(&timer_tx2);
-                         client_context_r.send_post_button_release(&timer_tx2);
-                     },
-                     wl_shell_surface::Event::PopupDone => {
-                         let client_context_fields3 = client_context2.clone();
-                         let window_context3 = window_context2.clone();
-                         let queue_context3 = queue_context2.clone();
-                         let mut client_context_r = client_context2.borrow_mut();
-                         match window_context2.write() {
-                             Ok(mut window_context_g) => {
-                                 match queue_context2.lock() {
-                                     Ok(mut queue_context_g) => {
-                                         match prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface) {
-                                             Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
-                                             None => (),
-                                         }
-                                     },
-                                     Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
-                                 }
-                                 client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3, &timer_tx2);
-                             },
-                             Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
-                         }
-                         client_context_r.update_cursor_surface(&timer_tx2);
-                         client_context_r.send_post_button_release(&timer_tx2);
-                     },
-                     _ => (),
-                 }
-         });
+        let timer_tx2 = timer_tx.clone();
+        self.shell_surface.quick_assign(move |shell_surface, event, _| {
+                match  event {
+                    wl_shell_surface::Event::Ping { serial, } => {
+                        let mut client_context_r = client_context2.borrow_mut();
+                        client_context_r.fields.serial = Some(serial);
+                        shell_surface.pong(serial);
+                    },
+                    wl_shell_surface::Event::Configure { edges, width, height, } => {
+                        let client_context_fields3 = client_context2.clone();
+                        let window_context3 = window_context2.clone();
+                        let queue_context3 = queue_context2.clone();
+                        let mut client_context_r = client_context2.borrow_mut();
+                        match window_context2.write() {
+                            Ok(mut window_context_g) => {
+                                match queue_context2.lock() {
+                                    Ok(mut queue_context_g) => {
+                                        match prepare_event_for_client_shell_surface_configure(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface, edges, width, height) {
+                                            Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            None => (),
+                                        }
+                                    },
+                                    Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                }
+                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3, &timer_tx2);
+                            },
+                            Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                        }
+                        client_context_r.update_cursor_surface(&timer_tx2);
+                        client_context_r.send_post_button_release(&timer_tx2);
+                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                    },
+                    wl_shell_surface::Event::PopupDone => {
+                        let client_context_fields3 = client_context2.clone();
+                        let window_context3 = window_context2.clone();
+                        let queue_context3 = queue_context2.clone();
+                        let mut client_context_r = client_context2.borrow_mut();
+                        match window_context2.write() {
+                            Ok(mut window_context_g) => {
+                                match queue_context2.lock() {
+                                    Ok(mut queue_context_g) => {
+                                        match prepare_event_for_client_shell_surface_popup_done(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &shell_surface) {
+                                            Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            None => (),
+                                        }
+                                    },
+                                    Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                }
+                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context_fields3, window_context3, queue_context3, &timer_tx2);
+                            },
+                            Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                        }
+                        client_context_r.update_cursor_surface(&timer_tx2);
+                        client_context_r.send_post_button_release(&timer_tx2);
+                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                    },
+                    _ => (),
+                }
+        });
     }
     
     fn set_move(&self, client_context_fields: &ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
