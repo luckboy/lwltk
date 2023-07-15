@@ -367,8 +367,15 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
             if widget.is_clickable_by_key() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
                     let current_call_on_path = queue_context.current_call_on_path()?.clone();
-                    if queue_context.add_active_id(&current_call_on_path, ActiveId::Keyboard) {
-                        widget.set_state(WidgetState::Active);
+                    if keys.iter().any(|k| *k == VKey::Return) {
+                        if queue_context.add_active_id(&current_call_on_path, ActiveId::ReturnKey) {
+                            widget.set_state(WidgetState::Active);
+                        }
+                    }
+                    if keys.iter().any(|k| *k == VKey::Space) {
+                        if queue_context.add_active_id(&current_call_on_path, ActiveId::SpaceKey) {
+                            widget.set_state(WidgetState::Active);
+                        }
                     }
                 }
             }
@@ -378,11 +385,22 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
             if widget.is_clickable_by_key() {
                 if keys.iter().any(|k| *k == VKey::Return || *k == VKey::Space) {
                     let current_call_on_path = queue_context.current_call_on_path()?.clone();
-                    if queue_context.remove_active_id(&current_call_on_path, ActiveId::Keyboard) {
-                        if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
-                            widget.set_state(WidgetState::Hover);
-                        } else {
-                            widget.set_state(WidgetState::None);
+                    if keys.iter().any(|k| *k == VKey::Return) {
+                        if queue_context.remove_active_id(&current_call_on_path, ActiveId::ReturnKey) {
+                            if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
+                                widget.set_state(WidgetState::Hover);
+                            } else {
+                                widget.set_state(WidgetState::None);
+                            }
+                        }
+                    }
+                    if keys.iter().any(|k| *k == VKey::Space) {
+                        if queue_context.remove_active_id(&current_call_on_path, ActiveId::SpaceKey) {
+                            if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
+                                widget.set_state(WidgetState::Hover);
+                            } else {
+                                widget.set_state(WidgetState::None);
+                            }
                         }
                     }
                     if widget.is_enabled() {

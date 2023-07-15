@@ -32,15 +32,17 @@ pub enum CallOnId
 
 /// An enumeration of active identifier.
 ///
-/// The active identifier identifies a call-on identifier or a keyboard. This identifier is used to
-/// set an active widget state.
+/// The active identifier identifies a call-on identifier, a return key, or a space key. This 
+/// identifier is used to set an active widget state.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum ActiveId
 {
     /// A call-on identifier.
     CallOnId(CallOnId),
-    /// A keyboard.
-    Keyboard,
+    /// A return key.
+    ReturnKey,
+    /// A sapce key.
+    SpaceKey,
 }
 
 /// An iterator of queue context that iterates over pairs of widget indices.
