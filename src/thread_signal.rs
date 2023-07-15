@@ -17,7 +17,9 @@ use crate::client_error::*;
 pub(crate) enum ThreadTimer
 {
     Cursor,
+    Button,
     Key,
+    Touch,
     TextCursor,
     PostButtonRelease,
 }
@@ -44,9 +46,11 @@ impl ThreadSignalSender
         let mut buf: [u8; 1] = [0];
         match timer {
             ThreadTimer::Cursor => buf[0] = 0,
-            ThreadTimer::Key => buf[0] = 1,
-            ThreadTimer::TextCursor => buf[0] = 2,
-            ThreadTimer::PostButtonRelease => buf[0] = 3,
+            ThreadTimer::Button => buf[0] = 1,
+            ThreadTimer::Key => buf[0] = 2,
+            ThreadTimer::Touch => buf[0] = 3,
+            ThreadTimer::TextCursor => buf[0] = 4,
+            ThreadTimer::PostButtonRelease => buf[0] = 5,
         }
         match write(self.0, &buf) {
             Ok(_) => Ok(()),
@@ -90,10 +94,14 @@ impl ThreadSignalReceiver
                 if buf[0] == 0 {
                     Ok(Some(ThreadSignal::Timer(ThreadTimer::Cursor)))
                 } else if buf[0] == 1 {
-                    Ok(Some(ThreadSignal::Timer(ThreadTimer::Key)))
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::Button)))
                 } else if buf[0] == 2 {
-                    Ok(Some(ThreadSignal::Timer(ThreadTimer::TextCursor)))
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::Key)))
                 } else if buf[0] == 3 {
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::Touch)))
+                } else if buf[0] == 4 {
+                    Ok(Some(ThreadSignal::Timer(ThreadTimer::TextCursor)))
+                } else if buf[0] == 5 {
                     Ok(Some(ThreadSignal::Timer(ThreadTimer::PostButtonRelease)))
                 } else {
                     Ok(Some(ThreadSignal::Other))

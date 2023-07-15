@@ -60,6 +60,8 @@ use crate::types::*;
 use crate::window_context::*;
 
 const DEFAULT_SCALE: i32 = 1;
+const DEFAULT_CLICK_REPEAT_DELAY: u64 = 500;
+const DEFAULT_CLICK_REPEAT_TIME: u64 = 60;
 const DEFAULT_KEY_REPEAT_DELAY: u64 = 500;
 const DEFAULT_KEY_REPEAT_TIME: u64 = 30;
 const DEFAULT_TEXT_CURSOR_BLINK_TIME: u64 = 1200;
@@ -138,6 +140,8 @@ pub(crate) struct ClientContextFields
     pub(crate) xkb_logo_mask: xkb::ModMask,
     pub(crate) xdg_runtime_dir: String,
     pub(crate) scale: i32,
+    pub(crate) click_repeat_delay: u64,
+    pub(crate) click_repeat_time: u64,
     pub(crate) key_repeat_delay: u64,
     pub(crate) key_repeat_time: u64,
     pub(crate) text_cursor_blink_time: u64,
@@ -151,6 +155,7 @@ pub(crate) struct ClientContextFields
     pub(crate) key_modifiers: KeyModifiers,
     pub(crate) keys: HashMap<xkb::Keysym, VKey>,
     pub(crate) modifier_keys: HashSet<VKey>,
+    pub(crate) touch_ids: BTreeSet<i32>,
     pub(crate) has_cursor: bool,
     pub(crate) cursor: Cursor,
     pub(crate) has_old_cursor: bool,
@@ -252,10 +257,34 @@ impl ClientContext
             },
             Err(_) => DEFAULT_SCALE,
         };
+        let click_repeat_delay = match env::var("LWLTK_CLICK_REPEAT_DELAY") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_click_repeat_delay) => tmp_click_repeat_delay,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of click repeat delay");
+                        DEFAULT_CLICK_REPEAT_DELAY
+                    },
+                }
+            },
+            Err(_) => DEFAULT_CLICK_REPEAT_DELAY,
+        };
+        let click_repeat_time = match env::var("LWLTK_CLICK_REPEAT_TIME") {
+            Ok(s) => {
+                match s.parse::<u64>() {
+                    Ok(tmp_click_repeat_time) => tmp_click_repeat_time,
+                    Err(_) => {
+                        eprintln!("lwltk: warning: invalid value of click repeat time");
+                        DEFAULT_CLICK_REPEAT_TIME
+                    },
+                }
+            },
+            Err(_) => DEFAULT_CLICK_REPEAT_TIME,
+        };
         let key_repeat_delay = match env::var("LWLTK_KEY_REPEAT_DELAY") {
             Ok(s) => {
                 match s.parse::<u64>() {
-                    Ok(tmp_repeated_key_delay) => tmp_repeated_key_delay,
+                    Ok(tmp_key_repeat_delay) => tmp_key_repeat_delay,
                     Err(_) => {
                         eprintln!("lwltk: warning: invalid value of key repeat delay");
                         DEFAULT_KEY_REPEAT_DELAY
@@ -267,7 +296,7 @@ impl ClientContext
         let key_repeat_time = match env::var("LWLTK_KEY_REPEAT_TIME") {
             Ok(s) => {
                 match s.parse::<u64>() {
-                    Ok(tmp_repeated_key_time) => tmp_repeated_key_time,
+                    Ok(tmp_key_repeat_time) => tmp_key_repeat_time,
                     Err(_) => {
                         eprintln!("lwltk: warning: invalid value of key repeat time");
                         DEFAULT_KEY_REPEAT_TIME
@@ -336,6 +365,8 @@ impl ClientContext
                 xkb_logo_mask: 0 as xkb::ModMask,
                 xdg_runtime_dir,
                 scale,
+                click_repeat_delay,
+                click_repeat_time,
                 key_repeat_delay,
                 key_repeat_time,
                 text_cursor_blink_time,
@@ -349,6 +380,7 @@ impl ClientContext
                 key_modifiers: KeyModifiers::EMPTY,
                 keys: HashMap::new(),
                 modifier_keys: HashSet::new(),
+                touch_ids: BTreeSet::new(),
                 has_cursor: false,
                 cursor: Cursor::Default,
                 has_old_cursor: false,
@@ -1128,7 +1160,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
     let window_context4 = window_context.clone();
     let queue_context4 = queue_context.clone();
     let (timer_tx, timer_rx) = mpsc::channel::<ThreadTimerCommand>();
-    let (key_repeat_delay, key_repeat_time, text_cursor_blink_time) = {
+    let (click_repeat_delay, click_repeat_time, key_repeat_delay, key_repeat_time, text_cursor_blink_time) = {
         let timer_tx2 = timer_tx.clone();
         let mut client_context_r = client_context.borrow_mut();
         let filter = Filter::new(move |event, _, _| {
@@ -1216,7 +1248,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                match prepare_event_for_client_pointer_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, button, state) {
+                                                match prepare_event_for_client_pointer_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, button, state, &timer_tx2) {
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
@@ -1373,7 +1405,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                match prepare_event_for_client_touch_down(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, &surface, id, x, y) {
+                                                match prepare_event_for_client_touch_down(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, &surface, id, x, y, &timer_tx2) {
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
@@ -1397,7 +1429,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Ok(mut window_context_g) => {
                                         match queue_context2.lock() {
                                             Ok(mut queue_context_g) => {
-                                                match prepare_event_for_client_touch_up(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, id) {
+                                                match prepare_event_for_client_touch_up(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, time, id, &timer_tx2) {
                                                     Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                     None => (),
                                                 }
@@ -1469,7 +1501,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
             },
             Err(_) => return Err(ClientError::RwLock),
         }
-        (client_context_r.fields.key_repeat_delay, client_context_r.fields.key_repeat_time, client_context_r.fields.text_cursor_blink_time)
+        (client_context_r.fields.click_repeat_delay, client_context_r.fields.click_repeat_time, client_context_r.fields.key_repeat_delay, client_context_r.fields.key_repeat_time, client_context_r.fields.text_cursor_blink_time)
     };
     let timer_thread = thread::spawn(move || {
             let mut timer_data_vec = vec![
@@ -1479,9 +1511,19 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     repeat: ThreadTimerRepeat::None,
                 },
                 ThreadTimerData {
+                    timer: ThreadTimer::Button,
+                    delay: None,
+                    repeat: ThreadTimerRepeat::TwoDelays(Duration::from_millis(click_repeat_delay), Duration::from_millis(click_repeat_time)),
+                },
+                ThreadTimerData {
                     timer: ThreadTimer::Key,
                     delay: None,
                     repeat: ThreadTimerRepeat::TwoDelays(Duration::from_millis(key_repeat_delay), Duration::from_millis(key_repeat_time)),
+                },
+                ThreadTimerData {
+                    timer: ThreadTimer::Touch,
+                    delay: None,
+                    repeat: ThreadTimerRepeat::TwoDelays(Duration::from_millis(click_repeat_delay), Duration::from_millis(click_repeat_time)),
                 },
                 ThreadTimerData {
                     timer: ThreadTimer::TextCursor,
@@ -1637,14 +1679,18 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
             Some(revents) => {
                 if !revents.is_empty() {
                     let mut is_cursor_timer = false;
+                    let mut is_button_timer = false;
                     let mut is_key_timer = false;
+                    let mut is_touch_timer = false;
                     let mut is_text_cursor_timer = false;
                     let mut is_post_button_release_timer = false;
                     let mut is_other = false;
                     loop {
                         match thread_signal_receiver.recv() {
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::Cursor))) => is_cursor_timer = true,
+                            Ok(Some(ThreadSignal::Timer(ThreadTimer::Button))) => is_button_timer = true,
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::Key))) => is_key_timer = true,
+                            Ok(Some(ThreadSignal::Timer(ThreadTimer::Touch))) => is_touch_timer = true,
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::TextCursor))) => is_text_cursor_timer = true,
                             Ok(Some(ThreadSignal::Timer(ThreadTimer::PostButtonRelease))) => is_post_button_release_timer = true,
                             Ok(Some(ThreadSignal::Other)) => is_other = true,
@@ -1680,6 +1726,29 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         let mut client_context_r = client_context.borrow_mut();
                         client_context_r.update_cursor_surface_for_timer(&timer_tx);
                     }
+                    if is_button_timer {
+                        let mut client_context_r = client_context.borrow_mut();
+                        let client_context2 = client_context.clone();
+                        let window_context2 = window_context.clone();
+                        let queue_context2 = queue_context.clone();
+                        match window_context.write() {
+                            Ok(mut window_context_g) => {
+                                match queue_context.lock() {
+                                    Ok(mut queue_context_g) => {
+                                        match prepare_event_for_client_repeated_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g) {
+                                            Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                            None => (),
+                                        }
+                                    },
+                                    Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                }
+                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
+                            },
+                            Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                        }
+                        client_context_r.update_cursor_surface(&timer_tx);
+                        client_context_r.send_post_button_release(&timer_tx);
+                    }
                     if is_key_timer {
                         let mut client_context_r = client_context.borrow_mut();
                         let key_codes: Vec<u32> = client_context_r.fields.key_codes.iter().map(|kc| *kc).collect();
@@ -1692,6 +1761,32 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     match queue_context.lock() {
                                         Ok(mut queue_context_g) => {
                                             match prepare_event_for_client_repeated_key(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, *key_code) {
+                                                Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                None => (),
+                                            }
+                                        },
+                                        Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                    }
+                                    client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
+                                },
+                                Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                            }
+                        }
+                        client_context_r.update_cursor_surface(&timer_tx);
+                        client_context_r.send_post_button_release(&timer_tx);
+                    }
+                    if is_touch_timer {
+                        let mut client_context_r = client_context.borrow_mut();
+                        let ids: Vec<i32> = client_context_r.fields.touch_ids.iter().map(|id| *id).collect();
+                        for id in &ids {
+                            let client_context2 = client_context.clone();
+                            let window_context2 = window_context.clone();
+                            let queue_context2 = queue_context.clone();
+                            match window_context.write() {
+                                Ok(mut window_context_g) => {
+                                    match queue_context.lock() {
+                                        Ok(mut queue_context_g) => {
+                                            match prepare_event_for_client_repeated_touch(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, *id) {
                                                 Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
                                                 None => (),
                                             }

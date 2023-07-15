@@ -5,12 +5,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+use std::sync::mpsc;
 use wayland_client::protocol::wl_pointer;
 use wayland_client::protocol::wl_surface;
 use crate::client_context::*;
 use crate::client_error::*;
 use crate::events::*;
 use crate::queue_context::*;
+use crate::thread_signal::*;
 use crate::types::*;
 use crate::window_context::*;
 
@@ -89,7 +91,7 @@ pub(crate) fn prepare_event_for_client_pointer_motion(client_context: &mut Clien
     }
 }
 
-pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, time: u32, button: u32, state: wl_pointer::ButtonState) -> Option<Event>
+pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext, time: u32, button: u32, state: wl_pointer::ButtonState, timer_tx: &mpsc::Sender<ThreadTimerCommand>) -> Option<Event>
 {
     let client_button = if button == BTN_LEFT {
         Some(ClientButton::Left)
@@ -111,6 +113,21 @@ pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut Clien
                 Some(client_state) => {
                     match client_context.update_event_preparation(window_context, CallOnId::Pointer) {
                         Some((call_on_path, pos)) => {
+                            match (client_button, client_state) {
+                                (ClientButton::Left, ClientState::Pressed) => {
+                                    match timer_tx.send(ThreadTimerCommand::Start(ThreadTimer::Button)) {
+                                        Ok(()) => (),
+                                        Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+                                    }
+                                },
+                                (ClientButton::Left, ClientState::Released) => {
+                                    match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Button)) {
+                                        Ok(()) => (),
+                                        Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+                                    }
+                                },
+                                _ => (),
+                            }
                             window_context.current_window_index = Some(call_on_path.window_index());
                             window_context.current_pos = Some(pos);
                             queue_context.current_call_on_path = Some(call_on_path);
@@ -159,6 +176,22 @@ pub(crate) fn prepare_event_for_client_pointer_axis(client_context: &mut ClientC
         },
         None => {
             eprintln!("lwltk: {}", ClientError::InvalidAxis);
+            None
+        },
+    }
+}
+
+pub(crate) fn prepare_event_for_client_repeated_button(client_context: &mut ClientContext, window_context: &mut WindowContext, queue_context: &mut QueueContext) -> Option<Event>
+{
+    match client_context.update_event_preparation(window_context, CallOnId::Pointer) {
+        Some((call_on_path, pos)) => {
+            window_context.current_window_index = Some(call_on_path.window_index());
+            window_context.current_pos = Some(pos);
+            queue_context.current_call_on_path = Some(call_on_path);
+            Some(Event::Client(ClientEvent::RepeatedButton))
+        },
+        None => {
+            eprintln!("lwltk: {}", ClientError::EventPreparation);
             None
         },
     }

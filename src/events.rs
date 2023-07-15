@@ -55,7 +55,9 @@ pub enum ClientEvent
     TouchDown(u32, i32, Pos<f64>),
     TouchUp(u32, i32),
     TouchMotion(u32, i32, Pos<f64>),
+    RepeatedButton,
     RepeatedKey(Vec<VKey>, String),
+    RepeatedTouch(i32),
     PostButtonRelease,
 }
 
