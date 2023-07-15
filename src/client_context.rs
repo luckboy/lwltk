@@ -1071,11 +1071,11 @@ impl ClientContext
         self.fields.has_sent_post_button_release_call_on_path = true;
     }
 
-    /// Returns `true` if the stop of the button timer is `true`, otherwise `false`.
+    /// Returns `true` if the stop flag of the button timer is `true`, otherwise `false`.
     pub fn has_button_timer_stop(&self) -> bool
     { self.fields.has_button_timer_stop }
 
-    /// Sets the stop of the button timer.
+    /// Sets the stop flag of the button timer.
     pub fn set_button_timer_stop(&mut self, is_stop: bool)
     { self.fields.has_button_timer_stop = is_stop; }
 
@@ -1083,17 +1083,25 @@ impl ClientContext
     pub fn stop_button_timer(&mut self)
     { self.fields.has_button_timer_stop = true; }
 
-    /// Returns the touch identifier for the touch timer stop or `None`.
+    /// Unstops the button timer.
+    pub fn unstop_button_timer(&mut self)
+    { self.fields.has_button_timer_stop = false; }
+
+    /// Returns the touch identifier for the stop of the touch timer or `None`.
     pub fn touch_id_for_touch_timer_stop(&self) -> Option<i32>
     { self.fields.touch_id_for_touch_timer_stop }
     
-    /// Sets the stop of the touch timer.
+    /// Sets the touch identifier for the stop of the touch timer.
     pub fn set_touch_id_for_touch_timer_stop(&mut self, id: Option<i32>)
     { self.fields.touch_id_for_touch_timer_stop = id; }
     
-    /// Stops the touch timer for there is the only one touch with the touch identifier.
+    /// Stops the touch timer if there is the only one touch with the touch identifier.
     pub fn stop_touch_timer(&mut self, id: i32)
     { self.fields.touch_id_for_touch_timer_stop = Some(id); }
+    
+    /// Unstops the touch timer if there is the only one touch with the touch identifier.
+    pub fn unstop_touch_timer(&mut self)
+    { self.fields.touch_id_for_touch_timer_stop = None; }
     
     pub(crate) fn send_stop_for_button_timer_and_touch_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
