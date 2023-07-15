@@ -422,15 +422,15 @@ pub trait Window: Container + MinSize + PreferredSize
     /// Updates the focused relative widget path.
     ///
     /// This method returns `true` if the focused relative widget path is updated, otherwise
-    /// `false`. If the focused relative widget path refers a non-existent widget, this method
-    /// unsets the focused relative widget path.
+    /// `false`. If the focused relative widget path refers a non-existent widget or the
+    /// unfocusable widget, this method unsets the focused relative widget path.
     fn update_focused_rel_widget_path(&mut self) -> bool
     {
-        let is_widget = match self.focused_rel_widget_path() {
-            Some(rel_widget_path) => self.dyn_widget(rel_widget_path).is_some(),
+        let is_focusable_widget = match self.focused_rel_widget_path() {
+            Some(rel_widget_path) => self.dyn_widget(rel_widget_path).map(|w| w.is_focusable()).unwrap_or(false),
             None => true,
         };
-        if !is_widget {
+        if !is_focusable_widget {
             self.set_only_focused_rel_widget_path(None)
         } else {
             true
