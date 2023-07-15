@@ -164,7 +164,7 @@ pub(crate) struct ClientContextFields
     pub(crate) post_button_release_pos: Option<Pos<f64>>,
     pub(crate) has_sent_post_button_release_call_on_path: bool,
     pub(crate) has_button_timer_stop: bool,
-    pub(crate) has_touch_timer_stop: bool,
+    pub(crate) touch_id_for_touch_timer_stop: Option<i32>,
 }
 
 /// A structure of client context.
@@ -391,7 +391,7 @@ impl ClientContext
                 post_button_release_pos: None,
                 has_sent_post_button_release_call_on_path: false,
                 has_button_timer_stop: false,
-                has_touch_timer_stop: false,
+                touch_id_for_touch_timer_stop: None,
             },
             client_windows: BTreeMap::new(),
             client_windows_to_destroy: VecDeque::new(),
@@ -1083,17 +1083,17 @@ impl ClientContext
     pub fn stop_button_timer(&mut self)
     { self.fields.has_button_timer_stop = true; }
 
-    /// Returns `true` if the stop of the touch timer is `true`, otherwise `false`.
-    pub fn has_touch_timer_stop(&self) -> bool
-    { self.fields.has_touch_timer_stop }
+    /// Returns the touch identifier for the touch timer stop or `None`.
+    pub fn touch_id_for_touch_timer_stop(&self) -> Option<i32>
+    { self.fields.touch_id_for_touch_timer_stop }
     
     /// Sets the stop of the touch timer.
-    pub fn set_touch_timer_stop(&mut self, is_stop: bool)
-    { self.fields.has_touch_timer_stop = is_stop; }
+    pub fn set_touch_id_for_touch_timer_stop(&mut self, id: Option<i32>)
+    { self.fields.touch_id_for_touch_timer_stop = id; }
     
-    /// Stops the touch timer.
-    pub fn stop_touch_timer(&mut self)
-    { self.fields.has_touch_timer_stop = true; }
+    /// Stops the touch timer for there is the only one touch with the touch identifier.
+    pub fn stop_touch_timer(&mut self, id: i32)
+    { self.fields.touch_id_for_touch_timer_stop = Some(id); }
     
     pub(crate) fn send_stop_for_button_timer_and_touch_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
@@ -1104,13 +1104,19 @@ impl ClientContext
             }
         }
         self.fields.has_button_timer_stop = false;
-        if self.fields.has_touch_timer_stop {
-            match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Touch)) {
-                Ok(()) => (),
-                Err(_) => eprintln!("lwltk: {}", ClientError::Send),
-            }
+        match self.fields.touch_id_for_touch_timer_stop {
+            Some(id) => {
+                self.fields.touch_ids.remove(&id);
+                if self.fields.touch_ids.is_empty() {
+                    match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Touch)) {
+                        Ok(()) => (),
+                        Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+                    }
+                }
+            },
+            None => (),
         }
-        self.fields.has_touch_timer_stop = false;
+        self.fields.touch_id_for_touch_timer_stop = None;
     }
 }
 
