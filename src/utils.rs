@@ -379,6 +379,14 @@ pub fn default_widget_on_for_client_keyboard(widget: &mut dyn Widget, client_con
                     }
                 }
             }
+            queue_context.push_callback(move |_, window_context, _| {
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
+                    Some(())
+            });
             Some(Some(None))
         },
         Event::Client(ClientEvent::KeyboardKey(_, keys, _, ClientState::Released)) => {
@@ -851,6 +859,14 @@ pub fn default_window_on_for_client_keyboard(window: &mut dyn Window, client_con
             for c in s.chars() {
                 queue_context.push_event(Event::Char(c))?;
             }
+            queue_context.push_callback(move |_, window_context, _| {
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
+                    Some(())
+            });
             Some(Some(None))
         },
         Event::Client(ClientEvent::KeyboardKey(_, keys, _, ClientState::Released)) => Some(Some(None)),
