@@ -1597,7 +1597,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                 },
                 ThreadTimerData {
                     timer: ThreadTimer::TextCursor,
-                    delay: None,
+                    delay: Some(Duration::from_millis(text_cursor_blink_time)),
                     repeat: ThreadTimerRepeat::OneDelay(Duration::from_millis(text_cursor_blink_time)),
                 },
                 ThreadTimerData {
@@ -1606,7 +1606,6 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     repeat: ThreadTimerRepeat::None,
                 }
             ];
-            timer_data_vec[2].delay = Some(Duration::from_millis(text_cursor_blink_time));
             loop {
                 let mut delay: Option<Duration> = None;
                 for timer_data in &timer_data_vec {
