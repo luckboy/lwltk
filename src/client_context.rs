@@ -1103,7 +1103,7 @@ impl ClientContext
     pub fn unstop_touch_timer(&mut self)
     { self.fields.touch_id_for_touch_timer_stop = None; }
     
-    pub(crate) fn send_stop_for_button_timer_and_touch_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
+    pub(crate) fn stop_button_timer_and_touch_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
         if self.fields.has_button_timer_stop {
             match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Button)) {
@@ -1250,7 +1250,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_pointer::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -1275,7 +1275,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_pointer::Event::Motion { time, surface_x, surface_y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1299,7 +1299,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_pointer::Event::Button { serial, time, button, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -1323,7 +1323,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                     Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
                             },
                             wl_pointer::Event::Axis { time, axis, value, } => {
@@ -1348,7 +1348,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1382,7 +1382,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_keyboard::Event::Leave { serial, surface, } => {
                                 let client_context3 = client_context2.clone();
@@ -1407,7 +1407,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_keyboard::Event::Key { serial, time, key, state, } => {
                                 let client_context3 = client_context2.clone();
@@ -1432,7 +1432,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_keyboard::Event::Modifiers { serial, mods_depressed, mods_latched, mods_locked, group, } => {
                                 let client_context3 = client_context2.clone();
@@ -1457,7 +1457,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1487,7 +1487,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_touch::Event::Up { serial, time, id,  } => {
                                 let client_context3 = client_context2.clone();
@@ -1512,7 +1512,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             wl_touch::Event::Motion { time, id, x, y, } => {
                                 let client_context3 = client_context2.clone();
@@ -1536,7 +1536,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                                 }
                                 client_context_r.update_cursor_surface(&timer_tx2);
                                 client_context_r.send_post_button_release(&timer_tx2);
-                                client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx2);
+                                client_context_r.stop_button_timer_and_touch_timer(&timer_tx2);
                             },
                             _ => (),
                         }
@@ -1820,7 +1820,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.send_post_button_release(&timer_tx);
-                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx);
+                        client_context_r.stop_button_timer_and_touch_timer(&timer_tx);
                     }
                     if is_key_timer {
                         let mut client_context_r = client_context.borrow_mut();
@@ -1847,7 +1847,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.send_post_button_release(&timer_tx);
-                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx);
+                        client_context_r.stop_button_timer_and_touch_timer(&timer_tx);
                     }
                     if is_touch_timer {
                         let mut client_context_r = client_context.borrow_mut();
@@ -1874,7 +1874,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.send_post_button_release(&timer_tx);
-                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx);
+                        client_context_r.stop_button_timer_and_touch_timer(&timer_tx);
                     }
                     if is_text_cursor_timer {
                         //eprintln!("text cursor timer");
@@ -1901,7 +1901,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.send_post_button_release(&timer_tx);
-                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx);
+                        client_context_r.stop_button_timer_and_touch_timer(&timer_tx);
                     }
                     if is_other {
                         let client_context2 = client_context.clone();
@@ -1920,7 +1920,7 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.send_post_button_release(&timer_tx);
-                        client_context_r.send_stop_for_button_timer_and_touch_timer(&timer_tx);
+                        client_context_r.stop_button_timer_and_touch_timer(&timer_tx);
                     }
                 }
             },
