@@ -752,7 +752,6 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
                 Some(resize_edges) => {
                     if window.is_resizable() {
                         client_context.stop_button_timer();
-                        queue_context.set_motion_resize_edges(CallOnId::Pointer, resize_edges);
                         window.resize(resize_edges);
                     }
                 },
