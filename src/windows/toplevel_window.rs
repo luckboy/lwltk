@@ -97,7 +97,7 @@ impl ToplevelWindow
         title.set_on(move |client_context, queue_context, event| {
                 match event {
                      Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) => client_context.stop_button_timer(),
-                     Event::Client(ClientEvent::TouchDown(_, id, _)) => client_context.stop_touch_timer(*id),
+                     Event::Client(ClientEvent::TouchDown(_, _, _)) => client_context.stop_touch_timer(),
                      _ => (),
                 }
                 match event {

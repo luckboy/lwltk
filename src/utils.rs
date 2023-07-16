@@ -893,7 +893,7 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
             let resize_edges = client_resize_for_pos(*pos, window.size(), window.edges(), window.corners());
             match resize_edges {
                 Some(resize_edges) => {
-                    client_context.stop_touch_timer(*id);
+                    client_context.stop_touch_timer();
                     queue_context.set_motion_resize_edges(CallOnId::Touch(*id), resize_edges);
                     window.resize(resize_edges);
                 },

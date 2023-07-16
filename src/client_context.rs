@@ -150,6 +150,7 @@ pub(crate) struct ClientContextFields
     pub(crate) start_time: Instant,
     pub(crate) has_exit: bool,
     pub(crate) event_preparations: BTreeMap<CallOnId, EventPreparation>,
+    pub(crate) has_pressed_button: bool,
     pub(crate) keyboard_window_index: Option<WindowIndex>,
     pub(crate) key_codes: BTreeSet<u32>,
     pub(crate) key_modifiers: KeyModifiers,
@@ -164,7 +165,7 @@ pub(crate) struct ClientContextFields
     pub(crate) post_button_release_pos: Option<Pos<f64>>,
     pub(crate) has_sent_post_button_release_call_on_path: bool,
     pub(crate) has_button_timer_stop: bool,
-    pub(crate) touch_id_for_touch_timer_stop: Option<i32>,
+    pub(crate) has_touch_timer_stop: bool,
 }
 
 /// A structure of client context.
@@ -377,6 +378,7 @@ impl ClientContext
                 start_time: Instant::now(),
                 has_exit: false,
                 event_preparations: BTreeMap::new(),
+                has_pressed_button: false,
                 keyboard_window_index: None,
                 key_codes: BTreeSet::new(),
                 key_modifiers: KeyModifiers::EMPTY,
@@ -391,7 +393,7 @@ impl ClientContext
                 post_button_release_pos: None,
                 has_sent_post_button_release_call_on_path: false,
                 has_button_timer_stop: false,
-                touch_id_for_touch_timer_stop: None,
+                has_touch_timer_stop: false,
             },
             client_windows: BTreeMap::new(),
             client_windows_to_destroy: VecDeque::new(),
@@ -1087,44 +1089,40 @@ impl ClientContext
     pub fn unstop_button_timer(&mut self)
     { self.fields.has_button_timer_stop = false; }
 
-    /// Returns the touch identifier for the stop of the touch timer or `None`.
-    pub fn touch_id_for_touch_timer_stop(&self) -> Option<i32>
-    { self.fields.touch_id_for_touch_timer_stop }
-    
-    /// Sets the touch identifier for the stop of the touch timer.
-    pub fn set_touch_id_for_touch_timer_stop(&mut self, id: Option<i32>)
-    { self.fields.touch_id_for_touch_timer_stop = id; }
-    
-    /// Stops the touch timer if there is the only one touch with the touch identifier.
-    pub fn stop_touch_timer(&mut self, id: i32)
-    { self.fields.touch_id_for_touch_timer_stop = Some(id); }
-    
-    /// Unstops the touch timer if there is the only one touch with the touch identifier.
+    /// Returns `true` if the stop flag of the touch timer is `true`, otherwise `false`.
+    pub fn has_touch_timer_stop(&self) -> bool
+    { self.fields.has_button_timer_stop }
+
+    /// Sets the stop flag of the touch timer.
+    pub fn set_touch_timer_stop(&mut self, is_stop: bool)
+    { self.fields.has_touch_timer_stop = is_stop; }
+
+    /// Stops the touch timer.
+    pub fn stop_touch_timer(&mut self)
+    { self.fields.has_touch_timer_stop = true; }
+
+    /// Unstops the touch timer.
     pub fn unstop_touch_timer(&mut self)
-    { self.fields.touch_id_for_touch_timer_stop = None; }
+    { self.fields.has_touch_timer_stop = false; }
     
     pub(crate) fn stop_button_timer_and_touch_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
         if self.fields.has_button_timer_stop {
+            self.fields.has_pressed_button = false;
             match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Button)) {
                 Ok(()) => (),
                 Err(_) => eprintln!("lwltk: {}", ClientError::Send),
             }
         }
-        self.fields.has_button_timer_stop = false;
-        match self.fields.touch_id_for_touch_timer_stop {
-            Some(id) => {
-                self.fields.touch_ids.remove(&id);
-                if self.fields.touch_ids.is_empty() {
-                    match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Touch)) {
-                        Ok(()) => (),
-                        Err(_) => eprintln!("lwltk: {}", ClientError::Send),
-                    }
-                }
-            },
-            None => (),
+        self.fields.has_touch_timer_stop = false;
+        if self.fields.has_touch_timer_stop {
+            self.fields.touch_ids.clear();
+            match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Touch)) {
+                Ok(()) => (),
+                Err(_) => eprintln!("lwltk: {}", ClientError::Send),
+            }
         }
-        self.fields.touch_id_for_touch_timer_stop = None;
+        self.fields.has_touch_timer_stop = false;
     }
 }
 
@@ -1800,23 +1798,25 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     }
                     if is_button_timer {
                         let mut client_context_r = client_context.borrow_mut();
-                        let client_context2 = client_context.clone();
-                        let window_context2 = window_context.clone();
-                        let queue_context2 = queue_context.clone();
-                        match window_context.write() {
-                            Ok(mut window_context_g) => {
-                                match queue_context.lock() {
-                                    Ok(mut queue_context_g) => {
-                                        match prepare_event_for_client_repeated_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g) {
-                                            Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
-                                            None => (),
-                                        }
-                                    },
-                                    Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
-                                }
-                                client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
-                            },
-                            Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                        if client_context_r.fields.has_pressed_button {
+                            let client_context2 = client_context.clone();
+                            let window_context2 = window_context.clone();
+                            let queue_context2 = queue_context.clone();
+                            match window_context.write() {
+                                Ok(mut window_context_g) => {
+                                    match queue_context.lock() {
+                                        Ok(mut queue_context_g) => {
+                                            match prepare_event_for_client_repeated_button(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g) {
+                                                Some(event) => handle_event(&mut client_context_r, &mut *window_context_g, &mut *queue_context_g, &event),
+                                                None => (),
+                                            }
+                                        },
+                                        Err(_) => eprintln!("lwltk: {}", ClientError::Mutex),
+                                    }
+                                    client_context_r.add_to_destroy_and_create_or_update_client_windows(&mut *window_context_g, client_context2, window_context2, queue_context2, &timer_tx);
+                                },
+                                Err(_) => eprintln!("lwltk: {}", ClientError::RwLock),
+                            }
                         }
                         client_context_r.update_cursor_surface(&timer_tx);
                         client_context_r.send_post_button_release(&timer_tx);

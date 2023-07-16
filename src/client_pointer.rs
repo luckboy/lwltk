@@ -119,8 +119,10 @@ pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut Clien
                                         Ok(()) => (),
                                         Err(_) => eprintln!("lwltk: {}", ClientError::Send),
                                     }
+                                    client_context.fields.has_pressed_button = true;
                                 },
                                 (ClientButton::Left, ClientState::Released) => {
+                                    client_context.fields.has_pressed_button = false;
                                     match timer_tx.send(ThreadTimerCommand::Stop(ThreadTimer::Button)) {
                                         Ok(()) => (),
                                         Err(_) => eprintln!("lwltk: {}", ClientError::Send),
