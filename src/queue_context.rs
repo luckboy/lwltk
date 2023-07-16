@@ -165,13 +165,13 @@ impl QueueContext
     pub fn motion_call_on_path(&self, call_on_id: CallOnId) -> Option<&CallOnPath>
     { self.motion_call_on_paths.get(&call_on_id) }
 
-    /// Sets the call-on path for the specified call-on identifier.
+    /// Sets the motion call-on path for the specified call-on identifier.
     ///
     /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn set_motion_call_on_path(&mut self, call_on_id: CallOnId, call_on_path: CallOnPath)
     { self.motion_call_on_paths.insert(call_on_id, call_on_path); }
 
-    /// Unsets the call-on path for the specified call-on identifier.
+    /// Unsets the motion call-on path for the specified call-on identifier.
     ///
     /// See [`motion_call_on_path`](Self::motion_call_on_path) for more informations.
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
@@ -179,7 +179,7 @@ impl QueueContext
 
     /// Returns the motion resize edges for the call-on identifier or `None`.
     ///
-    /// The motion resize edges is used to resize a window.
+    /// The motion resize edges are used to resize a window.
     pub fn motion_resize_edges(&self, call_on_id: CallOnId) -> Option<ClientResize>
     {
         match self.motion_resize_edge_map.get(&call_on_id) {
