@@ -9,9 +9,10 @@
 //!
 //! The module of events contains enumerations of events and related enumerations to events. This
 //! module has two event enumerations. The first event enumeration has events which are pushed to
-//! an event queue. The second event enumeration has events which directly called in a Wayland event
-//! or a system event. The first event enumeration is an event enumeration and has a variant that
-//! has a client event. The second event enumeration is an enumeration of client event.
+//! an event queue expect one variant. The second event enumeration has events which directly called
+//! in a Wayland event or a system event. The first event enumeration is an [`Event`] enumeration
+//! and has a variant that has a client event. The second event enumeration is a [`ClientEvent`]
+//! enumeration.
 use crate::keys::*;
 use crate::types::*;
 
@@ -147,7 +148,7 @@ pub enum Event
 ///
 /// The client events are directly prepared from Wayland events and system events which are called.
 /// The client event is called when the Wayland event or the system event is called. Other events
-/// are pushed to an event queue in the client events.
+/// are pushed to an event queue in a default event handler or a callback.
 #[derive(Clone, Debug)]
 pub enum ClientEvent
 {
@@ -234,7 +235,7 @@ pub enum ClientEvent
     RepeatedKey(Vec<VKey>, String),
     /// An event of repeated touch.
     ///
-    /// The field is touch identifier.
+    /// The field is a touch identifier.
     RepeatedTouch(i32),
     /// An event of post button release.
     PostButtonRelease,
