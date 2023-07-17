@@ -7,12 +7,11 @@
 //
 //! A module of events.
 //!
-//! The module of events contains enumerations of events and related enumerations to events. This
-//! module has two event enumerations. The first event enumeration has events which are pushed to
-//! an event queue expect one variant. The second event enumeration has events which directly called
-//! in a Wayland event or a system event. The first event enumeration is an [`Event`] enumeration
-//! and has a variant that has a client event. The second event enumeration is a [`ClientEvent`]
-//! enumeration.
+//! The module of events contains two event enumerations and related enumerations to events. The
+//! first event enumeration has events which are pushed to an event queue expect one variant. The
+//! second event enumeration has events which directly called in a Wayland event or a system event.
+//! The first event enumeration is an [`Event`] enumeration and has a variant that has a client
+//! event. The second event enumeration is a [`ClientEvent`] enumeration.
 use crate::keys::*;
 use crate::types::*;
 
@@ -66,13 +65,13 @@ pub enum Event
     ComboSelection(usize),
     /// An event of text change.
     ///
-    /// The event of text change is called when an user changed the text.
+    /// The event of text change is called when an user changes the text.
     TextChange,
     /// An event of text selection
     ///
     /// The event text selection is called when an user selects the text. The following fields are:
-    /// - a text start
-    /// - a text end
+    /// - an index of text start
+    /// - an index of text end
     TextSelection(usize, usize),
     /// An event of selection of list item.
     ///
