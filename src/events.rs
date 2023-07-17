@@ -65,8 +65,10 @@ pub enum Event
     ComboSelection(usize),
     /// An event of text change.
     ///
-    /// The event of text change is called when an user changes the text.
-    TextChange,
+    /// The event of text change is called when an user changes the text. The following fields are:
+    /// - an index of text start
+    /// - an index of text end
+    TextChange(usize, usize),
     /// An event of text selection
     ///
     /// The event text selection is called when an user selects the text. The following fields are:
