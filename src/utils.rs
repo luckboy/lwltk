@@ -1221,6 +1221,18 @@ pub fn inner_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
 }
 
 /// Returns an optional size of an inner rectangle for the optional size, the egdes.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::inner_opt_size;
+/// use lwltk::Edges;
+/// use lwltk::Size;
+///
+/// let size1 = inner_opt_size(Size::new(Some(8), None), Edges::new(1, 1, 2, 2));
+/// let size2 = inner_opt_size(Size::new(None, Some(10)), Edges::new(1, 1, 2, 2));
+/// assert_eq!(Size::new(Some(4), None), size1);
+/// assert_eq!(Size::new(None, Some(8)), size2);
+/// ```
 pub fn inner_opt_size<T>(size: Size<Option<T>>, edges: Edges<T>) -> Size<Option<T>>
     where T: Copy + PartialOrd + Add<Output = T> + Sub<Output = T> + From<i32>
 {
@@ -1297,6 +1309,18 @@ pub fn outer_rect<T>(rect: Rect<T>, edges: Edges<T>) -> Rect<T>
 }
 
 /// Returns an optional size of an outer rectangle for the optional size, the egdes.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::outer_opt_size;
+/// use lwltk::Edges;
+/// use lwltk::Size;
+///
+/// let size1 = outer_opt_size(Size::new(Some(4), None), Edges::new(1, 1, 2, 2));
+/// let size2 = outer_opt_size(Size::new(None, Some(6)), Edges::new(1, 1, 2, 2));
+/// assert_eq!(Size::new(Some(8), None), size1);
+/// assert_eq!(Size::new(None, Some(8)), size2);
+/// ```
 pub fn outer_opt_size<T>(size: Size<Option<T>>, edges: Edges<T>) -> Size<Option<T>>
     where T: Add<Output = T>
 {
@@ -1312,6 +1336,15 @@ pub fn outer_opt_size<T>(size: Size<Option<T>>, edges: Edges<T>) -> Size<Option<
 }
 
 /// Returns a maximal width for the width and the optional width.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::max_width_for_opt_width;
+///
+/// assert_eq!(2, max_width_for_opt_width(1, Some(2)));
+/// assert_eq!(3, max_width_for_opt_width(3, Some(2)));
+/// assert_eq!(4, max_width_for_opt_width(4, None));
+/// ```
 pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     where T: PartialOrd
 {
@@ -1322,11 +1355,29 @@ pub fn max_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
 }
 
 /// Returns a maximal height for the height and the optional height.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::max_height_for_opt_height;
+///
+/// assert_eq!(2, max_height_for_opt_height(1, Some(2)));
+/// assert_eq!(3, max_height_for_opt_height(3, Some(2)));
+/// assert_eq!(4, max_height_for_opt_height(4, None));
+/// ```
 pub fn max_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
     where T: PartialOrd
 { max_width_for_opt_width(height1, height2) }
 
 /// Returns a maximal size for the size and the optional size.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::max_size_for_opt_size;
+/// use lwltk::Size;
+///
+/// assert_eq!(Size::new(2, 4), max_size_for_opt_size(Size::new(1, 4), Size::new(Some(2), Some(3))));
+/// assert_eq!(Size::new(4, 5), max_size_for_opt_size(Size::new(4, 5), Size::new(None, None)));
+/// ```
 pub fn max_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
     where T: PartialOrd
 {
@@ -1336,6 +1387,15 @@ pub fn max_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<
 }
 
 /// Returns a minimal width for the width and the optional width.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::min_width_for_opt_width;
+///
+/// assert_eq!(1, min_width_for_opt_width(1, Some(2)));
+/// assert_eq!(2, min_width_for_opt_width(3, Some(2)));
+/// assert_eq!(4, min_width_for_opt_width(4, None));
+/// ```
 pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     where T: PartialOrd
 {
@@ -1346,11 +1406,29 @@ pub fn min_width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
 }
 
 /// Returns a minimal height for the height and the optional height.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::min_height_for_opt_height;
+///
+/// assert_eq!(1, min_height_for_opt_height(1, Some(2)));
+/// assert_eq!(2, min_height_for_opt_height(3, Some(2)));
+/// assert_eq!(4, min_height_for_opt_height(4, None));
+/// ```
 pub fn min_height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
     where T: PartialOrd
 { min_width_for_opt_width(height1, height2) }
 
 /// Returns a minimal size for the size and the optional size.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::min_size_for_opt_size;
+/// use lwltk::Size;
+///
+/// assert_eq!(Size::new(1, 3), min_size_for_opt_size(Size::new(1, 4), Size::new(Some(2), Some(3))));
+/// assert_eq!(Size::new(4, 5), min_size_for_opt_size(Size::new(4, 5), Size::new(None, None)));
+/// ```
 pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
     where T: PartialOrd
 {
@@ -1360,6 +1438,14 @@ pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<
 }
 
 /// Returns the optional width if the optional width exists, otherwise the width.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::width_for_opt_width;
+///
+/// assert_eq!(2, width_for_opt_width(1, Some(2)));
+/// assert_eq!(4, width_for_opt_width(4, None));
+/// ```
 pub fn width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
 {
     match width2 {
@@ -1369,10 +1455,27 @@ pub fn width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
 }
 
 /// Returns the optional height if the optional height exists, otherwise the height.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::height_for_opt_height;
+///
+/// assert_eq!(2, height_for_opt_height(1, Some(2)));
+/// assert_eq!(4, height_for_opt_height(4, None));
+/// ```
 pub fn height_for_opt_height<T>(height1: T, height2: Option<T>) -> T
 { width_for_opt_width(height1, height2) }
 
 /// Returns a size for the size and the optional size.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::size_for_opt_size;
+/// use lwltk::Size;
+///
+/// assert_eq!(Size::new(3, 2), size_for_opt_size(Size::new(1, 2), Size::new(Some(3), None)));
+/// assert_eq!(Size::new(1, 4), size_for_opt_size(Size::new(1, 2), Size::new(None, Some(4))));
+/// ```
 pub fn size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
 {
     let width = width_for_opt_width(size1.width, size2.width);
@@ -1381,6 +1484,17 @@ pub fn size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<T>
 }
 
 /// Returns a X coordinate of for the horizontal alignment.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::x_for_h_align;
+/// use lwltk::HAlign;
+///
+/// assert_eq!(1, x_for_h_align(4, 1, 6, HAlign::Left));
+/// assert_eq!(2, x_for_h_align(4, 1, 6, HAlign::Center));
+/// assert_eq!(3, x_for_h_align(4, 1, 6, HAlign::Right));
+/// assert_eq!(1, x_for_h_align(6, 1, 6, HAlign::Fill));
+/// ```
 pub fn x_for_h_align<T>(width1: T, x2: T, width2: T, h_align: HAlign) -> T
     where T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
 {
@@ -1393,6 +1507,17 @@ pub fn x_for_h_align<T>(width1: T, x2: T, width2: T, h_align: HAlign) -> T
 }
 
 /// Returns an Y coordinate for the vertical alignment.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::y_for_v_align;
+/// use lwltk::VAlign;
+///
+/// assert_eq!(1, y_for_v_align(4, 1, 6, VAlign::Top));
+/// assert_eq!(2, y_for_v_align(4, 1, 6, VAlign::Center));
+/// assert_eq!(3, y_for_v_align(4, 1, 6, VAlign::Bottom));
+/// assert_eq!(1, y_for_v_align(6, 1, 6, VAlign::Fill));
+/// ```
 pub fn y_for_v_align<T>(height1: T, y2: T, height2: T, v_align: VAlign) -> T
     where T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
 {
@@ -1405,6 +1530,21 @@ pub fn y_for_v_align<T>(height1: T, y2: T, height2: T, v_align: VAlign) -> T
 }
 
 /// Returns a position for the horizontal alignment and the vertical alignment.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::pos_for_h_align_and_v_align;
+/// use lwltk::HAlign;
+/// use lwltk::Pos;
+/// use lwltk::Rect;
+/// use lwltk::Size;
+/// use lwltk::VAlign;
+///
+/// assert_eq!(Pos::new(1, 2), pos_for_h_align_and_v_align(Size::new(4, 5), Rect::new(1, 2, 6, 7), HAlign::Left, VAlign::Top));
+/// assert_eq!(Pos::new(2, 3), pos_for_h_align_and_v_align(Size::new(4, 5), Rect::new(1, 2, 6, 7), HAlign::Center, VAlign::Center));
+/// assert_eq!(Pos::new(3, 4), pos_for_h_align_and_v_align(Size::new(4, 5), Rect::new(1, 2, 6, 7), HAlign::Right, VAlign::Bottom));
+/// assert_eq!(Pos::new(1, 2), pos_for_h_align_and_v_align(Size::new(6, 7), Rect::new(1, 2, 6, 7), HAlign::Fill, VAlign::Fill));
+/// ```
 pub fn pos_for_h_align_and_v_align<T>(size1: Size<T>, rect2: Rect<T>, h_align: HAlign, v_align: VAlign) -> Pos<T>
     where T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<i32>
 {
@@ -1414,6 +1554,17 @@ pub fn pos_for_h_align_and_v_align<T>(size1: Size<T>, rect2: Rect<T>, h_align: H
 }
 
 /// Returns a width for the horizontal alignment.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::width_for_h_align;
+/// use lwltk::HAlign;
+///
+/// assert_eq!(4, width_for_h_align(4, Some(6), HAlign::Left));
+/// assert_eq!(4, width_for_h_align(4, Some(6), HAlign::Center));
+/// assert_eq!(4, width_for_h_align(4, Some(6), HAlign::Right));
+/// assert_eq!(6, width_for_h_align(4, Some(6), HAlign::Fill));
+/// ```
 pub fn width_for_h_align<T>(width1: T, width2: Option<T>, h_align: HAlign) -> T
     where T: PartialOrd
 {
@@ -1424,6 +1575,17 @@ pub fn width_for_h_align<T>(width1: T, width2: Option<T>, h_align: HAlign) -> T
 }
 
 /// Returns a height for the vertical alignment.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::height_for_v_align;
+/// use lwltk::VAlign;
+///
+/// assert_eq!(4, height_for_v_align(4, Some(6), VAlign::Top));
+/// assert_eq!(4, height_for_v_align(4, Some(6), VAlign::Center));
+/// assert_eq!(4, height_for_v_align(4, Some(6), VAlign::Bottom));
+/// assert_eq!(6, height_for_v_align(4, Some(6), VAlign::Fill));
+/// ```
 pub fn height_for_v_align<T>(height1: T, height2: Option<T>, v_align: VAlign) -> T
     where T: PartialOrd
 {
@@ -1434,6 +1596,19 @@ pub fn height_for_v_align<T>(height1: T, height2: Option<T>, v_align: VAlign) ->
 }
 
 /// Returns a size for the horizontal alignment and the vertical alignment.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::size_for_h_align_and_v_align;
+/// use lwltk::HAlign;
+/// use lwltk::Size;
+/// use lwltk::VAlign;
+///
+/// assert_eq!(Size::new(4, 5), size_for_h_align_and_v_align(Size::new(4, 5), Size::new(Some(6), Some(7)), HAlign::Left, VAlign::Top));
+/// assert_eq!(Size::new(4, 5), size_for_h_align_and_v_align(Size::new(4, 5), Size::new(Some(6), Some(7)), HAlign::Center, VAlign::Center));
+/// assert_eq!(Size::new(4, 5), size_for_h_align_and_v_align(Size::new(4, 5), Size::new(Some(6), Some(7)), HAlign::Right, VAlign::Bottom));
+/// assert_eq!(Size::new(6, 7), size_for_h_align_and_v_align(Size::new(4, 5), Size::new(Some(6), Some(7)), HAlign::Fill, VAlign::Fill));
+/// ```
 pub fn size_for_h_align_and_v_align<T>(size1: Size<T>, size2: Size<Option<T>>, h_align: HAlign, v_align: VAlign) -> Size<T>
     where T: PartialOrd
 {
@@ -1443,6 +1618,18 @@ pub fn size_for_h_align_and_v_align<T>(size1: Size<T>, size2: Size<Option<T>>, h
 }
 
 /// Returns a maximal optional width for two optional widths.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::max_opt_width_for_opt_width;
+///
+/// assert_eq!(Some(2), max_opt_width_for_opt_width(Some(1), Some(2)));
+/// assert_eq!(Some(3), max_opt_width_for_opt_width(Some(3), Some(2)));
+/// assert_eq!(Some(4), max_opt_width_for_opt_width(Some(4), None));
+/// assert_eq!(Some(5), max_opt_width_for_opt_width(None, Some(5)));
+/// let none: Option<i32> = None;
+/// assert_eq!(none, max_opt_width_for_opt_width(none, none));
+/// ```
 pub fn max_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Option<T>
     where T: PartialOrd
 {
@@ -1455,11 +1642,35 @@ pub fn max_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> O
 }
 
 /// Returns a maximal optional height for two optional heights.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::max_opt_height_for_opt_height;
+///
+/// assert_eq!(Some(2), max_opt_height_for_opt_height(Some(1), Some(2)));
+/// assert_eq!(Some(3), max_opt_height_for_opt_height(Some(3), Some(2)));
+/// assert_eq!(Some(4), max_opt_height_for_opt_height(Some(4), None));
+/// assert_eq!(Some(5), max_opt_height_for_opt_height(None, Some(5)));
+/// let none: Option<i32> = None;
+/// assert_eq!(none, max_opt_height_for_opt_height(none, none));
+/// ```
 pub fn max_opt_height_for_opt_height<T>(height1: Option<T>, height2: Option<T>) -> Option<T>
     where T: PartialOrd
 { max_opt_width_for_opt_width(height1, height2) }
 
 /// Returns a maximal optional size for two optional sizes.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::max_opt_size_for_opt_size;
+/// use lwltk::Size;
+///
+/// assert_eq!(Size::new(Some(2), Some(4)), max_opt_size_for_opt_size(Size::new(Some(1), Some(4)), Size::new(Some(2), Some(3))));
+/// assert_eq!(Size::new(Some(4), Some(5)), max_opt_size_for_opt_size(Size::new(Some(4), Some(5)), Size::new(None, None)));
+/// assert_eq!(Size::new(Some(6), Some(7)), max_opt_size_for_opt_size(Size::new(None, None), Size::new(Some(6), Some(7))));
+/// let none: Option<i32> = None;
+/// assert_eq!(Size::new(none, none), max_opt_size_for_opt_size(Size::new(none, none), Size::new(none, none)));
+/// ```
 pub fn max_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T>>) -> Size<Option<T>>
     where T: PartialOrd
 {
@@ -1469,6 +1680,18 @@ pub fn max_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T
 }
 
 /// Returns a minimal optional width for two optional widths.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::min_opt_width_for_opt_width;
+///
+/// assert_eq!(Some(1), min_opt_width_for_opt_width(Some(1), Some(2)));
+/// assert_eq!(Some(2), min_opt_width_for_opt_width(Some(3), Some(2)));
+/// assert_eq!(Some(4), min_opt_width_for_opt_width(Some(4), None));
+/// assert_eq!(Some(5), min_opt_width_for_opt_width(None, Some(5)));
+/// let none: Option<i32> = None;
+/// assert_eq!(none, min_opt_width_for_opt_width(none, none));
+/// ```
 pub fn min_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Option<T>
     where T: PartialOrd
 {
@@ -1481,11 +1704,35 @@ pub fn min_opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> O
 }
 
 /// Returns a minimal optional height for two optional heights.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::min_opt_height_for_opt_height;
+///
+/// assert_eq!(Some(1), min_opt_height_for_opt_height(Some(1), Some(2)));
+/// assert_eq!(Some(2), min_opt_height_for_opt_height(Some(3), Some(2)));
+/// assert_eq!(Some(4), min_opt_height_for_opt_height(Some(4), None));
+/// assert_eq!(Some(5), min_opt_height_for_opt_height(None, Some(5)));
+/// let none: Option<i32> = None;
+/// assert_eq!(none, min_opt_height_for_opt_height(none, none));
+/// ```
 pub fn min_opt_height_for_opt_height<T>(height1: Option<T>, height2: Option<T>) -> Option<T>
     where T: PartialOrd
 { min_opt_width_for_opt_width(height1, height2) }
 
 /// Returns a minimal optional size for two optional sizes.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::min_opt_size_for_opt_size;
+/// use lwltk::Size;
+///
+/// assert_eq!(Size::new(Some(1), Some(3)), min_opt_size_for_opt_size(Size::new(Some(1), Some(4)), Size::new(Some(2), Some(3))));
+/// assert_eq!(Size::new(Some(4), Some(5)), min_opt_size_for_opt_size(Size::new(Some(4), Some(5)), Size::new(None, None)));
+/// assert_eq!(Size::new(Some(6), Some(7)), min_opt_size_for_opt_size(Size::new(None, None), Size::new(Some(6), Some(7))));
+/// let none: Option<i32> = None;
+/// assert_eq!(Size::new(none, none), min_opt_size_for_opt_size(Size::new(none, none), Size::new(none, none)));
+/// ```
 pub fn min_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T>>) -> Size<Option<T>>
     where T: PartialOrd
 {
@@ -1496,6 +1743,17 @@ pub fn min_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T
 
 /// Returns the second optional width if the second width exists, otherwise the first optional
 /// width.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::opt_width_for_opt_width;
+///
+/// assert_eq!(Some(2), opt_width_for_opt_width(Some(1), Some(2)));
+/// assert_eq!(Some(4), opt_width_for_opt_width(Some(4), None));
+/// assert_eq!(Some(5), opt_width_for_opt_width(None, Some(5)));
+/// let none: Option<i32> = None;
+/// assert_eq!(none, opt_width_for_opt_width(none, none));
+/// ```
 pub fn opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Option<T>
 {
     match (width1, width2) {
@@ -1507,10 +1765,34 @@ pub fn opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Optio
 
 /// Returns the second optional height if the second height exists, otherwise the first optional
 /// height.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::opt_height_for_opt_height;
+///
+/// assert_eq!(Some(2), opt_height_for_opt_height(Some(1), Some(2)));
+/// assert_eq!(Some(4), opt_height_for_opt_height(Some(4), None));
+/// assert_eq!(Some(5), opt_height_for_opt_height(None, Some(5)));
+/// let none: Option<i32> = None;
+/// assert_eq!(none, opt_height_for_opt_height(none, none));
+/// ```
 pub fn opt_height_for_opt_height<T>(height1: Option<T>, height2: Option<T>) -> Option<T>
 { opt_width_for_opt_width(height1, height2) }
 
 /// Returns an optional size for two optional sizes.
+///
+/// # Examples
+/// ```
+/// use lwltk::utils::opt_size_for_opt_size;
+/// use lwltk::Size;
+///
+/// assert_eq!(Size::new(Some(3), Some(2)), opt_size_for_opt_size(Size::new(Some(1), Some(2)), Size::new(Some(3), None)));
+/// assert_eq!(Size::new(Some(1), Some(4)), opt_size_for_opt_size(Size::new(Some(1), Some(2)), Size::new(None, Some(4))));
+/// assert_eq!(Size::new(Some(5), Some(6)), opt_size_for_opt_size(Size::new(Some(1), None), Size::new(Some(5), Some(6))));
+/// assert_eq!(Size::new(Some(7), Some(8)), opt_size_for_opt_size(Size::new(None, Some(2)), Size::new(Some(7), Some(8))));
+/// let none: Option<i32> = None;
+/// assert_eq!(Size::new(none, none), opt_size_for_opt_size(Size::new(none, none), Size::new(none, none)));
+/// ```
 pub fn opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T>>) -> Size<Option<T>>
 {
     let width = opt_width_for_opt_width(size1.width, size2.width);
