@@ -1437,7 +1437,7 @@ pub fn min_size_for_opt_size<T>(size1: Size<T>, size2: Size<Option<T>>) -> Size<
     Size::new(width, height)
 }
 
-/// Returns the optional width if the optional width exists, otherwise the width.
+/// Returns the optional width if the optional width isn't `None`, otherwise the width.
 ///
 /// # Examples
 /// ```
@@ -1454,7 +1454,7 @@ pub fn width_for_opt_width<T>(width1: T, width2: Option<T>) -> T
     }
 }
 
-/// Returns the optional height if the optional height exists, otherwise the height.
+/// Returns the optional height if the optional height isn't `None`, otherwise the height.
 ///
 /// # Examples
 /// ```
@@ -1741,8 +1741,8 @@ pub fn min_opt_size_for_opt_size<T>(size1: Size<Option<T>>, size2: Size<Option<T
     Size::new(width, height)
 }
 
-/// Returns the second optional width if the second width exists, otherwise the first optional
-/// width.
+/// Returns the second optional width if the second width isn't `None`, otherwise the first
+/// optional width.
 ///
 /// # Examples
 /// ```
@@ -1763,8 +1763,8 @@ pub fn opt_width_for_opt_width<T>(width1: Option<T>, width2: Option<T>) -> Optio
     }
 }
 
-/// Returns the second optional height if the second height exists, otherwise the first optional
-/// height.
+/// Returns the second optional height if the second height isn't `None`, otherwise the first
+/// optional height.
 ///
 /// # Examples
 /// ```
