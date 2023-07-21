@@ -92,31 +92,31 @@ impl KeyModifiers
     
     /// Returns an intersection of two sets of key modifiers.
     ///
-    /// This method is equivalent to `set & other`.
+    /// This method is equivalent to `key_modifiers & other`.
     pub fn intersection(self, other: Self) -> Self
     { KeyModifiers(self.0 & other.0) }
 
     /// Returns an union of two sets of key modifiers.
     ///
-    /// This method is equivalent to `set | other`.
+    /// This method is equivalent to `key_modifiers | other`.
     pub fn union(self, other: Self) -> Self
     { KeyModifiers(self.0 | other.0) }
 
     /// Returns a deffirence of two sets of key modifiers.
     ///
-    /// This method is equivalent to `set & !other` and `set - other`.
+    /// This method is equivalent to `key_modifiers & !other` and `key_modifiers - other`.
     pub fn difference(self, other: Self) -> Self
     { KeyModifiers(self.0 & !other.0) }
 
     /// Returns a symmetric deffirence of two sets of key modifiers.
     ///
-    /// This method is equivalent to `set ^ other`.
+    /// This method is equivalent to `key_modifiers ^ other`.
     pub fn symmetric_difference(self, other: Self) -> Self
     { KeyModifiers(self.0 ^ other.0) }
     
     /// Returns complement of the set of key modifiers.
     ///
-    /// This method is equivalent to `!set`.
+    /// This method is equivalent to `!key_modifiers`.
     pub fn complement(self) -> Self
     { KeyModifiers(self.0 ^ 63) }
 }
