@@ -107,8 +107,8 @@ impl<'a> StackElem<'a>
 ///
 /// The windows are for example toplevel windows and message windows. A widget of title bar and a
 /// content widget can be in the window. The window is drawn with descendant widgets and reacts on
-/// events if the window is visible. The window can have a parent window and window children. Only
-/// one focused widget can be on the window. The window can be moved and resized. The top level
+/// events if the window is visible. The window can have a parent window and child windows. Only
+/// one focused widget can be on the window. The window can be moved and resized. The toplevel
 /// window only can be maximized.
 pub trait Window: Container + MinSize + PreferredSize
 {
