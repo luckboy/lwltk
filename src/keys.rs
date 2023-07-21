@@ -5,6 +5,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
+//! A module of keys.
+//!
+//! The module of keys contains a structure of key modifiers and an enumeration of virtual key.
 use std::fmt;
 use std::ops::BitAnd;
 use std::ops::BitAndAssign;
@@ -16,46 +19,68 @@ use std::ops::Not;
 use std::ops::Sub;
 use std::ops::SubAssign;
 
+/// A structure of key modifiers.
+///
+/// The key modifiers are for example shift, alt, and control.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct KeyModifiers(u32);
 
 impl KeyModifiers
 {
+    /// An empty set of key modifiers.
     pub const EMPTY: KeyModifiers = KeyModifiers(0);
+    /// A shift key modifier.
     pub const SHIFT: KeyModifiers = KeyModifiers(1 << 0);
+    /// A caps lock key modifier.
     pub const CAPS: KeyModifiers = KeyModifiers(1 << 1);
+    /// A control key modifier.
     pub const CTRL: KeyModifiers = KeyModifiers(1 << 2);
+    /// An alt key modifier.
     pub const ALT: KeyModifiers = KeyModifiers(1 << 3);
+    /// A num lock key modifier.
     pub const NUM: KeyModifiers = KeyModifiers(1 << 4);
+    /// A logo key modifier.
     pub const LOGO: KeyModifiers = KeyModifiers(1 << 5);
 
+    /// Returns an empty set of key modifiers. 
     pub const fn empty() -> Self
     { KeyModifiers(0) }
 
+    /// Returns a full set of key modifiers. 
     pub const fn all() -> Self
     { KeyModifiers(63) }
     
+    /// Returns `true` if set of key modifiers is empty, otherwise `false`.
     pub const fn is_empty(&self) -> bool
     { self.0 == 0 }
     
+    /// Returns `true` if set of key modifiers is full, otherwise `false`.
     pub const fn is_all(&self) -> bool
     { self.0 == 63 }
 
+    /// Returns `true` if an intersection of two sets of key modifiers isn't empty, otherwise 
+    /// `false`.
     pub const fn intersects(&self, other: Self) -> bool
     { self.0 & other.0 != 0 }
     
+    /// Returns `true` if the set of the key modifiers contains the key modifiers, otherwise
+    /// `false`.
     pub const fn contains(&self, other: Self) -> bool
     { (self.0 & other.0) == other.0 }
 
+    /// Inserts the key modifiers.
     pub fn insert(&mut self, other: Self)
     { self.0 |= other.0; }
 
+    /// Removes the key modifiers.
     pub fn remove(&mut self, other: Self)
     { self.0 &= !other.0; }
 
+    /// Toggles the key modifiers.
     pub fn toggle(&mut self, other: Self)
     { self.0 ^= other.0; }
 
+    /// Inserts or removes the key modifiers for the flag.
     pub fn set(&mut self, other: Self, b: bool)
     {
         if b {
@@ -65,18 +90,33 @@ impl KeyModifiers
         }
     }
     
+    /// Returns an intersection of two sets of key modifiers.
+    ///
+    /// This method is equivalent to `set & other`.
     pub fn intersection(self, other: Self) -> Self
     { KeyModifiers(self.0 & other.0) }
 
+    /// Returns an union of two sets of key modifiers.
+    ///
+    /// This method is equivalent to `set | other`.
     pub fn union(self, other: Self) -> Self
     { KeyModifiers(self.0 | other.0) }
 
+    /// Returns a deffirence of two sets of key modifiers.
+    ///
+    /// This method is equivalent to `set & !other` and `set - other`.
     pub fn difference(self, other: Self) -> Self
     { KeyModifiers(self.0 & !other.0) }
 
+    /// Returns a symmetric deffirence of two sets of key modifiers.
+    ///
+    /// This method is equivalent to `set ^ other`.
     pub fn symmetric_difference(self, other: Self) -> Self
     { KeyModifiers(self.0 ^ other.0) }
     
+    /// Returns complement of the set of key modifiers.
+    ///
+    /// This method is equivalent to `!set`.
     pub fn complement(self) -> Self
     { KeyModifiers(self.0 ^ 63) }
 }
@@ -198,6 +238,7 @@ impl fmt::Debug for KeyModifiers
 
 // Most names of these enumeration variants are from xkbcommon/xkbcommon-keysyms.h.
 
+/// An enumeration of virtual key.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum VKey
 {
