@@ -177,7 +177,7 @@ impl QueueContext
     pub fn unset_motion_call_on_path(&mut self, call_on_id: CallOnId)
     { self.motion_call_on_paths.remove(&call_on_id); }
 
-    /// Returns the motion resize edges for the call-on identifier or `None`.
+    /// Returns the motion resize edges for the specified call-on identifier or `None`.
     ///
     /// The motion resize edges are pointed by the pointer or the touch and used to resize a window.
     pub fn motion_resize_edges(&self, call_on_id: CallOnId) -> Option<ClientResize>
