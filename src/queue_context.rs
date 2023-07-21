@@ -179,7 +179,7 @@ impl QueueContext
 
     /// Returns the motion resize edges for the call-on identifier or `None`.
     ///
-    /// The motion resize edges are used to resize a window.
+    /// The motion resize edges are pointed by the pointer or the touch and used to resize a window.
     pub fn motion_resize_edges(&self, call_on_id: CallOnId) -> Option<ClientResize>
     {
         match self.motion_resize_edge_map.get(&call_on_id) {
