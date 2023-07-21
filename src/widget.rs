@@ -17,7 +17,8 @@ use crate::types::*;
 ///
 /// The widgets are for example buttons, labels, and text fields. Child widgets can be in the widget
 /// if the widget is for example a linear layout. The widget draws with descendant widgets on a
-/// window and reacts on events.
+/// window and reacts on events. If the widget is disabled, the widget should be unfocusable and
+/// unclickable.
 pub trait Widget: Container + PreferredSize
 {
     /// Returns the margin bounds of the widget.
