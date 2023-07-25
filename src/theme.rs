@@ -111,7 +111,6 @@ pub trait Theme: Send + Sync
     fn set_purple_fg(&self, cairo_context: &CairoContext, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
 
     fn set_yellow_fg(&self, cairo_context: &CairoContext, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
-
 }
 
 pub fn theme_from_env() -> Result<Box<dyn Theme>, ClientError>
