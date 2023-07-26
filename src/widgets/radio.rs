@@ -39,7 +39,7 @@ pub struct Radio
     preferred_size: Size<Option<i32>>,
     call_on_fun: CallOnFun,
     text: Text,
-    number: usize,
+    selection_number: usize,
     group: Arc<RadioGroup>,
 }
 
@@ -64,7 +64,7 @@ impl Radio
             preferred_size: Size::new(None, None),
             call_on_fun: CallOnFun::new(),
             text: Text::new(s, TextAlign::Left),
-            number: group.increase_count(),
+            selection_number: group.increase_count(),
             group,
         }
     }
@@ -152,20 +152,20 @@ impl Radio
     { self.text.is_trimmed = is_trimmed; }
     
     pub fn is_selected(&self) -> bool
-    { self.group.selected() == self.number }
+    { self.group.selected() == self.selection_number }
 
-    pub fn number(&self) -> usize
-    { self.number }
+    pub fn selection_number(&self) -> usize
+    { self.selection_number }
     
     pub fn select(&self) -> usize
-    { self.group.select(self.number) }
+    { self.group.select(self.selection_number) }
 
     pub fn group(&self) -> Arc<RadioGroup>
     { self.group.clone() }
     
     pub fn set_group(&mut self, group: Arc<RadioGroup>)
     {
-        self.number = group.increase_count();
+        self.selection_number = group.increase_count();
         self.group = group;
         self.change_flag_arc.store(true, Ordering::SeqCst);
     }
