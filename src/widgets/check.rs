@@ -1296,22 +1296,25 @@ mod tests
     {
         let check = Check::new("Check");
         assert_eq!(false, check.is_checked);
+        assert_eq!(false, check.is_checked());
     }
 
     #[test]
-    fn test_check_sets_checked_flag_as_true()
+    fn test_check_sets_check_flag_on_true()
     {
         let mut check = Check::new("Check");
         check.set_check(true);
         assert_eq!(true, check.is_checked);
+        assert_eq!(true, check.is_checked());
     }
     
     #[test]
-    fn test_check_sets_checked_flag_as_false()
+    fn test_check_sets_check_flag_on_false()
     {
         let mut check = Check::new("Check");
         check.set_check(true);
         check.set_check(false);
         assert_eq!(false, check.is_checked);
+        assert_eq!(false, check.is_checked());
     }
 }

@@ -1306,7 +1306,7 @@ mod tests
     }
     
     #[test]
-    fn test_radios_has_selection_numbers()
+    fn test_radios_are_defaultly_unselected_and_have_selection_numbers()
     {
         let radio_group = Arc::new(RadioGroup::new());
         let radio1 = Radio::new_with_group("Radio1", radio_group.clone());
@@ -1315,6 +1315,9 @@ mod tests
         assert_eq!(1, radio1.selection_number);
         assert_eq!(2, radio2.selection_number);
         assert_eq!(3, radio3.selection_number);
+        assert_eq!(false, radio1.is_selected());
+        assert_eq!(false, radio2.is_selected());
+        assert_eq!(false, radio3.is_selected());
         assert_eq!(0, radio_group.selected());
         assert_eq!(3, radio_group.count());
     }
@@ -1330,6 +1333,9 @@ mod tests
         assert_eq!(1, radio1.selection_number);
         assert_eq!(2, radio2.selection_number);
         assert_eq!(3, radio3.selection_number);
+        assert_eq!(false, radio1.is_selected());
+        assert_eq!(true, radio2.is_selected());
+        assert_eq!(false, radio3.is_selected());
         assert_eq!(2, radio_group.selected());
         assert_eq!(3, radio_group.count());
     }
