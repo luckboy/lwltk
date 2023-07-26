@@ -299,3 +299,927 @@ impl AsAny for Label
     fn as_any_mut(&mut self) -> &mut dyn Any
     { self }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+
+    #[test]
+    fn test_label_updates_size_and_position()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_greater_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_less_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_h_align(HAlign::Fill);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 - 10;
+        let area_size = Size::new(Some(area_width), None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        let expected_height = 2 + (font_height.ceil() as i32) * 2 + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_greater_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        label.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_less_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        label.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_less_area_width_and_greater_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        label.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 - 10;
+        let area_size = Size::new(Some(area_width), None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        let expected_height = 2 + (font_height.ceil() as i32) * 2 + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_greater_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_less_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 - 10;
+        let area_size = Size::new(None, Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 - 10;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_greater_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        label.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 ;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_less_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_height = 2 + (font_height.ceil() as i32) + 3 - 10;
+        label.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 ;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, label.margin_bounds.height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_less_area_height_and_greater_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        label.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 - 10;
+        let area_size = Size::new(None, Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 - 10;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, label.margin_bounds.width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+    
+    #[test]
+    fn test_label_updates_size_and_position_for_left_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_h_align(HAlign::Left);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }    
+
+    #[test]
+    fn test_label_updates_size_and_position_for_center_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_h_align(HAlign::Center);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6 + 5;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }    
+
+    #[test]
+    fn test_label_updates_size_and_position_for_right_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_h_align(HAlign::Right);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6 + 10;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_fill_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_h_align(HAlign::Fill);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_top_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_v_align(VAlign::Top);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_center_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_v_align(VAlign::Center);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7 + 5;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_bottom_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_v_align(VAlign::Bottom);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7 + 10;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_label_updates_size_and_position_for_fill_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_label_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_label_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_label_font_size(16.0);
+        let mut label = Label::new("Label");
+        label.set_v_align(VAlign::Fill);
+        theme.set_label_font(&cairo_context).unwrap();
+        let l = cairo_context.text_extents("L").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let b = cairo_context.text_extents("b").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let l2 = cairo_context.text_extents("l").unwrap().x_advance;
+        let text_width = l + a + b + e + l2;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match label.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match label.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), label.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), label.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), label.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), label.margin_bounds.size());
+    }
+}

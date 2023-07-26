@@ -381,3 +381,956 @@ fn default_radio_on(widget: &mut dyn Widget, client_context: &mut ClientContext,
         Some(None)
     }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+
+    #[test]
+    fn test_radio_updates_size_and_position()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_greater_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_less_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_h_align(HAlign::Fill);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 - 10;
+        let area_size = Size::new(Some(area_width), None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        let expected_height = 2 + (font_height.ceil() as i32) * 2 + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_greater_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        radio.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_less_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        radio.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_less_area_width_and_greater_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        radio.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 - 10;
+        let area_size = Size::new(Some(area_width), None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        let expected_height = 2 + (font_height.ceil() as i32) * 2 + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_greater_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_less_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 - 10;
+        let area_size = Size::new(None, Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 - 10;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_greater_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        radio.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 ;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_less_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_height = 2 + (font_height.ceil() as i32) + 3 - 10;
+        radio.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 ;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, radio.margin_bounds.height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_less_area_height_and_greater_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        let preferred_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        radio.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 - 10;
+        let area_size = Size::new(None, Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 - 10;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, radio.margin_bounds.width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+    
+    #[test]
+    fn test_radio_updates_size_and_position_for_left_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_h_align(HAlign::Left);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }    
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_center_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_h_align(HAlign::Center);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6 + 5;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }    
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_right_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_h_align(HAlign::Right);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6 + 10;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_fill_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_h_align(HAlign::Fill);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5 + 10;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_top_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_v_align(VAlign::Top);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_center_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_v_align(VAlign::Center);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7 + 5;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_bottom_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_v_align(VAlign::Bottom);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7 + 10;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_radio_updates_size_and_position_for_fill_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_radio_margin_edges(Edges::new(1, 2, 3, 4));
+        theme.set_radio_padding_edges(Edges::new(2, 3, 4, 5));
+        theme.set_radio_font_size(16.0);
+        let mut radio = Radio::new("Radio");
+        radio.set_v_align(VAlign::Fill);
+        theme.set_radio_font(&cairo_context).unwrap();
+        let r = cairo_context.text_extents("R").unwrap().x_advance;
+        let a = cairo_context.text_extents("a").unwrap().x_advance;
+        let d = cairo_context.text_extents("d").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let o = cairo_context.text_extents("o").unwrap().x_advance;
+        let text_width = r + a + d + i + o;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 4 + (text_width.ceil() as i32) + 5 + 4 + 10;
+        let area_height = 1 + 2 + (font_height.ceil() as i32) + 3 + 2 + 10;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match radio.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 4 + (text_width.ceil() as i32) + 5;
+        let expected_height = 2 + (font_height.ceil() as i32) + 3 + 10;
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match radio.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), radio.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), radio.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), radio.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), radio.margin_bounds.size());
+    }
+    
+    #[test]
+    fn test_radios_has_selection_numbers()
+    {
+        let radio_group = Arc::new(RadioGroup::new());
+        let radio1 = Radio::new_with_group("Radio1", radio_group.clone());
+        let radio2 = Radio::new_with_group("Radio2", radio_group.clone());
+        let radio3 = Radio::new_with_group("Radio3", radio_group.clone());
+        assert_eq!(1, radio1.selection_number);
+        assert_eq!(2, radio2.selection_number);
+        assert_eq!(3, radio3.selection_number);
+        assert_eq!(0, radio_group.selected());
+        assert_eq!(3, radio_group.count());
+    }
+
+    #[test]
+    fn test_radio_selects()
+    {
+        let radio_group = Arc::new(RadioGroup::new());
+        let radio1 = Radio::new_with_group("Radio1", radio_group.clone());
+        let radio2 = Radio::new_with_group("Radio2", radio_group.clone());
+        let radio3 = Radio::new_with_group("Radio3", radio_group.clone());
+        assert_eq!(2, radio2.select());
+        assert_eq!(1, radio1.selection_number);
+        assert_eq!(2, radio2.selection_number);
+        assert_eq!(3, radio3.selection_number);
+        assert_eq!(2, radio_group.selected());
+        assert_eq!(3, radio_group.count());
+    }
+}

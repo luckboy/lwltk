@@ -607,6 +607,7 @@ mod tests
         theme.set_button_padding_edges(Edges::new(2, 3, 4, 5));
         theme.set_button_font_size(16.0);
         let mut button = Button::new("Button");
+        button.set_h_align(HAlign::Fill);
         theme.set_button_font(&cairo_context).unwrap();
         let b = cairo_context.text_extents("B").unwrap().x_advance;
         let u = cairo_context.text_extents("u").unwrap().x_advance;

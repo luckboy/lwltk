@@ -138,7 +138,7 @@ impl MockTheme
     { self.radio_margin_edges = edges; }
 
     pub(crate) fn set_radio_padding_edges(&mut self, edges: Edges<i32>)
-    { self.radio_margin_edges = edges; }
+    { self.radio_padding_edges = edges; }
 
     pub(crate) fn set_radio_font_size(&mut self, font_size: f64)
     { self.radio_font_size = font_size; }
