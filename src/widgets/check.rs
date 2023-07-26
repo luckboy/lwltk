@@ -493,7 +493,7 @@ mod tests
             Ok(()) => (),
             Err(_) => assert!(false),
         }
-        let expected_width = 4 + ((text_width.ceil() - c2 - k) as i32) + 5;
+        let expected_width = 4 + ((text_width - c2 - k).ceil() as i32) + 5;
         let expected_height = 2 + (font_height.ceil() as i32) * 2 + 3;
         assert_eq!(Size::new(expected_width, expected_height), check.bounds.size());
         let expected_margin_width = 3 + expected_width + 4;
