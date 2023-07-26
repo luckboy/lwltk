@@ -607,7 +607,6 @@ mod tests
         theme.set_button_padding_edges(Edges::new(2, 3, 4, 5));
         theme.set_button_font_size(16.0);
         let mut button = Button::new("Button");
-        button.set_h_align(HAlign::Fill);
         theme.set_button_font(&cairo_context).unwrap();
         let b = cairo_context.text_extents("B").unwrap().x_advance;
         let u = cairo_context.text_extents("u").unwrap().x_advance;
@@ -623,7 +622,7 @@ mod tests
             Ok(()) => (),
             Err(_) => assert!(false),
         }
-        let expected_width = 4 + (text_width.ceil() as i32) + 5 - 10;
+        let expected_width = 4 + ((text_width.ceil() - n) as i32) + 5;
         let expected_height = 2 + (font_height.ceil() as i32) * 2 + 3;
         assert_eq!(Size::new(expected_width, expected_height), button.bounds.size());
         let expected_margin_width = 3 + expected_width + 4;
