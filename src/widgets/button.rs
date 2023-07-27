@@ -516,7 +516,7 @@ mod tests
         theme.set_button_padding_edges(Edges::new(2, 3, 4, 5));
         theme.set_button_sep_width(4);
         theme.set_button_font_size(16.0);
-        let mut button = Button::new_with_icon(ButtonIcon::Ok, "OK");
+        let mut button = Button::new("OK");
         button.set_icon_image(|_theme| Size::new(26, 24), |_cairo_context, _theme, _pos, _state, _is_enabled, _is_focused, _is_focused_window| Ok(()));
         theme.set_button_font(&cairo_context).unwrap();
         let o = cairo_context.text_extents("O").unwrap().x_advance;

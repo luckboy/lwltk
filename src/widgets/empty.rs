@@ -236,3 +236,586 @@ impl AsAny for Empty
     fn as_any_mut(&mut self) -> &mut dyn Any
     { self }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+
+    #[test]
+    fn test_empty_updates_size_and_position()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, empty.margin_bounds.width, empty.margin_bounds.height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_size = Size::new(Some(area_width), None);
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, empty.margin_bounds.height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        let preferred_width = 10;
+        empty.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 10;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, empty.margin_bounds.width, empty.margin_bounds.height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_less_area_width_preferred_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        let preferred_width = 20;
+        empty.set_preferred_size(Size::new(Some(preferred_width), None));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_size = Size::new(Some(area_width), None);
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 10;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, empty.margin_bounds.height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(None, Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, empty.margin_bounds.width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        let preferred_height = 10;
+        empty.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 10;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, empty.margin_bounds.width, empty.margin_bounds.height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_less_area_height_preferred_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        let preferred_height = 20;
+        empty.set_preferred_size(Size::new(None, Some(preferred_height)));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(None, Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 10;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, empty.margin_bounds.width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_left_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_h_align(HAlign::Left);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_center_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_h_align(HAlign::Center);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6 + 5;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_right_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_h_align(HAlign::Right);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6 + 10;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_fill_horizontal_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_h_align(HAlign::Fill);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 10;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_top_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_v_align(VAlign::Top);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_center_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_v_align(VAlign::Center);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7 + 5;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_bottom_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_v_align(VAlign::Bottom);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 0;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7 + 10;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+
+    #[test]
+    fn test_empty_updates_size_and_position_for_fill_vertical_alignment()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_empty_margin_edges(Edges::new(1, 2, 3, 4));
+        let mut empty = Empty::new();
+        empty.set_v_align(VAlign::Fill);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 3 + 10 + 4;
+        let area_height = 1 + 10 + 2;
+        let area_size = Size::new(Some(area_width), Some(area_height));
+        match empty.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 0;
+        let expected_height = 10;
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        let expected_margin_width = 3 + expected_width + 4;
+        let expected_margin_height = 1 + expected_height + 2;
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+        let area_bounds = Rect::new(6, 7, area_width, area_height);
+        match empty.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_margin_x = 6;
+        let expected_margin_y = 7;
+        assert_eq!(Pos::new(expected_margin_x, expected_margin_y), empty.margin_bounds.pos());
+        let expected_x = expected_margin_x + 3;
+        let expected_y = expected_margin_y + 1;
+        assert_eq!(Pos::new(expected_x, expected_y), empty.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), empty.bounds.size());
+        assert_eq!(Size::new(expected_margin_width, expected_margin_height), empty.margin_bounds.size());
+    }
+}
