@@ -95,8 +95,8 @@ impl DefaultTheme
             title_bg_color1_for_unfocused_window: Color::new_from_argb_u32(0xff4444ee),
             title_bg_color2_for_unfocused_window: Color::new_from_argb_u32(0xff8888ee),
             // Hover color and active color.
-            hover_color: Color::new_from_argb_u32(0x88dddddd),
-            active_color: Color::new_from_argb_u32(0xcceeeeee),
+            hover_color: Color::new_from_argb_u32(0x88e5e5e5),
+            active_color: Color::new_from_argb_u32(0xcce5e5e5),
             // Border colors.
             border_color: Color::new_from_argb_u32(0xff222222),
             disabled_border_color: Color::new_from_argb_u32(0xff666666),
