@@ -656,11 +656,11 @@ impl GridLayoutWidgets
                         set_orient_size_width(&mut widget_area_size, Some(orient_size_width(widget.margin_size(), orient)), orient);
                     }
                     let mut is_updating = false;
-                    match h_align {
+                    match widget.h_align() {
                         HAlign::Fill => is_updating |= area_size2.width.is_none(),
                         _ => (),
                     }
-                    match v_align {
+                    match widget.v_align() {
                         VAlign::Fill => is_updating |= area_size2.height.is_none(),
                         _ => (),
                     }
