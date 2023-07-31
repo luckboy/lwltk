@@ -982,7 +982,7 @@ mod tests
     }
     
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill()
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill_alignment()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1050,7 +1050,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width_and_fill()
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width_and_fill_alignment()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1121,7 +1121,7 @@ mod tests
     }
     
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill_alignment_and_full_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1189,7 +1189,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width_and_fill_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width_and_fill_alignment_and_full_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1759,7 +1759,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill()
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill_alignment()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1827,7 +1827,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height_and_fill()
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height_and_fill_alignment()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1898,7 +1898,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill_alignment_and_full_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1966,7 +1966,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height_and_fill_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height_and_fill_alignment_and_full_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -2782,7 +2782,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_wigets_give_size_for_horizontal_orientation_and_area_size_and_fill()
+    fn test_linear_layout_wigets_give_size_for_horizontal_orientation_and_area_size_and_fill_alignment()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -2852,7 +2852,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_wigets_give_size_for_horizontal_orientation_and_area_size_and_fill_and_preferred_size()
+    fn test_linear_layout_wigets_give_size_for_horizontal_orientation_and_area_size_and_fill_alignment_and_preferred_size()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -2992,7 +2992,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_give_size_for_vertical_orientation_and_area_size_and_fill()
+    fn test_linear_layout_widgets_give_size_for_vertical_orientation_and_area_size_and_fill_alignment()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -3062,7 +3062,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_give_size_for_vertical_orientation_and_area_size_and_fill_and_preferred_size()
+    fn test_linear_layout_widgets_give_size_for_vertical_orientation_and_area_size_and_fill_alignment_and_preferred_size()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
