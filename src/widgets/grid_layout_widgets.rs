@@ -573,8 +573,10 @@ impl GridLayoutWidgets
                         HAlign::Fill => (),
                         _ => {
                             if preferred_size.width.is_none() {
-                                self.weight_width = max_weight_width;
-                                self.weight_width_rem = 0;
+                                if max_weight_width < self.weight_width {
+                                    self.weight_width = max_weight_width;
+                                    self.weight_width_rem = 0;
+                                }
                             }
                         },
                     }
@@ -584,8 +586,10 @@ impl GridLayoutWidgets
                         VAlign::Fill => (),
                         _ => {
                             if preferred_size.height.is_none() {
-                                self.weight_width = max_weight_width;
-                                self.weight_width_rem = 0;
+                                if max_weight_width < self.weight_width {
+                                    self.weight_width = max_weight_width;
+                                    self.weight_width_rem = 0;
+                                }
                             }
                         },
                     }

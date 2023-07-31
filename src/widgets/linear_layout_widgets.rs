@@ -235,8 +235,10 @@ impl LinearLayoutWidgets
                         HAlign::Fill => (),
                         _ => {
                             if preferred_size.width.is_none() {
-                                self.weight_width = max_weight_width;
-                                self.weight_width_rem = 0;
+                                if max_weight_width < self.weight_width {
+                                    self.weight_width = max_weight_width;
+                                    self.weight_width_rem = 0;
+                                }
                             }
                         },
                     }
@@ -246,8 +248,10 @@ impl LinearLayoutWidgets
                         VAlign::Fill => (),
                         _ => {
                             if preferred_size.height.is_none() {
-                                self.weight_width = max_weight_width;
-                                self.weight_width_rem = 0;
+                                if max_weight_width < self.weight_width {
+                                    self.weight_width = max_weight_width;
+                                    self.weight_width_rem = 0;
+                                }
                             }
                         },
                     }
@@ -980,6 +984,77 @@ mod tests
         assert_eq!(Pos::new(20 + 47 + 54 + 141, 10), widgets.widgets[3].margin_pos());
         assert_eq!(Pos::new(20 + 47 + 54 + 141 + 2, 10 + 2), widgets.widgets[3].pos());
     }
+
+    #[test]
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = LinearLayoutWidgets::new();
+        let mut button1 = Button::new("B1");
+        button1.set_h_align(HAlign::Fill);
+        button1.set_weight(1);
+        button1.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.add_dyn(Box::new(button1));
+        let mut button2 = Button::new("B2");
+        button2.set_preferred_size(Size::new(Some(50), Some(30)));
+        widgets.add_dyn(Box::new(button2));
+        let mut button3 = Button::new("B3");
+        button3.set_h_align(HAlign::Fill);
+        button3.set_weight(3);
+        button3.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.add_dyn(Box::new(button3));
+        let mut button4 = Button::new("B4");
+        button4.set_h_align(HAlign::Fill);
+        button4.set_weight(2);
+        button4.set_preferred_size(Size::new(Some(90), Some(30)));
+        widgets.add_dyn(Box::new(button4));
+        let area_width = 50 + 4 + 50 * (1 + 3 + 2) + 2;
+        let area_size = Size::new(Some(area_width), None);
+        let orient = Orient::Horizontal;
+        let h_align = HAlign::Left;
+        let v_align = VAlign::Top;
+        let preferred_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size, orient, h_align, v_align, preferred_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_zero_weight_width_sum = 50 + 4;
+        assert_eq!(expected_zero_weight_width_sum, widgets.zero_weight_width_sum);
+        let expected_weight_sum = 6;
+        assert_eq!(expected_weight_sum, widgets.weight_sum);
+        let expected_weight_width = 50;
+        assert_eq!(expected_weight_width, widgets.weight_width);
+        let expected_weight_width_rem = 2;
+        assert_eq!(expected_weight_width_rem, widgets.weight_width_rem);
+        assert_eq!(Size::new(51, 34), widgets.widgets[0].margin_size());
+        assert_eq!(Size::new(47, 30), widgets.widgets[0].size());
+        assert_eq!(Size::new(54, 34), widgets.widgets[1].margin_size());
+        assert_eq!(Size::new(50, 30), widgets.widgets[1].size());
+        assert_eq!(Size::new(151, 34), widgets.widgets[2].margin_size());
+        assert_eq!(Size::new(147, 30), widgets.widgets[2].size());
+        assert_eq!(Size::new(100, 34), widgets.widgets[3].margin_size());
+        assert_eq!(Size::new(96, 30), widgets.widgets[3].size());
+        let size = widgets.size(area_size, orient, h_align, v_align, preferred_size);
+        let area_bounds = Rect::new(20, 10, area_width, size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds, orient, h_align, v_align, preferred_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.widgets[0].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 2), widgets.widgets[0].pos());
+        assert_eq!(Pos::new(20 + 51, 10), widgets.widgets[1].margin_pos());
+        assert_eq!(Pos::new(20 + 51 + 2, 10 + 2), widgets.widgets[1].pos());
+        assert_eq!(Pos::new(20 + 51 + 54, 10), widgets.widgets[2].margin_pos());
+        assert_eq!(Pos::new(20 + 51 + 54 + 2, 10 + 2), widgets.widgets[2].pos());
+        assert_eq!(Pos::new(20 + 51 + 54 + 151, 10), widgets.widgets[3].margin_pos());
+        assert_eq!(Pos::new(20 + 51 + 54 + 151 + 2, 10 + 2), widgets.widgets[3].pos());
+    }    
     
     #[test]
     fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill_alignment()
@@ -1758,6 +1833,77 @@ mod tests
         assert_eq!(Pos::new(20 + 2, 10 + 37 + 44 + 111 + 2), widgets.widgets[3].pos());
     }
 
+    #[test]
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = LinearLayoutWidgets::new();
+        let mut button1 = Button::new("B1");
+        button1.set_v_align(VAlign::Fill);
+        button1.set_weight(1);
+        button1.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.add_dyn(Box::new(button1));
+        let mut button2 = Button::new("B2");
+        button2.set_preferred_size(Size::new(Some(40), Some(40)));
+        widgets.add_dyn(Box::new(button2));
+        let mut button3 = Button::new("B3");
+        button3.set_v_align(VAlign::Fill);
+        button3.set_weight(3);
+        button3.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.add_dyn(Box::new(button3));
+        let mut button4 = Button::new("B4");
+        button4.set_v_align(VAlign::Fill);
+        button4.set_weight(2);
+        button4.set_preferred_size(Size::new(Some(40), Some(70)));
+        widgets.add_dyn(Box::new(button4));
+        let area_height = 40 + 4 + 40 * (1 + 3 + 2) + 2;
+        let area_size = Size::new(None, Some(area_height));
+        let orient = Orient::Vertical;
+        let h_align = HAlign::Left;
+        let v_align = VAlign::Top;
+        let preferred_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size, orient, h_align, v_align, preferred_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_zero_weight_width_sum = 40 + 4;
+        assert_eq!(expected_zero_weight_width_sum, widgets.zero_weight_width_sum);
+        let expected_weight_sum = 6;
+        assert_eq!(expected_weight_sum, widgets.weight_sum);
+        let expected_weight_width = 40;
+        assert_eq!(expected_weight_width, widgets.weight_width);
+        let expected_weight_width_rem = 2;
+        assert_eq!(expected_weight_width_rem, widgets.weight_width_rem);
+        assert_eq!(Size::new(44, 41), widgets.widgets[0].margin_size());
+        assert_eq!(Size::new(40, 37), widgets.widgets[0].size());
+        assert_eq!(Size::new(44, 44), widgets.widgets[1].margin_size());
+        assert_eq!(Size::new(40, 40), widgets.widgets[1].size());
+        assert_eq!(Size::new(44, 121), widgets.widgets[2].margin_size());
+        assert_eq!(Size::new(40, 117), widgets.widgets[2].size());
+        assert_eq!(Size::new(44, 80), widgets.widgets[3].margin_size());
+        assert_eq!(Size::new(40, 76), widgets.widgets[3].size());
+        let size = widgets.size(area_size, orient, h_align, v_align, preferred_size);
+        let area_bounds = Rect::new(20, 10, size.width, area_height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds, orient, h_align, v_align, preferred_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.widgets[0].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 2), widgets.widgets[0].pos());
+        assert_eq!(Pos::new(20, 10 + 41), widgets.widgets[1].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 41 + 2), widgets.widgets[1].pos());
+        assert_eq!(Pos::new(20, 10 + 41 + 44), widgets.widgets[2].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 41 + 44 + 2), widgets.widgets[2].pos());
+        assert_eq!(Pos::new(20, 10 + 41 + 44 + 121), widgets.widgets[3].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 41 + 44 + 121 + 2), widgets.widgets[3].pos());
+    }    
+    
     #[test]
     fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill_alignment()
     {
