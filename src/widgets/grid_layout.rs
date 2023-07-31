@@ -141,6 +141,17 @@ impl GridLayout
     pub fn add<T: Widget + 'static>(&mut self, widget: T) -> Option<WidgetIndexPair>
     { self.add_dyn(Box::new(widget)) }
 
+    pub fn add_empty_row(&mut self) -> bool
+    {
+        if self.widgets.add_empty_row() {
+            self.change_flag_arc.store(true, Ordering::SeqCst);
+            true
+        } else {
+            false
+        }
+    }
+
+    
     pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
         widget.set_change_flag_arc(self.change_flag_arc.clone());
@@ -178,6 +189,12 @@ impl GridLayout
             },
             None => None,
         }
+    }
+
+    pub fn clear(&mut self)
+    {
+        self.widgets.widgets.clear();
+        self.change_flag_arc.store(true, Ordering::SeqCst);
     }
 }
 

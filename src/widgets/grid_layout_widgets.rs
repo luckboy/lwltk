@@ -97,6 +97,12 @@ impl GridLayoutWidgets
         }
     }
     
+    pub fn add_empty_row(&mut self) -> bool
+    {
+        self.widgets.push(Vec::new());
+        true
+    }
+    
     pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
         let i = idx_pair.0;

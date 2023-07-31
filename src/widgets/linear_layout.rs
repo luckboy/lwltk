@@ -167,6 +167,12 @@ impl LinearLayout
             None => None,
         }
     }
+    
+    pub fn clear(&mut self)
+    {
+        self.widgets.widgets.clear();
+        self.change_flag_arc.store(true, Ordering::SeqCst);
+    }
 }
 
 impl Widget for LinearLayout
