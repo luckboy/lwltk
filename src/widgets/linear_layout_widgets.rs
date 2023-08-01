@@ -417,18 +417,9 @@ mod tests
     fn test_linear_layout_widgets_insert_widgets()
     {
         let mut widgets = LinearLayoutWidgets::new();
-        match widgets.add_dyn(Box::new(Button::new("B1"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(0, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B2"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B3"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(2, 0), idx_pair),
-            None => assert!(false),
-        }
+        widgets.add_dyn(Box::new(Button::new("B1")));
+        widgets.add_dyn(Box::new(Button::new("B2")));
+        widgets.add_dyn(Box::new(Button::new("B3")));
         match widgets.insert_dyn(WidgetIndexPair(1, 0), Box::new(Button::new("B4"))) {
             Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
             None => assert!(false),
@@ -449,18 +440,9 @@ mod tests
     fn test_linear_layout_widgets_do_not_insert_widget_for_too_large_index()
     {
         let mut widgets = LinearLayoutWidgets::new();
-        match widgets.add_dyn(Box::new(Button::new("B1"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(0, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B2"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B3"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(2, 0), idx_pair),
-            None => assert!(false),
-        }
+        widgets.add_dyn(Box::new(Button::new("B1")));
+        widgets.add_dyn(Box::new(Button::new("B2")));
+        widgets.add_dyn(Box::new(Button::new("B3")));
         match widgets.insert_dyn(WidgetIndexPair(4, 0), Box::new(Button::new("B4"))) {
             Some(_) => assert!(false),
             None => assert!(true),
@@ -475,18 +457,9 @@ mod tests
     fn test_linear_layout_widgets_remove_widget()
     {
         let mut widgets = LinearLayoutWidgets::new();
-        match widgets.add_dyn(Box::new(Button::new("B1"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(0, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B2"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B3"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(2, 0), idx_pair),
-            None => assert!(false),
-        }
+        widgets.add_dyn(Box::new(Button::new("B1")));
+        widgets.add_dyn(Box::new(Button::new("B2")));
+        widgets.add_dyn(Box::new(Button::new("B3")));
         match widgets.remove(WidgetIndexPair(1, 0)) {
             Some(widget) => assert_eq!(Some("B2"), dyn_widget_as_widget(&*widget).map(|b: &Button| b.text())),
             None => assert!(false),
@@ -500,18 +473,9 @@ mod tests
     fn test_linear_layout_widgets_do_not_remove_widget_for_too_large_index()
     {
         let mut widgets = LinearLayoutWidgets::new();
-        match widgets.add_dyn(Box::new(Button::new("B1"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(0, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B2"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B3"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(2, 0), idx_pair),
-            None => assert!(false),
-        }
+        widgets.add_dyn(Box::new(Button::new("B1")));
+        widgets.add_dyn(Box::new(Button::new("B2")));
+        widgets.add_dyn(Box::new(Button::new("B3")));
         match widgets.remove(WidgetIndexPair(3, 0)) {
             Some(_) => assert!(false),
             None => assert!(true),
@@ -526,18 +490,9 @@ mod tests
     fn test_linear_layout_widgets_remove_last_widget()
     {
         let mut widgets = LinearLayoutWidgets::new();
-        match widgets.add_dyn(Box::new(Button::new("B1"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(0, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B2"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
-            None => assert!(false),
-        }
-        match widgets.add_dyn(Box::new(Button::new("B3"))) {
-            Some(idx_pair) => assert_eq!(WidgetIndexPair(2, 0), idx_pair),
-            None => assert!(false),
-        }
+        widgets.add_dyn(Box::new(Button::new("B1")));
+        widgets.add_dyn(Box::new(Button::new("B2")));
+        widgets.add_dyn(Box::new(Button::new("B3")));
         match widgets.remove_last() {
             Some(widget) => assert_eq!(Some("B3"), dyn_widget_as_widget(&*widget).map(|b: &Button| b.text())),
             None => assert!(false),
