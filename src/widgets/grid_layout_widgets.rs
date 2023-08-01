@@ -97,10 +97,10 @@ impl GridLayoutWidgets
         }
     }
     
-    pub fn add_empty_row(&mut self) -> bool
+    pub fn add_empty_row(&mut self) -> Option<()>
     {
         self.widgets.push(Vec::new());
-        true
+        Some(())
     }
     
     pub fn insert_dyn(&mut self, idx_pair: WidgetIndexPair, widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
@@ -778,3 +778,4 @@ impl GridLayoutWidgets
         orient_size(width, height, orient)
     }
 }
+
