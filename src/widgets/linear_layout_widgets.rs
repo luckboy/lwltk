@@ -548,7 +548,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_do_not_remove_last_widget_for_empty_widget_vector()
+    fn test_linear_layout_widgets_do_not_remove_last_widget_for_no_widgets()
     {
         let mut widgets = LinearLayoutWidgets::new();
         match widgets.remove_last() {
@@ -1201,7 +1201,7 @@ mod tests
     }
     
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill_alignment_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_weighted_widgets_and_area_width_and_fill_alignment_and_second_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -1269,7 +1269,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width_and_fill_alignment_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_horizontal_orientation_and_filled_weighted_widgets_and_area_width_and_fill_alignment_and_second_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -2049,7 +2049,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill_alignment_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_weighted_widgets_and_area_height_and_fill_alignment_and_second_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
@@ -2117,7 +2117,7 @@ mod tests
     }
 
     #[test]
-    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height_and_fill_alignment_and_full_remainder()
+    fn test_linear_layout_widgets_update_size_and_position_for_vertical_orientation_and_filled_weighted_widgets_and_area_height_and_fill_alignment_and_second_remainder()
     {
         let cairo_surface = create_dummy_cairo_surface().unwrap();
         let cairo_context = CairoContext::new(&cairo_surface).unwrap();
