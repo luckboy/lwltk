@@ -414,7 +414,7 @@ mod tests
     }
     
     #[test]
-    fn test_linear_layout_widgets_insert_widget()
+    fn test_linear_layout_widgets_insert_widgets()
     {
         let mut widgets = LinearLayoutWidgets::new();
         match widgets.add_dyn(Box::new(Button::new("B1"))) {
@@ -433,11 +433,16 @@ mod tests
             Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
             None => assert!(false),
         }
-        assert_eq!(4, widgets.widgets.len());
+        match widgets.insert_dyn(WidgetIndexPair(4, 0), Box::new(Button::new("B5"))) {
+            Some(idx_pair) => assert_eq!(WidgetIndexPair(4, 0), idx_pair),
+            None => assert!(false),
+        }
+        assert_eq!(5, widgets.widgets.len());
         assert_eq!(Some("B1"), dyn_widget_as_widget(&*widgets.widgets[0]).map(|b: &Button| b.text()));
         assert_eq!(Some("B4"), dyn_widget_as_widget(&*widgets.widgets[1]).map(|b: &Button| b.text()));
         assert_eq!(Some("B2"), dyn_widget_as_widget(&*widgets.widgets[2]).map(|b: &Button| b.text()));
         assert_eq!(Some("B3"), dyn_widget_as_widget(&*widgets.widgets[3]).map(|b: &Button| b.text()));
+        assert_eq!(Some("B5"), dyn_widget_as_widget(&*widgets.widgets[4]).map(|b: &Button| b.text()));
     }
     
     #[test]
