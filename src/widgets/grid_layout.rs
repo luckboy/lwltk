@@ -118,13 +118,7 @@ impl GridLayout
     { self.widgets.max_column_count }
 
     pub fn set_max_column_count(&mut self, count: usize)
-    {
-        let old_max_column_count = self.widgets.max_column_count;
-        self.widgets.max_column_count = count;
-        if old_max_column_count != self.widgets.max_column_count {
-            self.change_flag_arc.store(true, Ordering::SeqCst);
-        }
-    }
+    { self.widgets.max_column_count = count; }
     
     pub fn add_dyn(&mut self, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
