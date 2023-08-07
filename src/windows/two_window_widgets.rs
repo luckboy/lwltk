@@ -160,7 +160,7 @@ impl TwoWindowWidgets
         match (&mut self.title_bar, &self.content) {
             (Some(title_bar), Some(content)) => {
                 if area_size.width.is_none() {
-                    let area_size3 = Size::new(Some(title_bar.margin_width()), Some(content.margin_height()));
+                    let area_size3 = Size::new(Some(content.margin_width()), Some(title_bar.margin_height()));
                     title_bar.update_size(cairo_context, theme, area_size3)?;
                 }
             },
