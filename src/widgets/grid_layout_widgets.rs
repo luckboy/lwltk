@@ -1308,6 +1308,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -1398,6 +1399,7 @@ mod tests
         button6.set_v_align(VAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -1494,6 +1496,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -1604,6 +1607,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -1711,6 +1715,7 @@ mod tests
         button9.set_weight(1);
         button9.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button9));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -1829,6 +1834,7 @@ mod tests
         button9.set_weight(1);
         button9.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button9));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -1937,6 +1943,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2048,6 +2055,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2153,6 +2161,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2264,6 +2273,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2369,6 +2379,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 4;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2480,6 +2491,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 4;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2585,6 +2597,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 70 * (1 + 3 + 2) + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2697,6 +2710,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 50 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Horizontal;
@@ -2791,6 +2805,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 50 * 3 + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Horizontal;
@@ -2882,6 +2897,7 @@ mod tests
         button6.set_v_align(VAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 50 * 3 + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Horizontal;
@@ -2967,6 +2983,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 50 * 3 + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Horizontal;
@@ -3058,6 +3075,7 @@ mod tests
         button6.set_v_align(VAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 50 * 3 + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Horizontal;
@@ -3143,6 +3161,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 60 * 3 + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Horizontal;
@@ -3235,6 +3254,7 @@ mod tests
         button6.set_v_align(VAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 60 * 3 + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Horizontal;
@@ -3303,6 +3323,7 @@ mod tests
         theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
         theme.set_button_font_size(16.0);
         let mut widgets = GridLayoutWidgets::new(3);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -3363,6 +3384,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -3453,6 +3475,7 @@ mod tests
         button6.set_h_align(HAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -3549,6 +3572,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -3659,6 +3683,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -3766,6 +3791,7 @@ mod tests
         button9.set_weight(1);
         button9.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button9));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -3884,6 +3910,7 @@ mod tests
         button9.set_weight(1);
         button9.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button9));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -3992,6 +4019,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 50 * (1 + 3 + 2) + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4103,6 +4131,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 50 * (1 + 3 + 2) + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4208,6 +4237,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 50 * (1 + 3 + 2) + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4319,6 +4349,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 50 * (1 + 3 + 2) + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4424,6 +4455,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 50 * (1 + 3 + 2) + 4;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4535,6 +4567,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 50 * (1 + 3 + 2) + 4;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4640,6 +4673,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4752,6 +4786,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_height = 40 + 4 + 60 * (1 + 3 + 2) + 2;
         let area_size = Size::new(None, Some(area_height));
         let orient = Orient::Vertical;
@@ -4846,6 +4881,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 * 3 + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Vertical;
@@ -4937,6 +4973,7 @@ mod tests
         button6.set_h_align(HAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 * 3 + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Vertical;
@@ -5022,6 +5059,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 * 3 + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Vertical;
@@ -5113,6 +5151,7 @@ mod tests
         button6.set_h_align(HAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 * 3 + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Vertical;
@@ -5198,6 +5237,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 70 * 3 + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Vertical;
@@ -5290,6 +5330,7 @@ mod tests
         button6.set_h_align(HAlign::Fill);
         button6.set_preferred_size(Size::new(Some(40), Some(30)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 70 * 3 + 2;
         let area_size = Size::new(Some(area_width), None);
         let orient = Orient::Vertical;
@@ -5358,6 +5399,7 @@ mod tests
         theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
         theme.set_button_font_size(16.0);
         let mut widgets = GridLayoutWidgets::new(3);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -5418,6 +5460,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -5503,6 +5546,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -5588,6 +5632,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -5673,6 +5718,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -5758,6 +5804,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -5843,6 +5890,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -5928,6 +5976,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6013,6 +6062,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 64 + 54 + 64 + 10;
         let area_height = 54 * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6098,6 +6148,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -6151,6 +6202,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(137), Some(30)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -6192,6 +6244,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 + 4 + 50 + 4 + 60 + 4 + 10;
         let area_height = (50 + 4) * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6235,6 +6288,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 + 4 + 50 + 4 + 60 + 4 + 10;
         let area_height = (50 + 4) * 2 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6278,6 +6332,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 + 4 + 50 + 4 + 60 + 4 + 20;
         let area_height = (50 + 4) * 2 + 20;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6323,6 +6378,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = 60 + 4 + 50 + 4 + 60 + 4 + 20;
         let area_height = (50 + 4) * 2 + 20;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6368,6 +6424,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -6421,6 +6478,7 @@ mod tests
         button8.set_weight(3);
         button8.set_preferred_size(Size::new(Some(40), Some(107)));
         widgets.add_dyn(Box::new(button8));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -6462,6 +6520,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = (60 + 4) * 2 + 10;
         let area_height = 50 + 4 + 40 + 4 + 50 + 4 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6505,6 +6564,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = (60 + 4) * 2 + 10;
         let area_height = 50 + 4 + 40 + 4 + 50 + 4 + 10;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6548,6 +6608,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = (60 + 4) * 2 + 20;
         let area_height = 50 + 4 + 40 + 4 + 50 + 4 + 20;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6593,6 +6654,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_width = (60 + 4) * 2 + 20;
         let area_height = 50 + 4 + 40 + 4 + 50 + 4 + 20;
         let area_size = Size::new(Some(area_width), Some(area_height));
@@ -6638,6 +6700,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -6702,6 +6765,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Horizontal;
         let h_align = HAlign::Left;
@@ -6750,6 +6814,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
@@ -6814,6 +6879,7 @@ mod tests
         let mut button6 = Button::new("B6");
         button6.set_preferred_size(Size::new(Some(40), Some(50)));
         widgets.add_dyn(Box::new(button6));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
         let orient = Orient::Vertical;
         let h_align = HAlign::Left;
