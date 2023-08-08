@@ -343,3 +343,227 @@ impl AsAny for GridLayout
     fn as_any_mut(&mut self) -> &mut dyn Any
     { self }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+    use crate::widgets::button::*;
+
+    #[test]
+    fn test_grid_layout_updates_size_and_position_for_horizontal_orientation()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut grid_layout = GridLayout::new(4);
+        grid_layout.set_orient(Orient::Horizontal);
+        let mut button1 = Button::new("B1");
+        button1.set_weight(1);
+        button1.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button1);
+        let mut button2 = Button::new("B2");
+        button2.set_preferred_size(Size::new(Some(50), Some(30)));
+        grid_layout.add(button2);
+        let mut button3 = Button::new("B3");
+        button3.set_weight(3);
+        button3.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button3);
+        let mut button4 = Button::new("B4");
+        button4.set_weight(2);
+        button4.set_preferred_size(Size::new(Some(110), Some(30)));
+        grid_layout.add(button4);
+        let mut button5 = Button::new("B5");
+        button5.set_weight(1);
+        button5.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button5);
+        let mut button6 = Button::new("B6");
+        button6.set_preferred_size(Size::new(Some(50), Some(30)));
+        grid_layout.add(button6);
+        let mut button7 = Button::new("B7");
+        button7.set_weight(2);
+        button7.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button7);
+        let mut button8 = Button::new("B8");
+        button8.set_weight(3);
+        button8.set_preferred_size(Size::new(Some(137), Some(30)));
+        grid_layout.add(button8);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match grid_layout.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = 50 + 4 + 57 + 171 + 114;
+        let expected_height = (30 + 4) * 2;
+        assert_eq!(Size::new(expected_width, expected_height), grid_layout.bounds.size());
+        let expected_zero_weight_width_sum = 50 + 4;
+        assert_eq!(expected_zero_weight_width_sum, grid_layout.widgets.zero_weight_width_sum);
+        let expected_weight_sum = 6;
+        assert_eq!(expected_weight_sum, grid_layout.widgets.weight_sum);
+        let expected_weight_width = 57;
+        assert_eq!(expected_weight_width, grid_layout.widgets.weight_width);
+        let expected_weight_width_rem = 0;
+        assert_eq!(expected_weight_width_rem, grid_layout.widgets.weight_width_rem);
+        let expected_row_height = 34;
+        assert_eq!(expected_row_height, grid_layout.widgets.row_height);
+        let expected_row_height_rem = 0;
+        assert_eq!(expected_row_height_rem, grid_layout.widgets.row_height_rem);
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[0][0].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[0][0].size());
+        assert_eq!(Size::new(54, 34), grid_layout.widgets.widgets[0][1].margin_size());
+        assert_eq!(Size::new(50, 30), grid_layout.widgets.widgets[0][1].size());
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[0][2].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[0][2].size());
+        assert_eq!(Size::new(114, 34), grid_layout.widgets.widgets[0][3].margin_size());
+        assert_eq!(Size::new(110, 30), grid_layout.widgets.widgets[0][3].size());
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[1][0].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[1][0].size());
+        assert_eq!(Size::new(54, 34), grid_layout.widgets.widgets[1][1].margin_size());
+        assert_eq!(Size::new(50, 30), grid_layout.widgets.widgets[1][1].size());
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[1][2].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[1][2].size());
+        assert_eq!(Size::new(141, 34), grid_layout.widgets.widgets[1][3].margin_size());
+        assert_eq!(Size::new(137, 30), grid_layout.widgets.widgets[1][3].size());
+        let area_bounds = Rect::new(20, 10, grid_layout.bounds.width, grid_layout.bounds.height);
+        match grid_layout.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_x = 20;
+        let expected_y = 10;
+        assert_eq!(Pos::new(expected_x, expected_y), grid_layout.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), grid_layout.bounds.size());
+        let expected_start_y = 10;
+        assert_eq!(expected_start_y, grid_layout.widgets.start_y);
+        assert_eq!(Pos::new(20, 10), grid_layout.widgets.widgets[0][0].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 2), grid_layout.widgets.widgets[0][0].pos());
+        assert_eq!(Pos::new(20 + 57, 10), grid_layout.widgets.widgets[0][1].margin_pos());
+        assert_eq!(Pos::new(20 + 57 + 2, 10 + 2), grid_layout.widgets.widgets[0][1].pos());
+        assert_eq!(Pos::new(20 + 57 + 54, 10), grid_layout.widgets.widgets[0][2].margin_pos());
+        assert_eq!(Pos::new(20 + 57 + 54 + 2, 10 + 2), grid_layout.widgets.widgets[0][2].pos());
+        assert_eq!(Pos::new(20 + 57 + 54 + 171, 10), grid_layout.widgets.widgets[0][3].margin_pos());
+        assert_eq!(Pos::new(20 + 57 + 54 + 171 + 2, 10 + 2), grid_layout.widgets.widgets[0][3].pos());
+        assert_eq!(Pos::new(20, 10 + 34), grid_layout.widgets.widgets[1][0].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 34 + 2), grid_layout.widgets.widgets[1][0].pos());
+        assert_eq!(Pos::new(20 + 57, 10 + 34), grid_layout.widgets.widgets[1][1].margin_pos());
+        assert_eq!(Pos::new(20 + 57 + 2, 10 + 34 + 2), grid_layout.widgets.widgets[1][1].pos());
+        assert_eq!(Pos::new(20 + 57 + 54, 10 + 34), grid_layout.widgets.widgets[1][2].margin_pos());
+        assert_eq!(Pos::new(20 + 57 + 54 + 2, 10 + 34 + 2), grid_layout.widgets.widgets[1][2].pos());
+        assert_eq!(Pos::new(20 + 57 + 54 + 114, 10 + 34), grid_layout.widgets.widgets[1][3].margin_pos());
+        assert_eq!(Pos::new(20 + 57 + 54 + 114 + 2, 10 + 34 + 2), grid_layout.widgets.widgets[1][3].pos());
+    }
+
+    #[test]
+    fn test_grid_layout_updates_size_and_position_for_vertical_orientation()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut grid_layout = GridLayout::new(4);
+        grid_layout.set_orient(Orient::Vertical);
+        let mut button1 = Button::new("B1");
+        button1.set_weight(1);
+        button1.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button1);
+        let mut button2 = Button::new("B2");
+        button2.set_preferred_size(Size::new(Some(40), Some(40)));
+        grid_layout.add(button2);
+        let mut button3 = Button::new("B3");
+        button3.set_weight(3);
+        button3.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button3);
+        let mut button4 = Button::new("B4");
+        button4.set_weight(2);
+        button4.set_preferred_size(Size::new(Some(40), Some(90)));
+        grid_layout.add(button4);
+        let mut button5 = Button::new("B5");
+        button5.set_weight(1);
+        button5.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button5);
+        let mut button6 = Button::new("B6");
+        button6.set_preferred_size(Size::new(Some(40), Some(40)));
+        grid_layout.add(button6);
+        let mut button7 = Button::new("B7");
+        button7.set_weight(2);
+        button7.set_preferred_size(Size::new(Some(40), Some(30)));
+        grid_layout.add(button7);
+        let mut button8 = Button::new("B8");
+        button8.set_weight(3);
+        button8.set_preferred_size(Size::new(Some(40), Some(107)));
+        grid_layout.add(button8);
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match grid_layout.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = (40 + 4) * 2;
+        let expected_height = 40 + 4 + 47 + 141 + 94;
+        assert_eq!(Size::new(expected_width, expected_height), grid_layout.bounds.size());
+        let expected_zero_weight_width_sum = 40 + 4;
+        assert_eq!(expected_zero_weight_width_sum, grid_layout.widgets.zero_weight_width_sum);
+        let expected_weight_sum = 6;
+        assert_eq!(expected_weight_sum, grid_layout.widgets.weight_sum);
+        let expected_weight_width = 47;
+        assert_eq!(expected_weight_width, grid_layout.widgets.weight_width);
+        let expected_weight_width_rem = 0;
+        assert_eq!(expected_weight_width_rem, grid_layout.widgets.weight_width_rem);
+        let expected_row_height = 44;
+        assert_eq!(expected_row_height, grid_layout.widgets.row_height);
+        let expected_row_height_rem = 0;
+        assert_eq!(expected_row_height_rem, grid_layout.widgets.row_height_rem);
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[0][0].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[0][0].size());
+        assert_eq!(Size::new(44, 44), grid_layout.widgets.widgets[0][1].margin_size());
+        assert_eq!(Size::new(40, 40), grid_layout.widgets.widgets[0][1].size());
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[0][2].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[0][2].size());
+        assert_eq!(Size::new(44, 94), grid_layout.widgets.widgets[0][3].margin_size());
+        assert_eq!(Size::new(40, 90), grid_layout.widgets.widgets[0][3].size());
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[1][0].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[1][0].size());
+        assert_eq!(Size::new(44, 44), grid_layout.widgets.widgets[1][1].margin_size());
+        assert_eq!(Size::new(40, 40), grid_layout.widgets.widgets[1][1].size());
+        assert_eq!(Size::new(44, 34), grid_layout.widgets.widgets[1][2].margin_size());
+        assert_eq!(Size::new(40, 30), grid_layout.widgets.widgets[1][2].size());
+        assert_eq!(Size::new(44, 111), grid_layout.widgets.widgets[1][3].margin_size());
+        assert_eq!(Size::new(40, 107), grid_layout.widgets.widgets[1][3].size());
+        let area_bounds = Rect::new(20, 10, grid_layout.bounds.width, grid_layout.bounds.height);
+        match grid_layout.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_x = 20;
+        let expected_y = 10;
+        assert_eq!(Pos::new(expected_x, expected_y), grid_layout.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), grid_layout.bounds.size());
+        let expected_start_y = 10;
+        assert_eq!(expected_start_y, grid_layout.widgets.start_y);
+        assert_eq!(Pos::new(20, 10), grid_layout.widgets.widgets[0][0].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 2), grid_layout.widgets.widgets[0][0].pos());
+        assert_eq!(Pos::new(20, 10 + 47), grid_layout.widgets.widgets[0][1].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 47 + 2), grid_layout.widgets.widgets[0][1].pos());
+        assert_eq!(Pos::new(20 , 10 + 47 + 44), grid_layout.widgets.widgets[0][2].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 47 + 44 + 2), grid_layout.widgets.widgets[0][2].pos());
+        assert_eq!(Pos::new(20 , 10 + 47 + 44 + 141), grid_layout.widgets.widgets[0][3].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 47 + 44 + 141 + 2), grid_layout.widgets.widgets[0][3].pos());
+        assert_eq!(Pos::new(20 + 44, 10), grid_layout.widgets.widgets[1][0].margin_pos());
+        assert_eq!(Pos::new(20 + 44 + 2, 10 + 2), grid_layout.widgets.widgets[1][0].pos());
+        assert_eq!(Pos::new(20 + 44, 10 + 47), grid_layout.widgets.widgets[1][1].margin_pos());
+        assert_eq!(Pos::new(20 + 44 + 2, 10 + 47 + 2), grid_layout.widgets.widgets[1][1].pos());
+        assert_eq!(Pos::new(20 + 44, 10 + 47 + 44), grid_layout.widgets.widgets[1][2].margin_pos());
+        assert_eq!(Pos::new(20 + 44 + 2, 10 + 47 + 44 + 2), grid_layout.widgets.widgets[1][2].pos());
+        assert_eq!(Pos::new(20 + 44, 10 + 47 + 44 + 94), grid_layout.widgets.widgets[1][3].margin_pos());
+        assert_eq!(Pos::new(20 + 44 + 2, 10 + 47 + 44 + 94 + 2), grid_layout.widgets.widgets[1][3].pos());
+    }
+}

@@ -312,3 +312,84 @@ impl AsAny for TitleBar
     fn as_any_mut(&mut self) -> &mut dyn Any
     { self }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::image::*;
+    use crate::mocks::*;
+    use crate::widgets::title::*;
+    use crate::widgets::title_button::*;
+
+    #[test]
+    fn test_title_bar_updates_size_and_position()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        
+        title_bar.add(Title::new("Title"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        theme.set_title_font(&cairo_context).unwrap();
+        let t = cairo_context.text_extents("T").unwrap().x_advance;
+        let i = cairo_context.text_extents("i").unwrap().x_advance;
+        let t2 = cairo_context.text_extents("t").unwrap().x_advance;
+        let l = cairo_context.text_extents("l").unwrap().x_advance;
+        let e = cairo_context.text_extents("e").unwrap().x_advance;
+        let text_width = t + i + t2 + l + e;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match title_bar.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_width = (20 + 4) * 3 + (text_width.ceil() as i32) + 4;
+        let expected_height = (font_height.ceil() as i32) + 8;
+        assert_eq!(Size::new(expected_width, expected_height), title_bar.bounds.size());
+        let expected_zero_weight_width_sum = (20 + 4) * 3;
+        assert_eq!(expected_zero_weight_width_sum, title_bar.widgets.zero_weight_width_sum);
+        let expected_weight_sum = 1;
+        assert_eq!(expected_weight_sum, title_bar.widgets.weight_sum);
+        let expected_weight_width = (text_width.ceil() as i32) + 4;
+        assert_eq!(expected_weight_width, title_bar.widgets.weight_width);
+        let expected_weight_width_rem = 0;
+        assert_eq!(expected_weight_width_rem, title_bar.widgets.weight_width_rem);
+        assert_eq!(Size::new(24, 24), title_bar.widgets.widgets[0].margin_size());
+        assert_eq!(Size::new(20, 20), title_bar.widgets.widgets[0].size());
+        assert_eq!(Size::new((text_width.ceil() as i32)+ 4, (font_height.ceil() as i32) + 8), title_bar.widgets.widgets[1].margin_size());
+        assert_eq!(Size::new((text_width.ceil() as i32) + 4, (font_height.ceil() as i32) + 8), title_bar.widgets.widgets[1].size());
+        assert_eq!(Size::new(24, 24), title_bar.widgets.widgets[2].margin_size());
+        assert_eq!(Size::new(20, 20), title_bar.widgets.widgets[2].size());
+        assert_eq!(Size::new(24, 24), title_bar.widgets.widgets[3].margin_size());
+        assert_eq!(Size::new(20, 20), title_bar.widgets.widgets[3].size());
+        let area_bounds = Rect::new(20, 10, title_bar.bounds.width, title_bar.bounds.height);
+        match title_bar.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_x = 20;
+        let expected_y = 10;
+        assert_eq!(Pos::new(expected_x, expected_y), title_bar.bounds.pos());
+        assert_eq!(Size::new(expected_width, expected_height), title_bar.bounds.size());
+        assert_eq!(Pos::new(20, 10 + ((font_height.ceil() as i32) + 8 - 24) / 2), title_bar.widgets.widgets[0].margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + ((font_height.ceil() as i32) + 8 - 24) / 2 + 2), title_bar.widgets.widgets[0].pos());
+        assert_eq!(Pos::new(20 + 24, 10), title_bar.widgets.widgets[1].margin_pos());
+        assert_eq!(Pos::new(20 + 24, 10), title_bar.widgets.widgets[1].pos());
+        assert_eq!(Pos::new(20 + 24 + (text_width.ceil() as i32) + 4, 10 + ((font_height.ceil() as i32) + 8 - 24) / 2), title_bar.widgets.widgets[2].margin_pos());
+        assert_eq!(Pos::new(20 + 24 + (text_width.ceil() as i32) + 4 + 2, 10 + ((font_height.ceil() as i32) + 8 - 24) / 2 + 2), title_bar.widgets.widgets[2].pos());
+        assert_eq!(Pos::new(20 + 24 + (text_width.ceil() as i32) + 4 + 24, 10 + ((font_height.ceil() as i32) + 8 - 24) / 2), title_bar.widgets.widgets[3].margin_pos());
+        assert_eq!(Pos::new(20 + 24 + (text_width.ceil() as i32) + 4 + 24 + 2, 10 + ((font_height.ceil() as i32) + 8 - 24) / 2 + 2), title_bar.widgets.widgets[3].pos());
+    }
+}
