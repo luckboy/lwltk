@@ -13,6 +13,8 @@ use crate::widget::*;
 
 pub struct TwoWindowWidgets
 {
+    pub has_trimmed_width: bool,
+    pub has_trimmed_height: bool,
     pub title_bar: Option<Box<dyn Widget>>,
     pub content: Option<Box<dyn Widget>>,
 }
@@ -20,7 +22,14 @@ pub struct TwoWindowWidgets
 impl TwoWindowWidgets
 {
     pub fn new() -> Self
-    { TwoWindowWidgets { title_bar: None, content: None, } }
+    {
+        TwoWindowWidgets {
+            has_trimmed_width: false,
+            has_trimmed_height: false,
+            title_bar: None,
+            content: None,
+        }
+    }
 
     pub fn prev(&self, idx_pair: Option<WidgetIndexPair>) -> Option<WidgetIndexPair>
     {
@@ -159,8 +168,14 @@ impl TwoWindowWidgets
         }
         match (&mut self.title_bar, &self.content) {
             (Some(title_bar), Some(content)) => {
-                if area_size.width.is_none() {
+                if area_size.width.is_none() || self.has_trimmed_width {
                     let area_size3 = Size::new(Some(content.margin_width()), Some(title_bar.margin_height()));
+                    title_bar.update_size(cairo_context, theme, area_size3)?;
+                }
+            },
+            (Some(title_bar), None) => {
+                if self.has_trimmed_width {
+                    let area_size3 = Size::new(Some(0), Some(title_bar.margin_height()));
                     title_bar.update_size(cairo_context, theme, area_size3)?;
                 }
             },
@@ -209,6 +224,16 @@ impl TwoWindowWidgets
             (None, Some(content)) => Size::new(content.margin_width(), content.margin_height()),
             (None, None) => Size::new(0, 0),
         };
-        size_for_opt_size(size, area_size)
+        let width = if self.has_trimmed_width {
+            size.width
+        } else {
+            width_for_opt_width(size.width, area_size.width)
+        };
+        let height = if self.has_trimmed_height {
+            size.height
+        } else {
+            height_for_opt_height(size.height, area_size.height)
+        };
+        Size::new(width, height)
     }
 }

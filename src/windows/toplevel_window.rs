@@ -183,7 +183,7 @@ impl ToplevelWindow
             self.change_flag_arc.store(true, Ordering::SeqCst);
         }
     }
-    
+
     pub fn set_dyn_on(&mut self, f: Box<dyn FnMut(&mut ClientContext, &mut QueueContext, &Event) -> Option<EventOption> + Send + Sync + 'static>)
     { self.call_on_fun.fun = f; }
 
@@ -191,6 +191,30 @@ impl ToplevelWindow
         where F: FnMut(&mut ClientContext, &mut QueueContext, &Event) -> Option<EventOption> + Send + Sync + 'static
     { self.set_dyn_on(Box::new(f)) }
 
+    pub fn has_trimmed_width(&self) -> bool
+    { self.widgets.has_trimmed_width }
+    
+    pub fn set_trimmed_width(&mut self, is_trimmed_width: bool)
+    {
+        let old_trimmed_width_flag = self.widgets.has_trimmed_width;
+        self.widgets.has_trimmed_width = is_trimmed_width;
+        if old_trimmed_width_flag != self.widgets.has_trimmed_width {
+            self.change_flag_arc.store(true, Ordering::SeqCst);
+        }
+    }
+
+    pub fn has_trimmed_height(&self) -> bool
+    { self.widgets.has_trimmed_height }
+
+    pub fn set_trimmed_height(&mut self, is_trimmed_height: bool)
+    {
+        let old_trimmed_height_flag = self.widgets.has_trimmed_height;
+        self.widgets.has_trimmed_height = is_trimmed_height;
+        if old_trimmed_height_flag != self.widgets.has_trimmed_height {
+            self.change_flag_arc.store(true, Ordering::SeqCst);
+        }
+    }
+    
     pub fn set_dyn_title_bar(&mut self, mut widget: Box<dyn Widget>) -> Option<WidgetIndexPair>
     {
         widget.set_change_flag_arc(self.change_flag_arc.clone());
