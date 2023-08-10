@@ -237,3 +237,1331 @@ impl TwoWindowWidgets
         Size::new(width, height)
     }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+    use crate::image::*;
+    use crate::preferred_size::*;
+    use crate::widgets::*;
+
+    #[test]
+    fn test_two_window_widgets_give_previous_widget_index_pairs()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(1, 0)), idx_pair);
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(0, 0)), idx_pair);
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_previous_widget_index_pairs_for_no_content()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(0, 0)), idx_pair);
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_previous_widget_index_pairs_for_no_title_bar()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.content = Some(Box::new(Button::new("B")));
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(1, 0)), idx_pair);
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_previous_widget_index_pairs_for_no_title_bar_and_no_content()
+    {
+        let widgets = TwoWindowWidgets::new();
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.prev(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_previous_widget_index_pairs_for_bad_index()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        let idx_pair = widgets.prev(Some(WidgetIndexPair(0, 1)));
+        assert_eq!(None, idx_pair);
+    }
+    
+    #[test]
+    fn test_two_window_widgets_give_next_widget_index_pairs()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(0, 0)), idx_pair);
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(1, 0)), idx_pair);
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_next_widget_index_pairs_for_no_content()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(0, 0)), idx_pair);
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_next_widget_index_pairs_for_no_title_bar()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.content = Some(Box::new(Button::new("B")));
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(Some(WidgetIndexPair(1, 0)), idx_pair);
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_next_widget_index_pairs_for_no_title_bar_and_no_content()
+    {
+        let widgets = TwoWindowWidgets::new();
+        let mut idx_pair: Option<WidgetIndexPair> = None;
+        idx_pair = widgets.next(idx_pair);
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_next_widget_index_pairs_for_bad_index()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        let idx_pair = widgets.next(Some(WidgetIndexPair(0, 1)));
+        assert_eq!(None, idx_pair);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_title_bar()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        match widgets.dyn_widget(WidgetIndexPair(0, 0)) {
+            Some(widget) => assert_eq!(Some(()), dyn_widget_as_widget(widget).map(|_: &TitleBar| ())),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_content()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        match widgets.dyn_widget(WidgetIndexPair(1, 0)) {
+            Some(widget) => assert_eq!(Some("B"), dyn_widget_as_widget(widget).map(|b: &Button| b.text())),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_do_not_give_widget_for_bad_index()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        match widgets.dyn_widget(WidgetIndexPair(0, 1)) {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_mutable_title_bar()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        match widgets.dyn_widget_mut(WidgetIndexPair(0, 0)) {
+            Some(widget) => assert_eq!(Some(()), dyn_widget_mut_as_widget_mut(widget).map(|_: &mut TitleBar| ())),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_mutable_content()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        match widgets.dyn_widget_mut(WidgetIndexPair(1, 0)) {
+            Some(widget) => assert_eq!(Some("B"), dyn_widget_mut_as_widget_mut(widget).map(|b: &mut Button| b.text())),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_do_not_give_mutable_widget_for_bad_index()
+    {
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.title_bar = Some(Box::new(TitleBar::new()));
+        widgets.content = Some(Box::new(Button::new("B")));
+        match widgets.dyn_widget_mut(WidgetIndexPair(0, 1)) {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_filled_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_h_align(HAlign::Fill);
+        button.set_v_align(VAlign::Fill);
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_small_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(44, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(44, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(44, 34), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(40, 30), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_filled_small_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_h_align(HAlign::Fill);
+        button.set_v_align(VAlign::Fill);
+        button.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(44, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(44, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(44, 34), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(40, 30), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 120 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(134, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(134, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_filled_content_and_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_h_align(HAlign::Fill);
+        button.set_v_align(VAlign::Fill);
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 120 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(134, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(134, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(134, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(130, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_area_width_and_trimmed_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.has_trimmed_width = true;
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 120 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_filled_content_and_area_width_and_trimmed_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.has_trimmed_width = true;
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_h_align(HAlign::Fill);
+        button.set_v_align(VAlign::Fill);
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 120 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(134, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(134, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(134, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(130, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = (font_height.ceil() as i32) + 8 + 60 + 4 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_filled_content_and_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_h_align(HAlign::Fill);
+        button.set_v_align(VAlign::Fill);
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = (font_height.ceil() as i32) + 8 + 60 + 4 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 74), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 70), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_area_height_and_trimmed_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.has_trimmed_height = true;
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = (font_height.ceil() as i32) + 8 + 60 + 4 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_filled_content_and_area_height_and_trimmed_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.has_trimmed_height = true;
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_h_align(HAlign::Fill);
+        button.set_v_align(VAlign::Fill);
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = (font_height.ceil() as i32) + 8 + 60 + 4 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 74), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 70), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(20, 10 + (font_height.ceil() as i32) + 8), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + (font_height.ceil() as i32) + 8 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_no_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        theme.set_title_font(&cairo_context).unwrap();
+        let t = cairo_context.text_extents("T").unwrap().x_advance;
+        let text_width = t;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(24 * 3 + (text_width.ceil() as i32) + 4, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(24 * 3 + (text_width.ceil() as i32) + 4, (font_height.ceil() as i32) + 8), widgets.title_bar.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20, 10), widgets.title_bar.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_no_title_bar()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Size::new(124, 64), widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), widgets.content.as_ref().unwrap().size());
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        assert_eq!(Pos::new(20, 10), widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(20 + 2, 10 + 2), widgets.content.as_ref().unwrap().pos());
+    }
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position_for_no_title_bar_and_no_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match widgets.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        match widgets.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(124, (font_height.ceil() as i32) + 8 + 64);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_small_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(40), Some(30)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(44, (font_height.ceil() as i32) + 8 + 34);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_area_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 120 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(134, (font_height.ceil() as i32) + 8 + 64);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_area_width_and_trimmed_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.has_trimmed_width = true;
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_width = 120 + 4 + 10;
+        let area_size = Size::new(Some(area_width), None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(124, (font_height.ceil() as i32) + 8 + 64);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_area_height()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = (font_height.ceil() as i32) + 8 + 60 + 4 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(124, (font_height.ceil() as i32) + 8 + 74);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_area_height_and_trimmed_width()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        widgets.has_trimmed_height = true;
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_height = (font_height.ceil() as i32) + 8 + 60 + 4 + 10;
+        let area_size = Size::new(None, Some(area_height));
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(124, (font_height.ceil() as i32) + 8 + 64);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_no_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        theme.set_title_font(&cairo_context).unwrap();
+        let t = cairo_context.text_extents("T").unwrap().x_advance;
+        let text_width = t;
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(24 * 3 + (text_width.ceil() as i32) + 4, (font_height.ceil() as i32) + 8);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_no_title_bar()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(124, 64);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+
+    #[test]
+    fn test_two_window_widgets_give_padding_size_for_no_title_bar_and_no_content()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let expected_padding_size = Size::new(0, 0);
+        assert_eq!(expected_padding_size, padding_size);
+    }
+
+    #[test]
+    fn test_two_window_widgets_point_widgets()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        widgets.update_pos(&cairo_context, &theme, area_bounds).unwrap();
+        match widgets.point(Pos::new(25.0, 15.0)) {
+            Some(idx_pair) => assert_eq!(WidgetIndexPair(0, 0), idx_pair),
+            None => assert!(false),
+        }
+        match widgets.point(Pos::new(50.0, 65.0)) {
+            Some(idx_pair) => assert_eq!(WidgetIndexPair(1, 0), idx_pair),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_two_window_widgets_do_not_point_widgets()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut widgets = TwoWindowWidgets::new();
+        let mut title_bar = TitleBar::new();
+        title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
+        title_bar.add(Title::new("T"));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
+        title_bar.add(TitleButton::new(TitleButtonIcon::Close));
+        widgets.title_bar = Some(Box::new(title_bar));
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        widgets.content = Some(Box::new(button));
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        widgets.update_size(&cairo_context, &theme, area_size).unwrap();
+        let padding_size = widgets.padding_size(area_size);
+        let area_bounds = Rect::new(20, 10, padding_size.width, padding_size.height);
+        widgets.update_pos(&cairo_context, &theme, area_bounds).unwrap();
+        match widgets.point(Pos::new(15.0, 25.0)) {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
+}

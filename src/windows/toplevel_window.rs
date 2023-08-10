@@ -533,3 +533,67 @@ impl AsAny for ToplevelWindow
     fn as_any_mut(&mut self) -> &mut dyn Any
     { self }
 }
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+    use crate::mocks::*;
+
+    #[test]
+    fn test_two_window_widgets_update_size_and_position()
+    {
+        let cairo_surface = create_dummy_cairo_surface().unwrap();
+        let cairo_context = CairoContext::new(&cairo_surface).unwrap();
+        let mut theme = MockTheme::new();
+        theme.set_font_size(32.0);
+        theme.set_toplevel_window_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_margin_edges(Edges::new(0, 0, 0, 0));
+        theme.set_title_padding_edges(Edges::new(4, 4, 2, 2));
+        theme.set_title_font_size(16.0);
+        theme.set_title_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_title_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_title_button_icon_size(Size::new(12, 12));
+        theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
+        theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
+        theme.set_button_font_size(16.0);
+        let mut toplevel_window = ToplevelWindow::new().unwrap();
+        toplevel_window.set_title("T");
+        let mut button = Button::new("B");
+        button.set_preferred_size(Size::new(Some(120), Some(60)));
+        toplevel_window.set(button);
+        theme.set_title_font(&cairo_context).unwrap();
+        let font_height = cairo_context.font_extents().unwrap().height;
+        theme.set_cairo_context(&cairo_context, 1).unwrap();
+        let area_size = Size::new(None, None);
+        match toplevel_window.update_size(&cairo_context, &theme, area_size) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_padding_width = 124;
+        let expected_padding_height = (font_height.ceil() as i32) + 8 + 64;
+        assert_eq!(Size::new(expected_padding_width, expected_padding_height), toplevel_window.padding_bounds.size());
+        let expected_width = expected_padding_width + 8;
+        let expected_height = expected_padding_height + 8;
+        assert_eq!(Size::new(expected_width, expected_height), toplevel_window.size);
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), toplevel_window.widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), toplevel_window.widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), toplevel_window.widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), toplevel_window.widgets.content.as_ref().unwrap().size());
+        let padding_size = toplevel_window.widgets.padding_size(area_size);
+        let area_bounds = outer_rect(Rect::new(4, 4, padding_size.width, padding_size.height), Edges::new(4, 4, 4, 4));
+        match toplevel_window.update_pos(&cairo_context, &theme, area_bounds) {
+            Ok(()) => (),
+            Err(_) => assert!(false),
+        }
+        let expected_padding_x = 4;
+        let expected_padding_y = 4;
+        assert_eq!(Pos::new(expected_padding_x, expected_padding_y), toplevel_window.padding_bounds.pos());
+        assert_eq!(Size::new(expected_padding_width, expected_padding_height), toplevel_window.padding_bounds.size());
+        assert_eq!(Size::new(expected_width, expected_height), toplevel_window.size);
+        assert_eq!(Pos::new(4, 4), toplevel_window.widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(4, 4), toplevel_window.widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(4, 4 + (font_height.ceil() as i32) + 8), toplevel_window.widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(4 + 2, 4 + (font_height.ceil() as i32) + 8 + 2), toplevel_window.widgets.content.as_ref().unwrap().pos());
+    }
+}
