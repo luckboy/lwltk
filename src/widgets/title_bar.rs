@@ -337,7 +337,6 @@ mod tests
         theme.set_title_button_icon_size(Size::new(12, 12));
         let mut title_bar = TitleBar::new();
         title_bar.add(TitleButton::new(TitleButtonIcon::Menu));
-        
         title_bar.add(Title::new("Title"));
         title_bar.add(TitleButton::new(TitleButtonIcon::Maximize));
         title_bar.add(TitleButton::new(TitleButtonIcon::Close));
