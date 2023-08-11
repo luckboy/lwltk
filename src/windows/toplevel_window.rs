@@ -580,8 +580,7 @@ mod tests
         assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), toplevel_window.widgets.title_bar.as_ref().unwrap().size());
         assert_eq!(Size::new(124, 64), toplevel_window.widgets.content.as_ref().unwrap().margin_size());
         assert_eq!(Size::new(120, 60), toplevel_window.widgets.content.as_ref().unwrap().size());
-        let padding_size = toplevel_window.widgets.padding_size(area_size);
-        let area_bounds = outer_rect(Rect::new(4, 4, padding_size.width, padding_size.height), Edges::new(4, 4, 4, 4));
+        let area_bounds = Rect::new(0, 0, toplevel_window.size.width, toplevel_window.size.height);
         match toplevel_window.update_pos(&cairo_context, &theme, area_bounds) {
             Ok(()) => (),
             Err(_) => assert!(false),
