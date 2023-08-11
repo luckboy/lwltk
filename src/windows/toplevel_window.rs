@@ -557,42 +557,42 @@ mod tests
         theme.set_button_margin_edges(Edges::new(2, 2, 2, 2));
         theme.set_button_padding_edges(Edges::new(4, 4, 4, 4));
         theme.set_button_font_size(16.0);
-        let mut toplevel_window = ToplevelWindow::new().unwrap();
-        toplevel_window.set_title("T");
+        let mut window = ToplevelWindow::new().unwrap();
+        window.set_title("T");
         let mut button = Button::new("B");
         button.set_preferred_size(Size::new(Some(120), Some(60)));
-        toplevel_window.set(button);
+        window.set(button);
         theme.set_title_font(&cairo_context).unwrap();
         let font_height = cairo_context.font_extents().unwrap().height;
         theme.set_cairo_context(&cairo_context, 1).unwrap();
         let area_size = Size::new(None, None);
-        match toplevel_window.update_size(&cairo_context, &theme, area_size) {
+        match window.update_size(&cairo_context, &theme, area_size) {
             Ok(()) => (),
             Err(_) => assert!(false),
         }
         let expected_padding_width = 124;
         let expected_padding_height = (font_height.ceil() as i32) + 8 + 64;
-        assert_eq!(Size::new(expected_padding_width, expected_padding_height), toplevel_window.padding_bounds.size());
+        assert_eq!(Size::new(expected_padding_width, expected_padding_height), window.padding_bounds.size());
         let expected_width = expected_padding_width + 8;
         let expected_height = expected_padding_height + 8;
-        assert_eq!(Size::new(expected_width, expected_height), toplevel_window.size);
-        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), toplevel_window.widgets.title_bar.as_ref().unwrap().margin_size());
-        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), toplevel_window.widgets.title_bar.as_ref().unwrap().size());
-        assert_eq!(Size::new(124, 64), toplevel_window.widgets.content.as_ref().unwrap().margin_size());
-        assert_eq!(Size::new(120, 60), toplevel_window.widgets.content.as_ref().unwrap().size());
-        let area_bounds = Rect::new(0, 0, toplevel_window.size.width, toplevel_window.size.height);
-        match toplevel_window.update_pos(&cairo_context, &theme, area_bounds) {
+        assert_eq!(Size::new(expected_width, expected_height), window.size);
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), window.widgets.title_bar.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(124, (font_height.ceil() as i32) + 8), window.widgets.title_bar.as_ref().unwrap().size());
+        assert_eq!(Size::new(124, 64), window.widgets.content.as_ref().unwrap().margin_size());
+        assert_eq!(Size::new(120, 60), window.widgets.content.as_ref().unwrap().size());
+        let area_bounds = Rect::new(0, 0, window.size.width, window.size.height);
+        match window.update_pos(&cairo_context, &theme, area_bounds) {
             Ok(()) => (),
             Err(_) => assert!(false),
         }
         let expected_padding_x = 4;
         let expected_padding_y = 4;
-        assert_eq!(Pos::new(expected_padding_x, expected_padding_y), toplevel_window.padding_bounds.pos());
-        assert_eq!(Size::new(expected_padding_width, expected_padding_height), toplevel_window.padding_bounds.size());
-        assert_eq!(Size::new(expected_width, expected_height), toplevel_window.size);
-        assert_eq!(Pos::new(4, 4), toplevel_window.widgets.title_bar.as_ref().unwrap().margin_pos());
-        assert_eq!(Pos::new(4, 4), toplevel_window.widgets.title_bar.as_ref().unwrap().pos());
-        assert_eq!(Pos::new(4, 4 + (font_height.ceil() as i32) + 8), toplevel_window.widgets.content.as_ref().unwrap().margin_pos());
-        assert_eq!(Pos::new(4 + 2, 4 + (font_height.ceil() as i32) + 8 + 2), toplevel_window.widgets.content.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(expected_padding_x, expected_padding_y), window.padding_bounds.pos());
+        assert_eq!(Size::new(expected_padding_width, expected_padding_height), window.padding_bounds.size());
+        assert_eq!(Size::new(expected_width, expected_height), window.size);
+        assert_eq!(Pos::new(4, 4), window.widgets.title_bar.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(4, 4), window.widgets.title_bar.as_ref().unwrap().pos());
+        assert_eq!(Pos::new(4, 4 + (font_height.ceil() as i32) + 8), window.widgets.content.as_ref().unwrap().margin_pos());
+        assert_eq!(Pos::new(4 + 2, 4 + (font_height.ceil() as i32) + 8 + 2), window.widgets.content.as_ref().unwrap().pos());
     }
 }
