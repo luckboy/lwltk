@@ -94,12 +94,10 @@ impl ToplevelWindow
         let close_button = TitleButton::new(TitleButtonIcon::Close);
         let close_button_path = container_rel_widget_path(&mut window, &title_bar_path, |title_bar: &mut TitleBar| title_bar.add(close_button))?;
         let title: &mut Title = container_widget_mut(&mut window, &title_path)?;
-        title.set_on(move |client_context, queue_context, event| {
+        title.set_on(move |_, queue_context, event| {
                 match event {
                      Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) |
                      Event::Client(ClientEvent::TouchDown(_, _, _)) => {
-                         client_context.stop_button_timer();
-                         client_context.stop_touch_timer();
                          let current_window_idx = queue_context.current_call_on_path()?.window_index();
                          queue_context.push_callback(move |_, window_context, _| {
                                  window_context.dyn_window_mut(current_window_idx)?._move();

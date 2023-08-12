@@ -264,7 +264,7 @@ impl ClientWindow
         });
     }
     
-    fn set_move(&self, client_context_fields: &ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
+    fn set_move(&self, client_context_fields: &mut ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
     {
         if window.is_moved() {
             match client_context_fields.serial {
@@ -272,11 +272,13 @@ impl ClientWindow
                 None => return Err(ClientError::NoSerial),
             }
             window.clear_move_flag();
+            client_context_fields.has_button_timer_stop = true;
+            client_context_fields.has_touch_timer_stop = true;
         }
         Ok(())
     }
 
-    fn set_resize(&self, client_context_fields: &ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
+    fn set_resize(&self, client_context_fields: &mut ClientContextFields, window: &mut dyn Window) -> Result<(), ClientError>
     {
         match window.resize_edges() {
             Some(edges) => {
@@ -296,13 +298,15 @@ impl ClientWindow
                     None => return Err(ClientError::NoSerial),
                 }
                 window.clear_resize_edges();
+                client_context_fields.has_button_timer_stop = true;
+                client_context_fields.has_touch_timer_stop = true;
             },
             None => (),
         }
         Ok(())
     }
     
-    pub(crate) fn set(&mut self, client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme, parent_surface: Option<&wl_surface::WlSurface>) -> Result<(), ClientError>
+    pub(crate) fn set(&mut self, client_context_fields: &mut ClientContextFields, window: &mut dyn Window, theme: &dyn Theme, parent_surface: Option<&wl_surface::WlSurface>) -> Result<(), ClientError>
     {
         let scale = client_context_fields.scale;
         match (window.parent_index(), window.pos_in_parent(), parent_surface) {
@@ -337,7 +341,7 @@ impl ClientWindow
         Ok(())
     }
 
-    pub(crate) fn update(&mut self, client_context_fields: &ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), ClientError>
+    pub(crate) fn update(&mut self, client_context_fields: &mut ClientContextFields, window: &mut dyn Window, theme: &dyn Theme) -> Result<(), ClientError>
     {
         let scale = client_context_fields.scale;
         let new_title = window.title().map(|s| String::from(s));

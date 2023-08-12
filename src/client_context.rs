@@ -437,7 +437,7 @@ impl ClientContext
             Some(window) => {
                 let mut client_window = ClientWindow::new(&self.fields, window, &*window_context.theme)?;
                 client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx);
-                match client_window.set(&self.fields, window, &*window_context.theme, parent_surface) {
+                match client_window.set(&mut self.fields, window, &*window_context.theme, parent_surface) {
                     Ok(()) => (),
                     Err(err) => {
                         client_window.destroy();
@@ -664,7 +664,7 @@ impl ClientContext
             Some(client_window) => {
                 match window_context.window_container.dyn_window_mut(idx) {
                     Some(window) => {
-                        client_window.update(&self.fields, window, &*window_context.theme)?;
+                        client_window.update(&mut self.fields, window, &*window_context.theme)?;
                         window.child_indices().collect::<Vec<WindowIndex>>()
                     },
                     None => return Err(ClientError::NoWindow),
@@ -675,7 +675,7 @@ impl ClientContext
                     Some(window) => {
                         let mut client_window = ClientWindow::new(&self.fields, window, &*window_context.theme)?;
                         client_window.assign(client_context2.clone(), window_context2.clone(), queue_context2.clone(), timer_tx);
-                        match client_window.set(&self.fields, window, &*window_context.theme, parent_surface) {
+                        match client_window.set(&mut self.fields, window, &*window_context.theme, parent_surface) {
                             Ok(()) => (),
                             Err(err) => {
                                 client_window.destroy();
@@ -1072,38 +1072,6 @@ impl ClientContext
         }
         self.fields.has_sent_post_button_release_call_on_path = true;
     }
-
-    /// Returns `true` if the stop flag of the button timer is `true`, otherwise `false`.
-    pub fn has_button_timer_stop(&self) -> bool
-    { self.fields.has_button_timer_stop }
-
-    /// Sets the stop flag of the button timer.
-    pub fn set_button_timer_stop(&mut self, is_stop: bool)
-    { self.fields.has_button_timer_stop = is_stop; }
-
-    /// Stops the button timer.
-    pub fn stop_button_timer(&mut self)
-    { self.fields.has_button_timer_stop = true; }
-
-    /// Unstops the button timer.
-    pub fn unstop_button_timer(&mut self)
-    { self.fields.has_button_timer_stop = false; }
-
-    /// Returns `true` if the stop flag of the touch timer is `true`, otherwise `false`.
-    pub fn has_touch_timer_stop(&self) -> bool
-    { self.fields.has_button_timer_stop }
-
-    /// Sets the stop flag of the touch timer.
-    pub fn set_touch_timer_stop(&mut self, is_stop: bool)
-    { self.fields.has_touch_timer_stop = is_stop; }
-
-    /// Stops the touch timer.
-    pub fn stop_touch_timer(&mut self)
-    { self.fields.has_touch_timer_stop = true; }
-
-    /// Unstops the touch timer.
-    pub fn unstop_touch_timer(&mut self)
-    { self.fields.has_touch_timer_stop = false; }
     
     pub(crate) fn stop_button_timer_and_touch_timer(&mut self, timer_tx: &mpsc::Sender<ThreadTimerCommand>)
     {
