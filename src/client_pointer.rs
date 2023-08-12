@@ -25,7 +25,7 @@ pub(crate) fn prepare_event_for_client_pointer_enter(client_context: &mut Client
     match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             let pos = Pos::new(surface_x / (client_context.fields.scale as f64), surface_y / (client_context.fields.scale as f64));
-            match client_context.add_event_preparation(window_context, CallOnId::Pointer, window_idx, pos) {
+            match client_context.add_event_preparation(window_context, CallOnId::Pointer, window_idx, pos, None) {
                 Some((call_on_path, pos)) => {
                     client_context.fields.has_cursor = true;
                     window_context.current_window_index = Some(call_on_path.window_index());
@@ -127,6 +127,7 @@ pub(crate) fn prepare_event_for_client_pointer_button(client_context: &mut Clien
                                         Ok(()) => (),
                                         Err(_) => eprintln!("lwltk: {}", ClientError::Send),
                                     }
+                                    client_context.unset_first_pos(CallOnId::Pointer);
                                 },
                                 _ => (),
                             }

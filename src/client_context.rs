@@ -113,6 +113,7 @@ pub(crate) struct EventPreparation
     window_index: WindowIndex,
     pos: Pos<f64>,
     call_on_path: CallOnPath,
+    first_pos: Option<Pos<f64>>,
 }
 
 pub(crate) struct ClientContextFields
@@ -838,11 +839,11 @@ impl ClientContext
         })
     }
 
-    pub(crate) fn add_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, idx: WindowIndex, pos: Pos<f64>) -> Option<(CallOnPath, Pos<f64>)>
+    pub(crate) fn add_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, idx: WindowIndex, pos: Pos<f64>, first_pos: Option<Pos<f64>>) -> Option<(CallOnPath, Pos<f64>)>
     {
         match window_context.window_container.dyn_window(idx) {
             Some(window) => {
-                let call_on_path = match window.point(pos) {
+                let call_on_path = match window.point(first_pos.unwrap_or(pos)) {
                     Some(rel_widget_path) => CallOnPath::Widget(rel_widget_path.to_abs_widget_path(idx)),
                     None => CallOnPath::Window(idx),
                 };
@@ -850,6 +851,7 @@ impl ClientContext
                     window_index: idx,
                     pos,
                     call_on_path: call_on_path.clone(),
+                    first_pos,
                 };
                 self.fields.event_preparations.insert(call_on_id, event_preparation);
                 Some((call_on_path, pos))
@@ -860,12 +862,12 @@ impl ClientContext
     
     pub(crate) fn set_event_preparation(&mut self, window_context: &WindowContext, call_on_id: CallOnId, pos: Pos<f64>) -> Option<(CallOnPath, Pos<f64>)>
     {
-        let idx = match self.fields.event_preparations.remove(&call_on_id) {
-            Some(event_preparation) => Some(event_preparation.window_index),
+        let pair = match self.fields.event_preparations.remove(&call_on_id) {
+            Some(event_preparation) => Some((event_preparation.window_index, event_preparation.first_pos)),
             None => None,
         };
-        match idx {
-            Some(idx) => self.add_event_preparation(window_context, call_on_id, idx, pos),
+        match pair {
+            Some((idx, first_pos)) => self.add_event_preparation(window_context, call_on_id, idx, pos, first_pos),
             None => None,
         }
     }
@@ -883,7 +885,7 @@ impl ClientContext
                 } else {
                     match window_context.window_container.dyn_window(event_preparation.window_index) {
                         Some(window) => {
-                            let call_on_path = match window.point(event_preparation.pos) {
+                            let call_on_path = match window.point(event_preparation.first_pos.unwrap_or(event_preparation.pos)) {
                                 Some(rel_widget_path) => CallOnPath::Widget(rel_widget_path.to_abs_widget_path(event_preparation.window_index)),
                                 None => CallOnPath::Window(event_preparation.window_index),
                             };
@@ -922,6 +924,36 @@ impl ClientContext
                 }
             },
             None => None,
+        }
+    }
+
+    /// Sets the first position for the call-on identifier.
+    ///
+    /// The first position is used to point a window or a widget instead the current position. The
+    /// first position defaultly is unset. A left button release unsets the first position for a
+    /// pointer. This method returns `true` if the first position is set, otherwise `false`.
+    pub fn set_first_pos(&mut self, call_on_id: CallOnId) -> bool
+    {
+        match self.fields.event_preparations.get_mut(&call_on_id) {
+            Some(event_preparation) => {
+                event_preparation.first_pos = Some(event_preparation.pos);
+                true
+            },
+            None => false,
+        }
+    }
+
+    /// Unsets the first position for the call-on identifier.
+    ///
+    /// See [`set_first_pos`](Self::set_first_pos) for more informations.
+    pub fn unset_first_pos(&mut self, call_on_id: CallOnId) -> bool
+    {
+        match self.fields.event_preparations.get_mut(&call_on_id) {
+            Some(event_preparation) => {
+                event_preparation.first_pos = None;
+                true
+            },
+            None => false,
         }
     }
     

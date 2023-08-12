@@ -20,7 +20,7 @@ pub(crate) fn prepare_event_for_client_touch_down(client_context: &mut ClientCon
     match client_context.window_index_for_surface(surface) {
         Some(window_idx) => {
             let pos = Pos::new(x / (client_context.fields.scale as f64), y / (client_context.fields.scale as f64));
-            match client_context.add_event_preparation(window_context, CallOnId::Touch(id), window_idx, pos) {
+            match client_context.add_event_preparation(window_context, CallOnId::Touch(id), window_idx, pos, None) {
                 Some((call_on_path, pos)) => {
                     if client_context.fields.touch_ids.is_empty() {
                         match timer_tx.send(ThreadTimerCommand::Start(ThreadTimer::Touch)) {
