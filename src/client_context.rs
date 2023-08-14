@@ -793,7 +793,7 @@ impl ClientContext
         match self.destroy_client_windows_to_destroy() {
             Ok(()) => (),
             Err(err) => eprintln!("lwltk: {}", err),
-        };
+        }
         match destroy_map_client_windows(&self.client_windows) {
             Ok(()) => (),
             Err(err) => eprintln!("lwltk: {}", err),
