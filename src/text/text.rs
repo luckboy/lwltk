@@ -95,7 +95,7 @@ impl Text
                                 Some(((_, c2), j2)) => {
                                     if is_mark_char(c2) {
                                         is_combination = true;
-                                        is_double_combination |= is_mark_char(c2);
+                                        is_double_combination |= is_mark_char2(c2);
                                         j = j2;
                                     } else {
                                         iter = tmp_iter2;
