@@ -1669,14 +1669,14 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     Some(cmd) => {
                         for timer_data in &mut timer_data_vec {
                             match cmd {
-                                ThreadTimerCommand::SetDelay(timer, delay) if timer == timer_data.timer => {
-                                    timer_data.delay = Some(delay);
+                                ThreadTimerCommand::SetDelay(timer, tmp_delay4) if timer == timer_data.timer => {
+                                    timer_data.delay = Some(tmp_delay4);
                                 },
                                 ThreadTimerCommand::Start(timer) if timer == timer_data.timer => {
                                     match timer_data.repeat {
                                         ThreadTimerRepeat::None => (),
-                                        ThreadTimerRepeat::OneDelay(delay) => timer_data.delay = Some(delay),
-                                        ThreadTimerRepeat::TwoDelays(delay, _) => timer_data.delay = Some(delay),
+                                        ThreadTimerRepeat::OneDelay(tmp_delay4) => timer_data.delay = Some(tmp_delay4),
+                                        ThreadTimerRepeat::TwoDelays(tmp_delay4, _) => timer_data.delay = Some(tmp_delay4),
                                     }
                                 },
                                 ThreadTimerCommand::Stop(timer) if timer == timer_data.timer => {
