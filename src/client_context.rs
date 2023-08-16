@@ -1649,8 +1649,8 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                             } else {
                                 match timer_data.repeat {
                                     ThreadTimerRepeat::None => timer_data.delay = None,
-                                    ThreadTimerRepeat::OneDelay(tmp_delay3) => timer_data.delay = Some(tmp_delay3),
-                                    ThreadTimerRepeat::TwoDelays(_, tmp_delay3) => timer_data.delay = Some(tmp_delay3),
+                                    ThreadTimerRepeat::OneDelay(tmp_delay2) => timer_data.delay = Some(tmp_delay2),
+                                    ThreadTimerRepeat::TwoDelays(_, tmp_delay2) => timer_data.delay = Some(tmp_delay2),
                                 }
                                 match thread_signal_sender.commit_timer(timer_data.timer) {
                                     Ok(()) => (),
@@ -1669,14 +1669,14 @@ pub(crate) fn run_main_loop(client_display: &mut ClientDisplay, client_context: 
                     Some(cmd) => {
                         for timer_data in &mut timer_data_vec {
                             match cmd {
-                                ThreadTimerCommand::SetDelay(timer, tmp_delay4) if timer == timer_data.timer => {
-                                    timer_data.delay = Some(tmp_delay4);
+                                ThreadTimerCommand::SetDelay(timer, tmp_delay) if timer == timer_data.timer => {
+                                    timer_data.delay = Some(tmp_delay);
                                 },
                                 ThreadTimerCommand::Start(timer) if timer == timer_data.timer => {
                                     match timer_data.repeat {
                                         ThreadTimerRepeat::None => (),
-                                        ThreadTimerRepeat::OneDelay(tmp_delay4) => timer_data.delay = Some(tmp_delay4),
-                                        ThreadTimerRepeat::TwoDelays(tmp_delay4, _) => timer_data.delay = Some(tmp_delay4),
+                                        ThreadTimerRepeat::OneDelay(tmp_delay) => timer_data.delay = Some(tmp_delay),
+                                        ThreadTimerRepeat::TwoDelays(tmp_delay, _) => timer_data.delay = Some(tmp_delay),
                                     }
                                 },
                                 ThreadTimerCommand::Stop(timer) if timer == timer_data.timer => {
