@@ -380,7 +380,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
     }
 }
 
-/// A part of default event handler for the widget, the client pointer, and the scroll bar.
+/// A part of default event handler for the widget, the client pointer, the scroll bar, and the
+/// seek bar.
 pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event, mut f: F, mut g: G) -> Option<Option<Option<Event>>>
     where F: FnMut(&dyn Widget, &mut ClientContext, &mut QueueContext, Pos<f64>) -> Option<ScrollBarElem> + Send + Sync + 'static,
           G: FnMut(&mut dyn Widget, &mut ClientContext, &mut QueueContext, ScrollBarElem, Option<Pos<f64>>, Pos<f64>) -> Option<()>  + Send + Sync + 'static
@@ -791,7 +792,8 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
     }
 }
 
-/// A part of default event handler for the widget, the client touch, and the scroll bar.
+/// A part of default event handler for the widget, the client touch, the scroll bar, and the seek
+/// bar.
 pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event, mut f: F, mut g: G) -> Option<Option<Option<Event>>>
     where F: FnMut(&dyn Widget, &mut ClientContext, &mut QueueContext, Pos<f64>) -> Option<ScrollBarElem> + Send + Sync + 'static,
           G: FnMut(&mut dyn Widget, &mut ClientContext, &mut QueueContext, ScrollBarElem, Option<Pos<f64>>, Pos<f64>) -> Option<()>  + Send + Sync + 'static
