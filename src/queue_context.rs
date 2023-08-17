@@ -287,7 +287,7 @@ impl QueueContext
     /// identifier or `None`.
     ///
     /// The old position of the pressed button is the old current position that was pointed by the
-    /// pointer or the touch when the widget is pressed by the pointer or touched.
+    /// pointer or the touch for the widget that is pressed by the pointer or touched.
     pub fn pressed_old_pos(&self, call_on_id: CallOnId) -> Option<Pos<f64>>
     {
         match self.pressed_old_poses.get(&call_on_id) {
