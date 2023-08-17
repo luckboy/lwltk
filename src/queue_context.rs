@@ -45,12 +45,17 @@ pub enum ActiveId
     SpaceKey,
 }
 
+/// An enumeration of element of scroll bar.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum ScrollBarElem
 {
+    /// An up button or a left button.
     FirstButton,
+    /// A down button or a right button.
     SecondButton,
+    /// A slider.
     Slider,
+    /// A Trough.
     Trough,
 }
 
@@ -233,11 +238,11 @@ impl QueueContext
     pub fn unset_pressed_call_on_path(&mut self, call_on_id: CallOnId)
     { self.pressed_call_on_paths.remove(&call_on_id); }
     
-    /// Returns the clock measurement of the pressed button for the specified call-on identifier
-    /// or `None`.
+    /// Returns a reference to the clock measurement of the pressed button for the specified call-on
+    /// identifier or `None`.
     ///
-    /// The clock measurement of the pressed button is made when the widget or the window that is
-    /// pressed by the pointer or touched.
+    /// The clock measurement of the pressed button is made when the widget or the window is pressed
+    /// by the pointer or touched.
     pub fn pressed_instant(&self, call_on_id: CallOnId) -> Option<&Instant>
     { self.pressed_instants.get(&call_on_id) }
 
@@ -253,6 +258,11 @@ impl QueueContext
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
 
+    /// Returns the element of a scroll bar of the pressed button for the specified call-on
+    /// identifier or `None`.
+    ///
+    /// The element of a scroll bar of the pressed button is pointed by the pointer or the touch
+    /// when the widget is pressed by the pointer or touched.
     pub fn pressed_scroll_bar_elem(&self, call_on_id: CallOnId) -> Option<ScrollBarElem>
     {
         match self.pressed_scroll_bar_elems.get(&call_on_id) {
@@ -261,12 +271,23 @@ impl QueueContext
         }
     }
     
+    /// Sets the element of a scroll bar of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_scroll_bar_elem`](Self::pressed_scroll_bar_elem) for more informations.
     pub fn set_pressed_scroll_bar_elem(&mut self, call_on_id: CallOnId, elem: ScrollBarElem)
     { self.pressed_scroll_bar_elems.insert(call_on_id, elem); }
 
+    /// Unsets the element of a scroll bar of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_scroll_bar_elem`](Self::pressed_scroll_bar_elem) for more informations.
     pub fn unset_pressed_scroll_bar_elem(&mut self, call_on_id: CallOnId)
     { self.pressed_scroll_bar_elems.remove(&call_on_id); }
 
+    /// Returns the old position of the pressed button for the specified call-on
+    /// identifier or `None`.
+    ///
+    /// The old position of the pressed button is the old current position that was pointed by the
+    /// pointer or the touch when the widget is pressed by the pointer or touched.
     pub fn pressed_old_pos(&self, call_on_id: CallOnId) -> Option<Pos<f64>>
     {
         match self.pressed_old_poses.get(&call_on_id) {
@@ -275,9 +296,15 @@ impl QueueContext
         }
     }
     
+    /// Sets the old position of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_old_pos`](Self::pressed_old_pos) for more informations.
     pub fn set_pressed_old_pos(&mut self, call_on_id: CallOnId, pos: Pos<f64>)
     { self.pressed_old_poses.insert(call_on_id, pos); }
 
+    /// Sets the old position of the pressed button for the specified call-on identifier.
+    ///
+    /// See [`pressed_old_pos`](Self::pressed_old_pos) for more informations.
     pub fn unset_pressed_old_pos(&mut self, call_on_id: CallOnId)
     { self.pressed_old_poses.remove(&call_on_id); }
 
