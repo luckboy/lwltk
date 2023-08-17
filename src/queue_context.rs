@@ -387,6 +387,12 @@ impl QueueContext
             for call_on_id in &pressed_call_on_ids {
                 self.pressed_instants.remove(call_on_id);
             }
+            for call_on_id in &pressed_call_on_ids {
+                self.pressed_scroll_bar_elems.remove(call_on_id);
+            }
+            for call_on_id in &pressed_call_on_ids {
+                self.pressed_old_poses.remove(call_on_id);
+            }
             let active_call_on_paths: Vec<CallOnPath> = self.active_id_sets.keys().filter(|k| {
                     client_windows_to_destroy.keys().any(|i| *i == k.window_index()) 
             }).map(|k| k.clone()).collect();
