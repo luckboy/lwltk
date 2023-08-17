@@ -230,6 +230,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             queue_context.unset_motion_resize_edges(CallOnId::Pointer);
             queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
             queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerMotion(_, pos)) => {
@@ -265,6 +267,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) => {
             queue_context.set_pressed_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
             queue_context.set_pressed_instant(CallOnId::Pointer, Instant::now());
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             queue_context.set_long_click(false);
             if client_context.post_button_release_call_on_path().is_none() {
                 let current_call_on_path = queue_context.current_call_on_path()?.clone();
@@ -326,6 +330,8 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             }
             queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
             queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Pressed)) => {
@@ -367,6 +373,212 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
                 } else {
                     queue_context.push_event(Event::Click)?;
                 }
+            }
+            Some(Some(None))
+        },
+        _ => Some(None),
+    }
+}
+
+pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event, mut f: F, mut g: G) -> Option<Option<Option<Event>>>
+    where F: FnMut(&dyn Widget, &mut ClientContext, &mut QueueContext, Pos<f64>) -> Option<ScrollBarElem> + Send + Sync + 'static,
+          G: FnMut(&mut dyn Widget, &mut ClientContext, &mut QueueContext, ScrollBarElem, Option<Pos<f64>>, Pos<f64>) -> Option<()>  + Send + Sync + 'static
+{
+    match event {
+        Event::Client(ClientEvent::PointerEnter(pos)) => {
+            client_context.set_cursor(widget.cursor(*pos, queue_context.has_wait_cursor()));
+            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
+            queue_context.unset_motion_resize_edges(CallOnId::Pointer);
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::PointerLeave) => {
+            match queue_context.motion_call_on_path(CallOnId::Pointer) {
+                Some(CallOnPath::Widget(abs_widget_path)) => {
+                    let tmp_abs_widget_path = abs_widget_path.clone();
+                    let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                    queue_context.push_callback(move |_, window_context, queue_context| {
+                            if queue_context.remove_active_id(&tmp_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                                window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                            }
+                            Some(())
+                    });
+                },
+                _ => (),
+            }
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.remove_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                widget.set_state(WidgetState::Hover);
+            }
+            queue_context.unset_motion_call_on_path(CallOnId::Pointer);
+            queue_context.unset_motion_resize_edges(CallOnId::Pointer);
+            queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
+            queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::PointerMotion(_, pos)) => {
+            client_context.set_cursor(widget.cursor(*pos, queue_context.has_wait_cursor()));
+            let motion_call_on_path = queue_context.motion_call_on_path(CallOnId::Pointer);
+            if motion_call_on_path != queue_context.current_call_on_path() {
+                match motion_call_on_path {
+                    Some(CallOnPath::Widget(abs_widget_path)) => {
+                        let tmp_abs_widget_path = abs_widget_path.clone();
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.remove_active_id(&tmp_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                                    window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                }
+                                Some(())
+                        });
+                    },
+                    _ => (),
+                }
+            }
+            queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
+            queue_context.unset_motion_resize_edges(CallOnId::Pointer);
+            if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Pointer) {
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.add_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                    widget.set_state(WidgetState::Active);
+                }
+            } else {
+                widget.set_state(WidgetState::Hover);
+            }
+            if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Pointer) {
+                match queue_context.current_call_on_path() {
+                    Some(CallOnPath::Widget(abs_widget_path)) => {
+                        let tmp_abs_widget_path = abs_widget_path.clone();
+                        queue_context.push_callback(move |client_context, window_context, queue_context| {
+                                let current_pos = window_context.current_pos()?;
+                                match (queue_context.pressed_scroll_bar_elem(CallOnId::Pointer), queue_context.pressed_old_pos(CallOnId::Pointer)) {
+                                    (Some(scroll_bar_elem @ (ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)), Some(_)) => {
+                                        match f(window_context.dyn_widget(&tmp_abs_widget_path)?, client_context, queue_context, current_pos)? {
+                                            scroll_bar_elem2 if scroll_bar_elem2 == scroll_bar_elem => (),
+                                            _ => queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer),
+                                        }
+                                    },
+                                    (Some(scroll_bar_elem), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, Some(old_pos), current_pos)?,
+                                    _ => (),
+                                }
+                                queue_context.set_pressed_old_pos(CallOnId::Pointer, current_pos);
+                                Some(())
+                        });
+                    },
+                    _ => return None,
+                }
+            }
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) => {
+            client_context.set_first_pos(CallOnId::Pointer);
+            queue_context.set_pressed_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
+            queue_context.set_pressed_instant(CallOnId::Pointer, Instant::now());
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
+            queue_context.set_long_click(false);
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.add_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                widget.set_state(WidgetState::Active);
+            }
+            queue_context.set_double_click(false);
+            queue_context.push_callback(move |_, window_context, _| {
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
+                    let current_pos = window_context.current_pos()?;
+                    let window = window_context.dyn_window_mut(current_window_idx)?;
+                    match window.point_focusable(current_pos) {
+                        Some(focusable_widget) => {
+                            window.update_focused_rel_widget_path();
+                            window.set_focused_rel_widget_path(Some(focusable_widget));
+                        },
+                        None => (),
+                    }
+                    Some(())
+            });
+            match queue_context.current_call_on_path() {
+                Some(CallOnPath::Widget(abs_widget_path)) => {
+                    let tmp_abs_widget_path = abs_widget_path.clone();
+                    queue_context.push_callback(move |client_context, window_context, queue_context| {
+                            let current_pos = window_context.current_pos()?;
+                            let scroll_bar_elem = f(window_context.dyn_widget(&tmp_abs_widget_path)?, client_context, queue_context, current_pos)?;
+                            queue_context.set_pressed_scroll_bar_elem(CallOnId::Pointer, scroll_bar_elem);
+                            g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, None, current_pos)?;
+                            match scroll_bar_elem {
+                                ScrollBarElem::Trough => queue_context.set_pressed_scroll_bar_elem(CallOnId::Pointer, scroll_bar_elem),
+                                _ => (),
+                            }
+                            queue_context.set_pressed_old_pos(CallOnId::Pointer, current_pos);
+                            Some(())
+                    });
+                },
+                _ => return None,
+            }
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Released)) => {
+            let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Pointer);
+            if pressed_call_on_path != queue_context.current_call_on_path() {
+                match pressed_call_on_path {
+                    Some(CallOnPath::Widget(abs_widget_path)) => {
+                        let tmp_abs_widget_path = abs_widget_path.clone();
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.remove_active_id(&tmp_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                                    window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                }
+                                Some(())
+                        });
+                    },
+                    _ => (),
+                }
+            }
+            queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
+            queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Pressed)) => {
+            queue_context.push_callback(move |_, window_context, _| {
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
+                    let current_pos = window_context.current_pos()?;
+                    let window = window_context.dyn_window_mut(current_window_idx)?;
+                    match window.point_focusable(current_pos) {
+                        Some(focusable_widget) => {
+                            window.update_focused_rel_widget_path();
+                            window.set_focused_rel_widget_path(Some(focusable_widget));
+                        },
+                        None => (),
+                    }
+                    Some(())
+            });
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::PointerButton(_, ClientButton::Right, ClientState::Released)) => Some(Some(None)),
+        Event::Client(ClientEvent::RepeatedButton) => {
+            match queue_context.current_call_on_path() {
+                Some(CallOnPath::Widget(abs_widget_path)) => {
+                    let tmp_abs_widget_path = abs_widget_path.clone();
+                    queue_context.push_callback(move |client_context, window_context, queue_context| {
+                            let current_pos = window_context.current_pos()?;
+                            match queue_context.pressed_scroll_bar_elem(CallOnId::Pointer) {
+                                Some(scroll_bar_elem @ (ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)) => { 
+                                    g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, None, current_pos)?;
+                                },
+                                _ => (),
+                            }
+                            Some(())
+                    });
+                },
+                _ => return None,
             }
             Some(Some(None))
         },
@@ -468,6 +680,8 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
             queue_context.unset_motion_resize_edges(CallOnId::Touch(*id));
             queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
             queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
+            queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
             let current_call_on_path = queue_context.current_call_on_path()?.clone();
             if queue_context.add_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Touch(*id))) {
                 widget.set_state(WidgetState::Active);
@@ -533,6 +747,8 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
             queue_context.unset_motion_call_on_path(CallOnId::Touch(*id));
             queue_context.unset_pressed_call_on_path(CallOnId::Touch(*id));
             queue_context.unset_pressed_instant(CallOnId::Touch(*id));
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
+            queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
             Some(Some(None))
         },
         Event::Client(ClientEvent::TouchMotion(_, id, _)) => {
@@ -564,6 +780,170 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
                 if queue_context.add_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Touch(*id))) {
                     widget.set_state(WidgetState::Active);
                 }
+            }
+            Some(Some(None))
+        },
+        _ => Some(None),
+    }
+}
+
+pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widget, client_context: &mut ClientContext, queue_context: &mut QueueContext, event: &Event, mut f: F, mut g: G) -> Option<Option<Option<Event>>>
+    where F: FnMut(&dyn Widget, &mut ClientContext, &mut QueueContext, Pos<f64>) -> Option<ScrollBarElem> + Send + Sync + 'static,
+          G: FnMut(&mut dyn Widget, &mut ClientContext, &mut QueueContext, ScrollBarElem, Option<Pos<f64>>, Pos<f64>) -> Option<()>  + Send + Sync + 'static
+{
+    match event {
+        Event::Client(ClientEvent::TouchDown(_, id, _)) => {
+            client_context.set_first_pos(CallOnId::Touch(*id));
+            queue_context.set_motion_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
+            queue_context.unset_motion_resize_edges(CallOnId::Touch(*id));
+            queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
+            queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
+            queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
+            let current_call_on_path = queue_context.current_call_on_path()?.clone();
+            if queue_context.add_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Touch(*id))) {
+                widget.set_state(WidgetState::Active);
+            }
+            queue_context.push_callback(move |_, window_context, _| {
+                    let current_window_idx = window_context.current_window_index()?;
+                    let window = window_context.dyn_window(current_window_idx)?;
+                    if window.is_focusable() {
+                        window_context.set_focused_window_index(Some(current_window_idx));
+                    }
+                    let current_pos = window_context.current_pos()?;
+                    let window = window_context.dyn_window_mut(current_window_idx)?;
+                    match window.point_focusable(current_pos) {
+                        Some(focusable_widget) => {
+                            window.update_focused_rel_widget_path();
+                            window.set_focused_rel_widget_path(Some(focusable_widget));
+                        },
+                        None => (),
+                    }
+                    Some(())
+            });
+            match queue_context.current_call_on_path() {
+                Some(CallOnPath::Widget(abs_widget_path)) => {
+                    let tmp_abs_widget_path = abs_widget_path.clone();
+                    let tmp_id = *id;
+                    queue_context.push_callback(move |client_context, window_context, queue_context| {
+                            let current_pos = window_context.current_pos()?;
+                            let scroll_bar_elem = f(window_context.dyn_widget(&tmp_abs_widget_path)?, client_context, queue_context, current_pos)?;
+                            queue_context.set_pressed_scroll_bar_elem(CallOnId::Touch(tmp_id), scroll_bar_elem);
+                            g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, None, current_pos)?;
+                            match scroll_bar_elem {
+                                ScrollBarElem::Trough => queue_context.set_pressed_scroll_bar_elem(CallOnId::Pointer, scroll_bar_elem),
+                                _ => (),
+                            }
+                            queue_context.set_pressed_old_pos(CallOnId::Touch(tmp_id), current_pos);
+                            Some(())
+                    });
+                },
+                _ => return None,
+            }
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::TouchUp(_, id)) => {
+            let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Touch(*id));
+            if pressed_call_on_path != queue_context.current_call_on_path() {
+                match pressed_call_on_path {
+                    Some(CallOnPath::Widget(abs_widget_path)) => {
+                        let tmp_abs_widget_path = abs_widget_path.clone();
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        let tmp_id = *id; 
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.remove_active_id(&tmp_call_on_path, ActiveId::CallOnId(CallOnId::Touch(tmp_id))) {
+                                    if queue_context.motion_call_on_path(CallOnId::Pointer) == Some(&tmp_call_on_path) {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::Hover);
+                                    } else {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                    }
+                                }
+                                Some(())
+                        });
+                    },
+                    _ => (),
+                }
+            }
+            queue_context.unset_motion_call_on_path(CallOnId::Touch(*id));
+            queue_context.unset_pressed_call_on_path(CallOnId::Touch(*id));
+            queue_context.unset_pressed_instant(CallOnId::Touch(*id));
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
+            queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::TouchMotion(_, id, _)) => {
+            let motion_call_on_path = queue_context.motion_call_on_path(CallOnId::Touch(*id));
+            if motion_call_on_path != queue_context.current_call_on_path() {
+                match motion_call_on_path {
+                    Some(CallOnPath::Widget(abs_widget_path)) => {
+                        let tmp_abs_widget_path = abs_widget_path.clone();
+                        let tmp_call_on_path = CallOnPath::Widget(abs_widget_path.clone());
+                        let tmp_id = *id;
+                        queue_context.push_callback(move |_, window_context, queue_context| {
+                                if queue_context.remove_active_id(&tmp_call_on_path, ActiveId::CallOnId(CallOnId::Touch(tmp_id))) {
+                                    if queue_context.motion_call_on_path(CallOnId::Pointer) == Some(&tmp_call_on_path) {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::Hover);
+                                    } else {
+                                        window_context.dyn_widget_mut(&tmp_abs_widget_path)?.set_state(WidgetState::None);
+                                    }
+                                }
+                                Some(())
+                        });
+                    },
+                    _ => (),
+                }
+            }
+            queue_context.set_motion_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
+            queue_context.unset_motion_resize_edges(CallOnId::Pointer);
+            if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Touch(*id)) {
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.add_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Touch(*id))) {
+                    widget.set_state(WidgetState::Active);
+                }
+            }
+            if queue_context.current_call_on_path() == queue_context.pressed_call_on_path(CallOnId::Pointer) {
+                match queue_context.current_call_on_path() {
+                    Some(CallOnPath::Widget(abs_widget_path)) => {
+                        let tmp_abs_widget_path = abs_widget_path.clone();
+                        let tmp_id = *id;
+                        queue_context.push_callback(move |client_context, window_context, queue_context| {
+                                let current_pos = window_context.current_pos()?;
+                                match (queue_context.pressed_scroll_bar_elem(CallOnId::Touch(tmp_id)), queue_context.pressed_old_pos(CallOnId::Pointer)) {
+                                    (Some(scroll_bar_elem @ (ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)), Some(_)) => {
+                                        match f(window_context.dyn_widget(&tmp_abs_widget_path)?, client_context, queue_context, current_pos)? {
+                                            scroll_bar_elem2 if scroll_bar_elem2 == scroll_bar_elem => (),
+                                            _ => queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(tmp_id)),
+                                        }
+                                    },
+                                    (Some(scroll_bar_elem), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, Some(old_pos), current_pos)?,
+                                    _ => (),
+                                }
+                                queue_context.set_pressed_old_pos(CallOnId::Touch(tmp_id), current_pos);
+                                Some(())
+                        });
+                    },
+                    _ => return None,
+                }
+            }
+            Some(Some(None))
+        },
+        Event::Client(ClientEvent::RepeatedTouch(id)) => {
+            match queue_context.current_call_on_path() {
+                Some(CallOnPath::Widget(abs_widget_path)) => {
+                    let tmp_abs_widget_path = abs_widget_path.clone();
+                    let tmp_id = *id;
+                    queue_context.push_callback(move |client_context, window_context, queue_context| {
+                            let current_pos = window_context.current_pos()?;
+                            match queue_context.pressed_scroll_bar_elem(CallOnId::Touch(tmp_id)) {
+                                Some(scroll_bar_elem @ (ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)) => { 
+                                    g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, None, current_pos)?;
+                                },
+                                _ => (),
+                            }
+                            Some(())
+                    });
+                },
+                _ => return None,
             }
             Some(Some(None))
         },
@@ -755,6 +1135,8 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
             queue_context.unset_motion_resize_edges(CallOnId::Pointer);
             queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
             queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerMotion(_, pos)) => {
@@ -793,6 +1175,8 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
                 None => {
                     queue_context.set_pressed_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
                     queue_context.set_pressed_instant(CallOnId::Pointer, Instant::now());
+                    queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+                    queue_context.unset_pressed_old_pos(CallOnId::Pointer);
                     queue_context.set_long_click(false);
                     if client_context.post_button_release_call_on_path().is_none() {
                         queue_context.set_double_click(false);
@@ -844,6 +1228,8 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
                 }
                 queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
                 queue_context.unset_pressed_instant(CallOnId::Pointer);
+                queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+                queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             }
             Some(Some(None))
         },
@@ -937,6 +1323,8 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
                     queue_context.unset_motion_resize_edges(CallOnId::Touch(*id));
                     queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
                     queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
+                    queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
+                    queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
                     queue_context.push_callback(move |_, window_context, _| {
                             let current_window_idx = window_context.current_window_index()?;
                             let window = window_context.dyn_window(current_window_idx)?;
@@ -982,6 +1370,8 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
                 queue_context.unset_motion_call_on_path(CallOnId::Touch(*id));
                 queue_context.unset_pressed_call_on_path(CallOnId::Touch(*id));
                 queue_context.unset_pressed_instant(CallOnId::Touch(*id));
+                queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
+                queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
             }
             Some(Some(None))
         },

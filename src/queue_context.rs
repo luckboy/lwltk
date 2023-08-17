@@ -45,6 +45,15 @@ pub enum ActiveId
     SpaceKey,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum ScrollBarElem
+{
+    FirstButton,
+    SecondButton,
+    Slider,
+    Trough,
+}
+
 /// An iterator of queue context that iterates over pairs of widget indices.
 #[derive(Clone)]
 pub struct QueueContextIter<'a>
@@ -95,6 +104,8 @@ pub struct QueueContext
     pub(crate) motion_resize_edge_map: BTreeMap<CallOnId, ClientResize>,
     pub(crate) pressed_call_on_paths: BTreeMap<CallOnId, CallOnPath>,
     pub(crate) pressed_instants: BTreeMap<CallOnId, Instant>,
+    pub(crate) pressed_scroll_bar_elems: BTreeMap<CallOnId, ScrollBarElem>,
+    pub(crate) pressed_old_poses: BTreeMap<CallOnId, Pos<f64>>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
     pub(crate) active_id_sets: BTreeMap<CallOnPath, BTreeSet<ActiveId>>,
@@ -114,6 +125,8 @@ impl QueueContext
             motion_resize_edge_map: BTreeMap::new(),
             pressed_call_on_paths: BTreeMap::new(),
             pressed_instants: BTreeMap::new(),
+            pressed_scroll_bar_elems: BTreeMap::new(),
+            pressed_old_poses: BTreeMap::new(),
             has_double_click: false,
             has_long_click: false,
             active_id_sets: BTreeMap::new(),
@@ -239,6 +252,34 @@ impl QueueContext
     /// See [`pressed_instant`](Self::pressed_instant) for more informations.
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
+
+    pub fn pressed_scroll_bar_elem(&self, call_on_id: CallOnId) -> Option<ScrollBarElem>
+    {
+        match self.pressed_scroll_bar_elems.get(&call_on_id) {
+            Some(elem) => Some(*elem),
+            None => None,
+        }
+    }
+    
+    pub fn set_pressed_scroll_bar_elem(&mut self, call_on_id: CallOnId, elem: ScrollBarElem)
+    { self.pressed_scroll_bar_elems.insert(call_on_id, elem); }
+
+    pub fn unset_pressed_scroll_bar_elem(&mut self, call_on_id: CallOnId)
+    { self.pressed_scroll_bar_elems.remove(&call_on_id); }
+
+    pub fn pressed_old_pos(&self, call_on_id: CallOnId) -> Option<Pos<f64>>
+    {
+        match self.pressed_old_poses.get(&call_on_id) {
+            Some(elem) => Some(*elem),
+            None => None,
+        }
+    }
+    
+    pub fn set_pressed_old_pos(&mut self, call_on_id: CallOnId, pos: Pos<f64>)
+    { self.pressed_old_poses.insert(call_on_id, pos); }
+
+    pub fn unset_pressed_old_pos(&mut self, call_on_id: CallOnId)
+    { self.pressed_old_poses.remove(&call_on_id); }
 
     /// Returns `true` if a double click occurred by the pointer, otherwise `false`.
     pub fn has_double_click(&self) -> bool
