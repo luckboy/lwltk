@@ -206,6 +206,10 @@ pub fn default_widget_on_for_client_pointer(widget: &mut dyn Widget, client_cont
             client_context.set_cursor(widget.cursor(*pos, queue_context.has_wait_cursor()));
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
             queue_context.unset_motion_resize_edges(CallOnId::Pointer);
+            queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
+            queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerLeave) => {
@@ -391,6 +395,10 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
             client_context.set_cursor(widget.cursor(*pos, queue_context.has_wait_cursor()));
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
             queue_context.unset_motion_resize_edges(CallOnId::Pointer);
+            queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
+            queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             Some(Some(None))
         },
         Event::Client(ClientEvent::PointerLeave) => {
@@ -469,7 +477,7 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Pressed)) => {
             client_context.set_first_pos(CallOnId::Pointer);
             queue_context.set_pressed_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
-            queue_context.set_pressed_instant(CallOnId::Pointer, Instant::now());
+            queue_context.unset_pressed_instant(CallOnId::Pointer);
             queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
             queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             queue_context.set_long_click(false);
@@ -804,7 +812,7 @@ pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widg
             queue_context.set_motion_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
             queue_context.unset_motion_resize_edges(CallOnId::Touch(*id));
             queue_context.set_pressed_call_on_path(CallOnId::Touch(*id), queue_context.current_call_on_path()?.clone());
-            queue_context.set_pressed_instant(CallOnId::Touch(*id), Instant::now());
+            queue_context.unset_pressed_instant(CallOnId::Touch(*id));
             queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(*id));
             queue_context.unset_pressed_old_pos(CallOnId::Touch(*id));
             let current_call_on_path = queue_context.current_call_on_path()?.clone();
@@ -1121,6 +1129,10 @@ pub fn default_window_on_for_client_pointer(window: &mut dyn Window, client_cont
             let resize_edges = client_resize_for_pos(*pos, window.size(), window.edges(), window.corners());
             client_context.set_cursor(cursor_for_client_resize_and_resizable(resize_edges, window.is_resizable()));
             queue_context.set_motion_call_on_path(CallOnId::Pointer, queue_context.current_call_on_path()?.clone());
+            queue_context.unset_pressed_call_on_path(CallOnId::Pointer);
+            queue_context.unset_pressed_instant(CallOnId::Pointer);
+            queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer);
+            queue_context.unset_pressed_old_pos(CallOnId::Pointer);
             match resize_edges {
                 Some(resize_edges) => queue_context.set_motion_resize_edges(CallOnId::Pointer, resize_edges),
                 None => queue_context.unset_motion_resize_edges(CallOnId::Pointer),
