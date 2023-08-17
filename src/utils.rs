@@ -453,13 +453,7 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
                         queue_context.push_callback(move |client_context, window_context, queue_context| {
                                 let current_pos = window_context.current_pos()?;
                                 match (queue_context.pressed_scroll_bar_elem(CallOnId::Pointer), queue_context.pressed_old_pos(CallOnId::Pointer)) {
-                                    (Some(scroll_bar_elem @ (ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)), Some(_)) => {
-                                        match f(window_context.dyn_widget(&tmp_abs_widget_path)?, client_context, queue_context, current_pos)? {
-                                            scroll_bar_elem2 if scroll_bar_elem2 == scroll_bar_elem => (),
-                                            _ => queue_context.unset_pressed_scroll_bar_elem(CallOnId::Pointer),
-                                        }
-                                    },
-                                    (Some(scroll_bar_elem), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, Some(old_pos), current_pos)?,
+                                    (Some(ScrollBarElem::Slider), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, ScrollBarElem::Slider, Some(old_pos), current_pos)?,
                                     _ => (),
                                 }
                                 queue_context.set_pressed_old_pos(CallOnId::Pointer, current_pos);
@@ -522,7 +516,16 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
         },
         Event::Client(ClientEvent::PointerButton(_, ClientButton::Left, ClientState::Released)) => {
             let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Pointer);
-            if pressed_call_on_path != queue_context.current_call_on_path() {
+            if pressed_call_on_path == queue_context.current_call_on_path() {
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.remove_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Pointer)) {
+                    if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
+                        widget.set_state(WidgetState::Hover);
+                    } else {
+                        widget.set_state(WidgetState::None);
+                    }
+                }
+            } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
@@ -719,7 +722,7 @@ pub fn default_widget_on_for_client_touch(widget: &mut dyn Widget, client_contex
                 }
                 let duration = Duration::from_millis(client_context.long_click_delay());
                 if widget.is_enabled() {
-                    if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
+                    if queue_context.pressed_instant(CallOnId::Touch(*id))?.elapsed() >= duration {
                         queue_context.push_event(Event::LongClick)?;
                     } else {
                         queue_context.push_event(Event::Click)?;
@@ -846,7 +849,16 @@ pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widg
         },
         Event::Client(ClientEvent::TouchUp(_, id)) => {
             let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Touch(*id));
-            if pressed_call_on_path != queue_context.current_call_on_path() {
+            if pressed_call_on_path == queue_context.current_call_on_path() {
+                let current_call_on_path = queue_context.current_call_on_path()?.clone();
+                if queue_context.remove_active_id(&current_call_on_path, ActiveId::CallOnId(CallOnId::Touch(*id))) {
+                    if queue_context.motion_call_on_path(CallOnId::Pointer) == queue_context.current_call_on_path() {
+                        widget.set_state(WidgetState::Hover);
+                    } else {
+                        widget.set_state(WidgetState::None);
+                    }
+                }
+            } else {
                 match pressed_call_on_path {
                     Some(CallOnPath::Widget(abs_widget_path)) => {
                         let tmp_abs_widget_path = abs_widget_path.clone();
@@ -911,13 +923,7 @@ pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widg
                         queue_context.push_callback(move |client_context, window_context, queue_context| {
                                 let current_pos = window_context.current_pos()?;
                                 match (queue_context.pressed_scroll_bar_elem(CallOnId::Touch(tmp_id)), queue_context.pressed_old_pos(CallOnId::Pointer)) {
-                                    (Some(scroll_bar_elem @ (ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)), Some(_)) => {
-                                        match f(window_context.dyn_widget(&tmp_abs_widget_path)?, client_context, queue_context, current_pos)? {
-                                            scroll_bar_elem2 if scroll_bar_elem2 == scroll_bar_elem => (),
-                                            _ => queue_context.unset_pressed_scroll_bar_elem(CallOnId::Touch(tmp_id)),
-                                        }
-                                    },
-                                    (Some(scroll_bar_elem), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, scroll_bar_elem, Some(old_pos), current_pos)?,
+                                    (Some(ScrollBarElem::Slider), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, ScrollBarElem::Slider, Some(old_pos), current_pos)?,
                                     _ => (),
                                 }
                                 queue_context.set_pressed_old_pos(CallOnId::Touch(tmp_id), current_pos);
@@ -1344,7 +1350,7 @@ pub fn default_window_on_for_client_touch(window: &mut dyn Window, client_contex
                 let pressed_call_on_path = queue_context.pressed_call_on_path(CallOnId::Touch(*id));
                 if pressed_call_on_path == queue_context.current_call_on_path() {
                     let duration = Duration::from_millis(client_context.long_click_delay());
-                    if queue_context.pressed_instant(CallOnId::Pointer)?.elapsed() >= duration {
+                    if queue_context.pressed_instant(CallOnId::Touch(*id))?.elapsed() >= duration {
                         queue_context.push_event(Event::LongClick)?;
                     } else {
                         queue_context.push_event(Event::Click)?;
