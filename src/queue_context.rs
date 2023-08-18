@@ -45,9 +45,9 @@ pub enum ActiveId
     SpaceKey,
 }
 
-/// An enumeration of element of scroll bar.
+/// An enumeration of call-on element.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub enum ScrollBarElem
+pub enum CallOnElem
 {
     /// An up button or a left button.
     FirstButton,
@@ -109,7 +109,7 @@ pub struct QueueContext
     pub(crate) motion_resize_edge_map: BTreeMap<CallOnId, ClientResize>,
     pub(crate) pressed_call_on_paths: BTreeMap<CallOnId, CallOnPath>,
     pub(crate) pressed_instants: BTreeMap<CallOnId, Instant>,
-    pub(crate) pressed_scroll_bar_elems: BTreeMap<CallOnId, ScrollBarElem>,
+    pub(crate) pressed_call_on_elems: BTreeMap<CallOnId, CallOnElem>,
     pub(crate) pressed_old_poses: BTreeMap<CallOnId, Pos<f64>>,
     pub(crate) has_double_click: bool,
     pub(crate) has_long_click: bool,
@@ -130,7 +130,7 @@ impl QueueContext
             motion_resize_edge_map: BTreeMap::new(),
             pressed_call_on_paths: BTreeMap::new(),
             pressed_instants: BTreeMap::new(),
-            pressed_scroll_bar_elems: BTreeMap::new(),
+            pressed_call_on_elems: BTreeMap::new(),
             pressed_old_poses: BTreeMap::new(),
             has_double_click: false,
             has_long_click: false,
@@ -258,30 +258,30 @@ impl QueueContext
     pub fn unset_pressed_instant(&mut self, call_on_id: CallOnId)
     { self.pressed_instants.remove(&call_on_id); }
 
-    /// Returns the element of a scroll bar of the pressed button for the specified call-on
-    /// identifier or `None`.
+    /// Returns the call-on element of the pressed button for the specified call-on identifier or
+    /// `None`.
     ///
-    /// The element of a scroll bar of the pressed button is pointed by the pointer or the touch
-    /// when the widget is pressed by the pointer or touched.
-    pub fn pressed_scroll_bar_elem(&self, call_on_id: CallOnId) -> Option<ScrollBarElem>
+    /// The call-on element of the pressed button is pointed by the pointer or the touch when the
+    /// widget is pressed by the pointer or touched.
+    pub fn pressed_call_on_elem(&self, call_on_id: CallOnId) -> Option<CallOnElem>
     {
-        match self.pressed_scroll_bar_elems.get(&call_on_id) {
+        match self.pressed_call_on_elems.get(&call_on_id) {
             Some(elem) => Some(*elem),
             None => None,
         }
     }
     
-    /// Sets the element of a scroll bar of the pressed button for the specified call-on identifier.
+    /// Sets the call-on element of the pressed button for the specified call-on identifier.
     ///
-    /// See [`pressed_scroll_bar_elem`](Self::pressed_scroll_bar_elem) for more informations.
-    pub fn set_pressed_scroll_bar_elem(&mut self, call_on_id: CallOnId, elem: ScrollBarElem)
-    { self.pressed_scroll_bar_elems.insert(call_on_id, elem); }
+    /// See [`pressed_call_on_elem`](Self::pressed_call_on_elem) for more informations.
+    pub fn set_pressed_call_on_elem(&mut self, call_on_id: CallOnId, elem: CallOnElem)
+    { self.pressed_call_on_elems.insert(call_on_id, elem); }
 
-    /// Unsets the element of a scroll bar of the pressed button for the specified call-on identifier.
+    /// Unsets the call-on element of the pressed button for the specified call-on identifier.
     ///
-    /// See [`pressed_scroll_bar_elem`](Self::pressed_scroll_bar_elem) for more informations.
-    pub fn unset_pressed_scroll_bar_elem(&mut self, call_on_id: CallOnId)
-    { self.pressed_scroll_bar_elems.remove(&call_on_id); }
+    /// See [`pressed_call_on_elem`](Self::pressed_call_on_elem) for more informations.
+    pub fn unset_pressed_call_on_elem(&mut self, call_on_id: CallOnId)
+    { self.pressed_call_on_elems.remove(&call_on_id); }
 
     /// Returns the old position of the pressed button for the specified call-on
     /// identifier or `None`.
@@ -388,7 +388,7 @@ impl QueueContext
                 self.pressed_instants.remove(call_on_id);
             }
             for call_on_id in &pressed_call_on_ids {
-                self.pressed_scroll_bar_elems.remove(call_on_id);
+                self.pressed_call_on_elems.remove(call_on_id);
             }
             for call_on_id in &pressed_call_on_ids {
                 self.pressed_old_poses.remove(call_on_id);
