@@ -47,7 +47,8 @@ pub enum ActiveId
 
 /// An enumeration of call-on element.
 ///
-/// The call-on element is an element of scroll bar with a trough.
+/// The call-on element is an element of scroll bar with a trough. This enumeration is used to
+/// identify actions of a scroll bar.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum CallOnElem
 {
