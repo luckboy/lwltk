@@ -89,6 +89,18 @@ pub enum Orient
     Vertical,
 }
 
+/// An enumeration of element of scroll bar.
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum ScrollBarElem
+{
+    /// An up button or a left button.
+    FirstButton,
+    /// A down button or a right button.
+    SecondButton,
+    /// A slider.
+    Slider,
+}
+
 /// A color structure.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Color

@@ -462,7 +462,7 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
                         queue_context.push_callback(move |client_context, window_context, queue_context| {
                                 let current_pos = window_context.current_pos()?;
                                 match (queue_context.pressed_call_on_elem(CallOnId::Pointer), queue_context.pressed_old_pos(CallOnId::Pointer)) {
-                                    (Some(CallOnElem::Slider), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, CallOnElem::Slider, Some(old_pos), current_pos)?,
+                                    (Some(CallOnElem::ScrollBarElem(ScrollBarElem::Slider)), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, CallOnElem::ScrollBarElem(ScrollBarElem::Slider), Some(old_pos), current_pos)?,
                                     _ => (),
                                 }
                                 queue_context.set_pressed_old_pos(CallOnId::Pointer, current_pos);
@@ -512,7 +512,7 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
                             queue_context.set_pressed_call_on_elem(CallOnId::Pointer, call_on_elem);
                             g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, call_on_elem, None, current_pos)?;
                             match call_on_elem {
-                                CallOnElem::Trough => queue_context.set_pressed_call_on_elem(CallOnId::Pointer, call_on_elem),
+                                CallOnElem::Trough => queue_context.set_pressed_call_on_elem(CallOnId::Pointer, CallOnElem::ScrollBarElem(ScrollBarElem::Slider)),
                                 _ => (),
                             }
                             queue_context.set_pressed_old_pos(CallOnId::Pointer, current_pos);
@@ -583,7 +583,7 @@ pub fn default_widget_on_for_client_pointer_and_scroll<F, G>(widget: &mut dyn Wi
                     queue_context.push_callback(move |client_context, window_context, queue_context| {
                             let current_pos = window_context.current_pos()?;
                             match queue_context.pressed_call_on_elem(CallOnId::Pointer) {
-                                Some(call_on_elem @ (CallOnElem::FirstButton | CallOnElem::SecondButton)) => { 
+                                Some(call_on_elem @ CallOnElem::ScrollBarElem(ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)) => { 
                                     g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, call_on_elem, None, current_pos)?;
                                 },
                                 _ => (),
@@ -846,7 +846,7 @@ pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widg
                             queue_context.set_pressed_call_on_elem(CallOnId::Touch(tmp_id), call_on_elem);
                             g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, call_on_elem, None, current_pos)?;
                             match call_on_elem {
-                                CallOnElem::Trough => queue_context.set_pressed_call_on_elem(CallOnId::Pointer, call_on_elem),
+                                CallOnElem::Trough => queue_context.set_pressed_call_on_elem(CallOnId::Pointer, CallOnElem::ScrollBarElem(ScrollBarElem::Slider)),
                                 _ => (),
                             }
                             queue_context.set_pressed_old_pos(CallOnId::Touch(tmp_id), current_pos);
@@ -933,7 +933,7 @@ pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widg
                         queue_context.push_callback(move |client_context, window_context, queue_context| {
                                 let current_pos = window_context.current_pos()?;
                                 match (queue_context.pressed_call_on_elem(CallOnId::Touch(tmp_id)), queue_context.pressed_old_pos(CallOnId::Pointer)) {
-                                    (Some(CallOnElem::Slider), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, CallOnElem::Slider, Some(old_pos), current_pos)?,
+                                    (Some(CallOnElem::ScrollBarElem(ScrollBarElem::Slider)), Some(old_pos)) => g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, CallOnElem::ScrollBarElem(ScrollBarElem::Slider), Some(old_pos), current_pos)?,
                                     _ => (),
                                 }
                                 queue_context.set_pressed_old_pos(CallOnId::Touch(tmp_id), current_pos);
@@ -953,7 +953,7 @@ pub fn default_widget_on_for_client_touch_and_scroll<F, G>(widget: &mut dyn Widg
                     queue_context.push_callback(move |client_context, window_context, queue_context| {
                             let current_pos = window_context.current_pos()?;
                             match queue_context.pressed_call_on_elem(CallOnId::Touch(tmp_id)) {
-                                Some(call_on_elem @ (CallOnElem::FirstButton | CallOnElem::SecondButton)) => { 
+                                Some(call_on_elem @ CallOnElem::ScrollBarElem(ScrollBarElem::FirstButton | ScrollBarElem::SecondButton)) => { 
                                     g(window_context.dyn_widget_mut(&tmp_abs_widget_path)?, client_context, queue_context, call_on_elem, None, current_pos)?;
                                 },
                                 _ => (),

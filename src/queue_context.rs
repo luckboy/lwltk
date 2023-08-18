@@ -46,15 +46,13 @@ pub enum ActiveId
 }
 
 /// An enumeration of call-on element.
+///
+/// The call-on element is an element of scroll bar with a trough.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum CallOnElem
 {
-    /// An up button or a left button.
-    FirstButton,
-    /// A down button or a right button.
-    SecondButton,
-    /// A slider.
-    Slider,
+    /// An element of scroll bar.
+    ScrollBarElem(ScrollBarElem),
     /// A Trough.
     Trough,
 }
