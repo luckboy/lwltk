@@ -311,7 +311,7 @@ impl Draw for Radio
     fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
     {
         cairo_context.save()?;
-        cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64,  self.bounds.width as f64, self.bounds.height as f64);
+        cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64, self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
         let is_selected = self.is_selected();
         theme.draw_radio_bg(cairo_context, self.bounds, is_selected, self.state, self.is_enabled, self.is_focused(), is_focused_window)?;

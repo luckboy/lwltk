@@ -267,7 +267,7 @@ impl Draw for Title
     fn draw(&self, cairo_context: &CairoContext, theme: &dyn Theme, is_focused_window: bool) -> Result<(), CairoError>
     {
         cairo_context.save()?;
-        cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64,  self.bounds.width as f64, self.bounds.height as f64);
+        cairo_context.rectangle(self.bounds.x as f64, self.bounds.y as f64, self.bounds.width as f64, self.bounds.height as f64);
         cairo_context.clip();
         theme.draw_title_bg(cairo_context, self.bounds, self.state, self.is_enabled, is_focused_window)?;
         let padding_bounds = inner_rect(self.bounds, theme.title_padding_edges());
