@@ -37,6 +37,11 @@ pub(crate) struct MockTheme
     radio_margin_edges: Edges<i32>,
     radio_padding_edges: Edges<i32>,
     radio_font_size: f64,
+    scroll_bar_margin_edges: Edges<i32>,
+    scroll_bar_elems: ScrollBarElems,
+    scroll_bar_button_size: Size<i32>,
+    scroll_bar_slider_width: i32,
+    scroll_bar_slider_height: i32,
 }
 
 impl MockTheme
@@ -68,6 +73,11 @@ impl MockTheme
             radio_margin_edges: Edges::new(0, 0, 0, 0),
             radio_padding_edges: Edges::new(0, 0, 0, 0),
             radio_font_size: 0.0,
+            scroll_bar_margin_edges: Edges::new(0, 0, 0, 0),
+            scroll_bar_elems: ScrollBarElems::Button1Button2Slider,
+            scroll_bar_button_size: Size::new(0, 0),
+            scroll_bar_slider_width: 0,
+            scroll_bar_slider_height: 0,
         }
     }
 
@@ -142,6 +152,21 @@ impl MockTheme
 
     pub(crate) fn set_radio_font_size(&mut self, font_size: f64)
     { self.radio_font_size = font_size; }
+
+    pub(crate) fn set_scroll_bar_margin_edges(&mut self, edges: Edges<i32>)
+    { self.scroll_bar_margin_edges = edges; }
+    
+    pub(crate) fn set_scroll_bar_elems(&mut self, elems: ScrollBarElems)
+    { self.scroll_bar_elems = elems; }
+    
+    pub(crate) fn set_scroll_bar_button_size(&mut self, size: Size<i32>)
+    { self.scroll_bar_button_size = size; }
+    
+    pub(crate) fn set_scroll_bar_slider_width(&mut self, width: i32)
+    { self.scroll_bar_slider_width = width; }
+    
+    pub(crate) fn set_scroll_bar_slider_height(&mut self, height: i32)
+    { self.scroll_bar_slider_height = height; }
 }
 
 impl Theme for MockTheme
@@ -294,6 +319,33 @@ impl Theme for MockTheme
     { Ok(()) }
 
     fn draw_grid_layout_bg(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn scroll_bar_margin_edges(&self) -> Edges<i32>
+    { self.scroll_bar_margin_edges }
+    
+    fn scroll_bar_elems(&self) -> ScrollBarElems
+    { self.scroll_bar_elems }
+    
+    fn scroll_bar_button_size(&self) -> Size<i32>
+    { self.scroll_bar_button_size }
+    
+    fn scroll_bar_slider_width(&self) -> i32
+    { self.scroll_bar_slider_width }
+
+    fn scroll_bar_slider_height(&self) -> i32
+    { self.scroll_bar_slider_height }
+
+    fn draw_sroll_bar_trough(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn draw_sroll_bar_first_button(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn draw_sroll_bar_second_button(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn draw_sroll_bar_slider(&self, _cairo_context: &CairoContext, _bounds: Rect<f64>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
     
     fn set_fg(&self, _cairo_context: &CairoContext, _state: WidgetState, _is_enabled: bool, _is_focused: bool, _is_focused_window: bool) -> Result<(), CairoError>

@@ -10,6 +10,32 @@ use crate::image::*;
 use crate::themes::*;
 use crate::types::*;
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum ScrollBarElems
+{
+    Button1Button2Slider,
+    Button2Button1Slider,
+    Button2SliderButton1,
+    Button1SliderButton2,
+    SliderButton1Button2,
+    SliderButton2Button1,
+}
+
+impl ScrollBarElems
+{
+    pub fn to_array(&self) -> [ScrollBarElem; 3]
+    {
+        match self {
+            ScrollBarElems::Button1Button2Slider => [ScrollBarElem::FirstButton, ScrollBarElem::SecondButton, ScrollBarElem::Slider],
+            ScrollBarElems::Button2Button1Slider => [ScrollBarElem::SecondButton, ScrollBarElem::FirstButton, ScrollBarElem::Slider],
+            ScrollBarElems::Button2SliderButton1 => [ScrollBarElem::SecondButton, ScrollBarElem::Slider, ScrollBarElem::FirstButton],
+            ScrollBarElems::Button1SliderButton2 => [ScrollBarElem::FirstButton, ScrollBarElem::Slider, ScrollBarElem::SecondButton],
+            ScrollBarElems::SliderButton1Button2 => [ScrollBarElem::Slider, ScrollBarElem::FirstButton, ScrollBarElem::SecondButton],
+            ScrollBarElems::SliderButton2Button1 => [ScrollBarElem::Slider, ScrollBarElem::SecondButton, ScrollBarElem::FirstButton],
+        }
+    }
+}
+
 pub trait Theme: Send + Sync
 {
     fn set_cairo_context(&self, cairo_context: &CairoContext, scale: i32) -> Result<(), CairoError>;
@@ -96,6 +122,24 @@ pub trait Theme: Send + Sync
 
     fn draw_grid_layout_bg(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;    
     
+    fn scroll_bar_margin_edges(&self) -> Edges<i32>;
+    
+    fn scroll_bar_elems(&self) -> ScrollBarElems;
+    
+    fn scroll_bar_button_size(&self) -> Size<i32>;
+    
+    fn scroll_bar_slider_width(&self) -> i32;
+
+    fn scroll_bar_slider_height(&self) -> i32;
+
+    fn draw_sroll_bar_trough(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn draw_sroll_bar_first_button(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn draw_sroll_bar_second_button(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
+    fn draw_sroll_bar_slider(&self, cairo_context: &CairoContext, bounds: Rect<f64>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
+
     fn set_fg(&self, cairo_context: &CairoContext, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
 
     fn set_white_fg(&self, cairo_context: &CairoContext, state: WidgetState, is_enabled: bool, is_focused: bool, is_focused_window: bool) -> Result<(), CairoError>;
