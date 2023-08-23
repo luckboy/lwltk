@@ -804,8 +804,17 @@ impl Theme for DefaultTheme
     fn scroll_bar_elems(&self) -> ScrollBarElems
     { ScrollBarElems::Button1SliderButton2 }
     
-    fn scroll_bar_button_size(&self) -> Size<i32>
-    { Size::new(SCROLL_BAR_BUTTON_ICON_SIZE + 8, SCROLL_BAR_BUTTON_ICON_SIZE + 8) }
+    fn h_scroll_bar_height(&self) -> i32
+    { SCROLL_BAR_BUTTON_ICON_SIZE + 8 }
+
+    fn h_scroll_bar_button_width(&self) -> i32
+    { SCROLL_BAR_BUTTON_ICON_SIZE + 8 }
+
+    fn v_scroll_bar_width(&self) -> i32
+    { SCROLL_BAR_BUTTON_ICON_SIZE + 8 }
+
+    fn v_scroll_bar_button_height(&self) -> i32
+    { SCROLL_BAR_BUTTON_ICON_SIZE + 8 }
     
     fn draw_sroll_bar_first_button(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {

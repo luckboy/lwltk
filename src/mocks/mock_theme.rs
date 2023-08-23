@@ -39,7 +39,10 @@ pub(crate) struct MockTheme
     radio_font_size: f64,
     scroll_bar_margin_edges: Edges<i32>,
     scroll_bar_elems: ScrollBarElems,
-    scroll_bar_button_size: Size<i32>,
+    h_scroll_bar_height: i32,
+    h_scroll_bar_button_width: i32,
+    v_scroll_bar_width: i32,
+    v_scroll_bar_button_height: i32,
 }
 
 impl MockTheme
@@ -73,7 +76,10 @@ impl MockTheme
             radio_font_size: 0.0,
             scroll_bar_margin_edges: Edges::new(0, 0, 0, 0),
             scroll_bar_elems: ScrollBarElems::Button1Button2Slider,
-            scroll_bar_button_size: Size::new(0, 0),
+            h_scroll_bar_height: 0,
+            h_scroll_bar_button_width: 0,
+            v_scroll_bar_width: 0,
+            v_scroll_bar_button_height: 0,
         }
     }
 
@@ -155,8 +161,17 @@ impl MockTheme
     pub(crate) fn set_scroll_bar_elems(&mut self, elems: ScrollBarElems)
     { self.scroll_bar_elems = elems; }
     
-    pub(crate) fn set_scroll_bar_button_size(&mut self, size: Size<i32>)
-    { self.scroll_bar_button_size = size; }
+    pub(crate) fn set_h_scroll_bar_height(&mut self, height: i32)
+    { self.h_scroll_bar_height = height; }
+
+    pub(crate) fn set_h_scroll_bar_button_width(&mut self, width: i32)
+    { self.h_scroll_bar_button_width = width; }
+
+    pub(crate) fn set_v_scroll_bar_width(&mut self, width: i32)
+    { self.v_scroll_bar_width = width; }
+
+    pub(crate) fn set_v_scroll_bar_button_height(&mut self, height: i32)
+    { self.v_scroll_bar_button_height = height; }
 }
 
 impl Theme for MockTheme
@@ -317,9 +332,18 @@ impl Theme for MockTheme
     fn scroll_bar_elems(&self) -> ScrollBarElems
     { self.scroll_bar_elems }
     
-    fn scroll_bar_button_size(&self) -> Size<i32>
-    { self.scroll_bar_button_size }
-    
+    fn h_scroll_bar_height(&self) -> i32
+    { self.h_scroll_bar_height }
+
+    fn h_scroll_bar_button_width(&self) -> i32
+    { self.h_scroll_bar_button_width }
+
+    fn v_scroll_bar_width(&self) -> i32
+    { self.v_scroll_bar_width }
+
+    fn v_scroll_bar_button_height(&self) -> i32
+    { self.v_scroll_bar_button_height }
+
     fn draw_sroll_bar_first_button(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
 
