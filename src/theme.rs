@@ -128,10 +128,6 @@ pub trait Theme: Send + Sync
     
     fn scroll_bar_button_size(&self) -> Size<i32>;
     
-    fn scroll_bar_slider_width(&self) -> i32;
-
-    fn scroll_bar_slider_height(&self) -> i32;
-
     fn draw_sroll_bar_trough(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;
 
     fn draw_sroll_bar_first_button(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>;

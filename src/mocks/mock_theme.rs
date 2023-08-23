@@ -40,8 +40,6 @@ pub(crate) struct MockTheme
     scroll_bar_margin_edges: Edges<i32>,
     scroll_bar_elems: ScrollBarElems,
     scroll_bar_button_size: Size<i32>,
-    scroll_bar_slider_width: i32,
-    scroll_bar_slider_height: i32,
 }
 
 impl MockTheme
@@ -76,8 +74,6 @@ impl MockTheme
             scroll_bar_margin_edges: Edges::new(0, 0, 0, 0),
             scroll_bar_elems: ScrollBarElems::Button1Button2Slider,
             scroll_bar_button_size: Size::new(0, 0),
-            scroll_bar_slider_width: 0,
-            scroll_bar_slider_height: 0,
         }
     }
 
@@ -161,12 +157,6 @@ impl MockTheme
     
     pub(crate) fn set_scroll_bar_button_size(&mut self, size: Size<i32>)
     { self.scroll_bar_button_size = size; }
-    
-    pub(crate) fn set_scroll_bar_slider_width(&mut self, width: i32)
-    { self.scroll_bar_slider_width = width; }
-    
-    pub(crate) fn set_scroll_bar_slider_height(&mut self, height: i32)
-    { self.scroll_bar_slider_height = height; }
 }
 
 impl Theme for MockTheme
@@ -330,12 +320,6 @@ impl Theme for MockTheme
     fn scroll_bar_button_size(&self) -> Size<i32>
     { self.scroll_bar_button_size }
     
-    fn scroll_bar_slider_width(&self) -> i32
-    { self.scroll_bar_slider_width }
-
-    fn scroll_bar_slider_height(&self) -> i32
-    { self.scroll_bar_slider_height }
-
     fn draw_sroll_bar_trough(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
 

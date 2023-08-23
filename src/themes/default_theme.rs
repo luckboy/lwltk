@@ -807,12 +807,6 @@ impl Theme for DefaultTheme
     fn scroll_bar_button_size(&self) -> Size<i32>
     { Size::new(SCROLL_BAR_BUTTON_ICON_SIZE + 8, SCROLL_BAR_BUTTON_ICON_SIZE + 8) }
     
-    fn scroll_bar_slider_width(&self) -> i32
-    { SCROLL_BAR_BUTTON_ICON_SIZE + 8 }
-
-    fn scroll_bar_slider_height(&self) -> i32
-    { SCROLL_BAR_BUTTON_ICON_SIZE + 8 }
-
     fn draw_sroll_bar_trough(&self, cairo_context: &CairoContext, bounds: Rect<i32>, _orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         self.set_bg_cairo_color(cairo_context);
