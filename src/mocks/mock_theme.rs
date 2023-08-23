@@ -320,13 +320,13 @@ impl Theme for MockTheme
     fn scroll_bar_button_size(&self) -> Size<i32>
     { self.scroll_bar_button_size }
     
-    fn draw_sroll_bar_trough(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
-    { Ok(()) }
-
     fn draw_sroll_bar_first_button(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
 
     fn draw_sroll_bar_second_button(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
+    { Ok(()) }
+
+    fn draw_sroll_bar_trough(&self, _cairo_context: &CairoContext, _bounds: Rect<i32>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>
     { Ok(()) }
 
     fn draw_sroll_bar_slider(&self, _cairo_context: &CairoContext, _bounds: Rect<f64>, _orient: Orient, _state: WidgetState, _is_enabled: bool, _is_focused_window: bool) -> Result<(), CairoError>

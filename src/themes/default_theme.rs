@@ -807,21 +807,6 @@ impl Theme for DefaultTheme
     fn scroll_bar_button_size(&self) -> Size<i32>
     { Size::new(SCROLL_BAR_BUTTON_ICON_SIZE + 8, SCROLL_BAR_BUTTON_ICON_SIZE + 8) }
     
-    fn draw_sroll_bar_trough(&self, cairo_context: &CairoContext, bounds: Rect<i32>, _orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
-    {
-        self.set_bg_cairo_color(cairo_context);
-        cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-        cairo_context.fill()?;
-        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
-            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
-            cairo_context.fill()?;
-        }
-        self.set_border_cairo_color(cairo_context, is_enabled, false, is_focused_window);
-        cairo_context.rectangle((bounds.x as f64) + 1.0, (bounds.y as f64) + 1.0, (bounds.width as f64) - 2.0, (bounds.height as f64) - 2.0); 
-        cairo_context.stroke()?;
-        Ok(())
-    }
-    
     fn draw_sroll_bar_first_button(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
         self.set_dark_bg_cairo_gradient(cairo_context, bounds, orient)?;
@@ -855,6 +840,37 @@ impl Theme for DefaultTheme
         cairo_context.stroke()?;
         Ok(())
     }
+
+    fn draw_sroll_bar_trough(&self, cairo_context: &CairoContext, bounds: Rect<i32>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
+    {
+        self.set_bg_cairo_color(cairo_context);
+        cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+        cairo_context.fill()?;
+        if self.set_state_cairo_color(cairo_context, state, is_enabled, is_focused_window) {
+            cairo_context.rectangle(bounds.x as f64, bounds.y as f64, bounds.width as f64, bounds.height as f64); 
+            cairo_context.fill()?;
+        }
+        self.set_border_cairo_color(cairo_context, is_enabled, false, is_focused_window);
+        match orient {
+            Orient::Horizontal => {
+                cairo_context.move_to(bounds.x as f64, (bounds.y as f64) + 1.0);
+                cairo_context.line_to((bounds.x as f64) + (bounds.width as f64), (bounds.y as f64) + 1.0);
+                cairo_context.stroke()?;
+                cairo_context.move_to(bounds.x as f64, (bounds.y as f64) + (bounds.height as f64) - 1.0);
+                cairo_context.line_to((bounds.x as f64) + (bounds.width as f64), (bounds.y as f64) + (bounds.height as f64) - 1.0);
+                cairo_context.stroke()?;
+            },
+            Orient::Vertical => {
+                cairo_context.move_to((bounds.x as f64) + 1.0, bounds.y as f64);
+                cairo_context.line_to((bounds.x as f64) + 1.0, (bounds.y as f64) + (bounds.height as f64));
+                cairo_context.stroke()?;
+                cairo_context.move_to((bounds.x as f64) + (bounds.width as f64) - 1.0, bounds.y as f64);
+                cairo_context.line_to((bounds.x as f64) + (bounds.width as f64) - 1.0, (bounds.y as f64) + (bounds.height as f64));
+                cairo_context.stroke()?;
+            },
+        }
+        Ok(())
+    }    
 
     fn draw_sroll_bar_slider(&self, cairo_context: &CairoContext, bounds: Rect<f64>, orient: Orient, state: WidgetState, is_enabled: bool, is_focused_window: bool) -> Result<(), CairoError>
     {
